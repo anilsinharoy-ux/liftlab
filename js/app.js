@@ -145,10 +145,14 @@ function renderHome() {
     fetchExerciseGif(primaryExercise).then(url => {
       const wrap = document.getElementById('home-muscle-img-wrap');
       if (!wrap) return;
+      const svgFallback = `<div class="home-muscle-svg-wrap">${muscleMap.svg}<div class="muscle-tag-col">${tagHtml}</div></div>`;
       if (url) {
-        wrap.innerHTML = `<img class="home-exercise-img" src="${url}" alt="${primaryExercise}" />`;
+        const img = new Image();
+        img.onload = () => { if (wrap) wrap.innerHTML = `<img class="home-exercise-img" src="${url}" alt="${primaryExercise}" />`; };
+        img.onerror = () => { if (wrap) wrap.innerHTML = svgFallback; };
+        img.src = url;
       } else {
-        wrap.innerHTML = `<div class="home-muscle-svg-wrap">${muscleMap.svg}<div class="muscle-tag-col">${tagHtml}</div></div>`;
+        wrap.innerHTML = svgFallback;
       }
     });
   }
@@ -1869,7 +1873,10 @@ function renderActiveExercise() {
     const wrap = document.getElementById('exercise-img-wrap');
     if (!wrap) return;
     if (url) {
-      wrap.innerHTML = `<img class="exercise-gif" src="${url}" alt="${ex.name}" />`;
+      const img = new Image();
+      img.onload = () => { if (wrap) wrap.innerHTML = `<img class="exercise-gif" src="${url}" alt="${ex.name}" />`; };
+      img.onerror = () => { /* leave existing placeholder in place */ };
+      img.src = url;
     } else if (EXERCISEDB_KEY) {
       // Key set but fetch failed — show fallback placeholder
       wrap.innerHTML = `
