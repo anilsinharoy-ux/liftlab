@@ -1,4 +1,4 @@
-const CACHE_NAME = 'liftlab-v3';
+const CACHE_NAME = 'liftlab-v5';
 const GIF_CACHE  = 'liftlab-gifs-v1';
 
 const CORE_ASSETS = [

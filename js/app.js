@@ -148,7 +148,8 @@ function renderHome() {
       const svgFallback = `<div class="home-muscle-svg-wrap">${muscleMap.svg}<div class="muscle-tag-col">${tagHtml}</div></div>`;
       if (url) {
         const img = new Image();
-        img.onload = () => { if (wrap) wrap.innerHTML = `<img class="home-exercise-img" src="${url}" alt="${primaryExercise}" />`; };
+        img.referrerPolicy = 'no-referrer';
+        img.onload = () => { if (wrap) wrap.innerHTML = `<img class="home-exercise-img" referrerpolicy="no-referrer" src="${url}" alt="${primaryExercise}" />`; };
         img.onerror = () => { if (wrap) wrap.innerHTML = svgFallback; };
         img.src = url;
       } else {
@@ -1874,7 +1875,8 @@ function renderActiveExercise() {
     if (!wrap) return;
     if (url) {
       const img = new Image();
-      img.onload = () => { if (wrap) wrap.innerHTML = `<img class="exercise-gif" src="${url}" alt="${ex.name}" />`; };
+      img.referrerPolicy = 'no-referrer';
+      img.onload = () => { if (wrap) wrap.innerHTML = `<img class="exercise-gif" referrerpolicy="no-referrer" src="${url}" alt="${ex.name}" />`; };
       img.onerror = () => { /* leave existing placeholder in place */ };
       img.src = url;
     } else if (EXERCISEDB_KEY) {
