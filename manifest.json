@@ -1,0 +1,24 @@
+{
+  "name": "LiftLab",
+  "short_name": "LiftLab",
+  "description": "Personal fitness tracking PWA",
+  "start_url": "./",
+  "display": "standalone",
+  "theme_color": "#1E5080",
+  "background_color": "#F0F4F8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

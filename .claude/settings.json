@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/anilsinharoy/Downloads/**)",
+      "Bash(textutil -convert txt LiftLab_Coding_Prompt.docx -stdout)",
+      "Bash(python3 -c ' *)",
+      "Bash(node --input-type=module)",
+      "Bash(node -e ' *)",
+      "Bash(python3)",
+      "Bash(python3 -c \"from PIL import Image; print\\('PIL available'\\)\")",
+      "Bash(node -e \"require\\('canvas'\\); console.log\\('canvas available'\\)\")",
+      "Bash(python3 -)"
+    ]
+  }
+}
