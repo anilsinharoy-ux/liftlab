@@ -17,22 +17,21 @@ if ('serviceWorker' in navigator) {
 
 const EXERCISEDB_KEY = '89873a376emshb4aac58b1f59da0p158863jsne076af2868db';
 
-const WORKOUT_PHOTOS = {
-  'A-0': '9NhXc1HRj7I',
-  'A-1': 'k1HqE8AexuQ',
-  'A-2': 'rRaO3KnUKHc',
-  'A-3': 'uCKY-K_nHA0',
-  'B-0': 'Za_L4DYwBHo',
-  'B-1': '0HlI76m4jxU',
-  'B-2': 'sHfo3WOgGTU',
-  'B-3': '0Wra5YYVQJE',
-  'rest': 'zzfgog201wc',
-};
-
 function getWorkoutPhotoUrl(weekType, dayIndex, isRest = false) {
+  const PHOTOS = {
+    'A-0': 4853666,   // Chest: bench press
+    'A-1': 9644816,   // Back: pull-ups
+    'A-2': 34669288,  // Shoulders: shoulder press
+    'A-3': 29259727,  // Legs: squat
+    'B-0': 9602280,   // CrossFit
+    'B-1': 34794695,  // CrossFit
+    'B-2': 9602280,
+    'B-3': 34794695,
+    'rest': 32084028, // Rest/recovery
+  };
   const key = isRest ? 'rest' : `${weekType}-${dayIndex}`;
-  const id = WORKOUT_PHOTOS[key] || WORKOUT_PHOTOS['B-0'];
-  return `https://images.unsplash.com/photo-${id}?w=400&h=280&fit=crop&auto=format&q=80`;
+  const id = PHOTOS[key] || PHOTOS['B-0'];
+  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=400&h=280&dpr=1`;
 }
 
 // Maps our exercise names to ExerciseDB search terms
