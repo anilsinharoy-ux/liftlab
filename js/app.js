@@ -17,6 +17,24 @@ if ('serviceWorker' in navigator) {
 
 const EXERCISEDB_KEY = '89873a376emshb4aac58b1f59da0p158863jsne076af2868db';
 
+const WORKOUT_PHOTOS = {
+  'A-0': '9NhXc1HRj7I',
+  'A-1': 'k1HqE8AexuQ',
+  'A-2': 'rRaO3KnUKHc',
+  'A-3': 'uCKY-K_nHA0',
+  'B-0': 'Za_L4DYwBHo',
+  'B-1': '0HlI76m4jxU',
+  'B-2': 'sHfo3WOgGTU',
+  'B-3': '0Wra5YYVQJE',
+  'rest': 'zzfgog201wc',
+};
+
+function getWorkoutPhotoUrl(weekType, dayIndex, isRest = false) {
+  const key = isRest ? 'rest' : `${weekType}-${dayIndex}`;
+  const id = WORKOUT_PHOTOS[key] || WORKOUT_PHOTOS['B-0'];
+  return `https://images.unsplash.com/photo-${id}?w=400&h=280&fit=crop&auto=format&q=80`;
+}
+
 // Maps our exercise names to ExerciseDB search terms
 const EXERCISE_NAME_MAP = {
   'Incline Barbell Bench Press':               'barbell incline bench press',
@@ -133,31 +151,6 @@ function renderHome() {
   const homeStartBtn = document.getElementById('home-start-btn');
   if (homeStartBtn) homeStartBtn.addEventListener('click', () => navigateTo('workout'));
 
-  // Async: load primary exercise image for today's day
-  if (EXERCISEDB_KEY) {
-    const program = getWeekProgram();
-    const primaryExercise = program[currentDayIndex].exercises[0].name;
-    const muscleMap = getMuscleMap(currentDayIndex, state.weekType);
-    const tagHtml = muscleMap.tags.map(t =>
-      `<span class="muscle-tag ${t.primary ? 'muscle-tag-primary' : 'muscle-tag-secondary'}">${t.name}</span>`
-    ).join('');
-
-    fetchExerciseGif(primaryExercise).then(url => {
-      const wrap = document.getElementById('home-muscle-img-wrap');
-      if (!wrap) return;
-      const svgFallback = `<div class="home-muscle-svg-wrap">${muscleMap.svg}<div class="muscle-tag-col">${tagHtml}</div></div>`;
-      if (url) {
-        const img = new Image();
-        img.referrerPolicy = 'no-referrer';
-        img.onload = () => { if (wrap) wrap.innerHTML = `<img class="home-exercise-img" referrerpolicy="no-referrer" src="${url}" alt="${primaryExercise}" />`; };
-        img.onerror = () => { if (wrap) wrap.innerHTML = svgFallback; };
-        img.src = url;
-      } else {
-        wrap.innerHTML = svgFallback;
-      }
-    });
-  }
-
   checkAndShowCheckins();
 }
 
@@ -205,6 +198,7 @@ function getTodayWorkout(state) {
   const isRestDay   = !scheduled.includes(todayOffset) || checkin === 'no';
 
   if (isRestDay) {
+    const photoUrl = getWorkoutPhotoUrl('rest', 0, true);
     return `
       <div class="today-card">
         <div class="today-card-header">
@@ -213,6 +207,9 @@ function getTodayWorkout(state) {
             <div class="today-card-meta">Recovery is part of the program</div>
           </div>
           <span class="today-card-tag">Week ${weekType}</span>
+        </div>
+        <div class="home-muscle-img-wrap">
+          <img class="home-exercise-img" src="${photoUrl}" alt="Rest day" referrerpolicy="no-referrer" />
         </div>
         <div class="rest-day-msg">See you at the next session 💪</div>
       </div>
@@ -223,17 +220,11 @@ function getTodayWorkout(state) {
   const program = getWeekProgram();
   const day = program[dayIndex];
   const muscleMap = getMuscleMap(dayIndex, weekType);
+  const photoUrl = getWorkoutPhotoUrl(weekType, dayIndex);
 
   const tagHtml = muscleMap.tags.map(t =>
     `<span class="muscle-tag ${t.primary ? 'muscle-tag-primary' : 'muscle-tag-secondary'}">${t.name}</span>`
   ).join('');
-
-  const imgInner = EXERCISEDB_KEY
-    ? `<div class="exercise-photo-loading"><div class="exercise-loading-spinner"></div></div>`
-    : `<div class="home-muscle-svg-wrap">
-         ${muscleMap.svg}
-         <div class="muscle-tag-col">${tagHtml}</div>
-       </div>`;
 
   return `
     <div class="today-card">
@@ -244,8 +235,10 @@ function getTodayWorkout(state) {
         </div>
         <span class="today-card-tag">Week ${weekType}</span>
       </div>
-      <div class="home-muscle-img-wrap" id="home-muscle-img-wrap">${imgInner}</div>
-      ${EXERCISEDB_KEY ? `<div class="muscle-tag-row">${tagHtml}</div>` : ''}
+      <div class="home-muscle-img-wrap">
+        <img class="home-exercise-img" src="${photoUrl}" alt="${day.label}" referrerpolicy="no-referrer" />
+      </div>
+      <div class="muscle-tag-row">${tagHtml}</div>
       <div class="today-card-footer">
         <button class="start-btn" id="home-start-btn">Start workout</button>
       </div>
@@ -1877,7 +1870,17 @@ function renderActiveExercise() {
       const img = new Image();
       img.referrerPolicy = 'no-referrer';
       img.onload = () => { if (wrap) wrap.innerHTML = `<img class="exercise-gif" referrerpolicy="no-referrer" src="${url}" alt="${ex.name}" />`; };
-      img.onerror = () => { /* leave existing placeholder in place */ };
+      img.onerror = () => {
+        if (wrap) wrap.innerHTML = `
+          <div class="exercise-photo-placeholder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span>${ex.name}</span>
+          </div>`;
+      };
       img.src = url;
     } else if (EXERCISEDB_KEY) {
       // Key set but fetch failed — show fallback placeholder
@@ -2279,6 +2282,8 @@ async function fetchExerciseGif(exerciseName) {
   if (cache[exerciseName]) return cache[exerciseName];
 
   const searchTerm = EXERCISE_NAME_MAP[exerciseName] || exerciseName.toLowerCase();
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
   try {
     const res = await fetch(
       `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(searchTerm)}?limit=1`,
@@ -2287,8 +2292,10 @@ async function fetchExerciseGif(exerciseName) {
           'X-RapidAPI-Key': EXERCISEDB_KEY,
           'X-RapidAPI-Host': 'exercisedb.p.rapidapi.com',
         },
+        signal: controller.signal,
       }
     );
+    clearTimeout(timeout);
     if (!res.ok) return null;
     const data = await res.json();
     if (!Array.isArray(data) || !data.length) return null;
