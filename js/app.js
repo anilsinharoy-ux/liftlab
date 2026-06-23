@@ -112,6 +112,13 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => navigateTo(btn.dataset.tab));
 });
 
+document.getElementById('header-week-badge').addEventListener('click', () => {
+  const state = getWeekState();
+  state.weekType = state.weekType === 'A' ? 'B' : 'A';
+  localStorage.setItem('liftlab_week', JSON.stringify(state));
+  navigateTo(currentTab);
+});
+
 // ========================
 // HOME SCREEN
 // ========================
