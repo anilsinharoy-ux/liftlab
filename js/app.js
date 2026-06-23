@@ -1772,17 +1772,9 @@ function renderActiveExercise() {
 
       <div class="exercise-photo-wrap">
         <div id="exercise-img-wrap" class="exercise-img-wrap">
-          ${EXERCISEDB_KEY
-            ? `<div class="exercise-photo-loading"><div class="exercise-loading-spinner"></div></div>`
-            : `<div class="exercise-photo-placeholder">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <rect x="3" y="3" width="18" height="18" rx="3"/>
-                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                  <polyline points="21 15 16 10 5 21"/>
-                </svg>
-                <span>${ex.name}</span>
-               </div>`
-          }
+          <img class="exercise-gif" referrerpolicy="no-referrer"
+            src="${getWorkoutPhotoUrl(getWeekState().weekType, session.dayIndex)}"
+            alt="${ex.name}" />
         </div>
         <button class="active-back-btn" id="active-back-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -1861,40 +1853,6 @@ function renderActiveExercise() {
 
   document.getElementById('log-set-btn').addEventListener('click', logCurrentSet);
 
-  // Async: load exercise GIF (replaces placeholder when ready)
-  fetchExerciseGif(ex.name).then(url => {
-    const wrap = document.getElementById('exercise-img-wrap');
-    if (!wrap) return;
-    if (url) {
-      const img = new Image();
-      img.referrerPolicy = 'no-referrer';
-      img.onload = () => { if (wrap) wrap.innerHTML = `<img class="exercise-gif" referrerpolicy="no-referrer" src="${url}" alt="${ex.name}" />`; };
-      img.onerror = () => {
-        if (wrap) wrap.innerHTML = `
-          <div class="exercise-photo-placeholder">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <rect x="3" y="3" width="18" height="18" rx="3"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
-            <span>${ex.name}</span>
-          </div>`;
-      };
-      img.src = url;
-    } else if (EXERCISEDB_KEY) {
-      // Key set but fetch failed — show fallback placeholder
-      wrap.innerHTML = `
-        <div class="exercise-photo-placeholder">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="18" height="18" rx="3"/>
-            <circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
-          <span>${ex.name}</span>
-        </div>
-      `;
-    }
-  });
 }
 
 function handleRestBtn() {
