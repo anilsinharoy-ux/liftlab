@@ -2,21 +2,43 @@
    LIFTLAB — DESIGN TOKENS
    ======================== */
 :root {
-  --navy:          #1E5080;
-  --mid-blue:      #2A6A9A;
-  --light-fill:    #E8F0FA;
-  --page-bg:       #F0F4F8;
-  --white:         #FFFFFF;
-  --border:        #C8D8E8;
-  --muted:         #6A90B0;
-  --body-text:     #1A2535;
-  --amber:         #D4A054;
-  --amber-fill:    #FDF6EC;
-  --buffer-bg:     #F0E8FA;
-  --buffer-border: #C8A8E0;
+  /* Core dark palette */
+  --bg-base:        #080C10;
+  --bg-surface:     #0D1520;
+  --bg-elevated:    #111C28;
+  --bg-input:       #0A1018;
 
-  --nav-height: 64px;
-  --header-height: 52px;
+  /* Navy accent ramp */
+  --navy-dark:      #0D2040;
+  --navy:           #1A3A6A;
+  --navy-mid:       #2A5A9A;
+  --navy-accent:    #4A6A9A;
+
+  /* Text ramp */
+  --text-primary:   #E8EEF4;
+  --text-secondary: #7A9AB8;
+  --text-muted:     #3A5A70;
+  --text-faint:     #1E3A52;
+
+  /* Borders */
+  --border-subtle:  #0D1828;
+  --border:         #111C28;
+  --border-mid:     #1A2E42;
+
+  /* Semantic */
+  --green:          #2A7A54;
+  --green-fill:     #0A2018;
+  --amber:          #A07030;
+  --amber-fill:     #1A1408;
+  --red:            #C0392B;
+  --red-fill:       #200808;
+  --purple:         #7B4FA0;
+  --purple-fill:    #150A20;
+  --purple-border:  #2A1840;
+
+  /* Layout */
+  --nav-height:     64px;
+  --header-height:  52px;
 }
 
 /* ========================
@@ -33,8 +55,8 @@ html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 14px;
-  color: var(--body-text);
-  background: var(--page-bg);
+  color: var(--text-primary);
+  background: var(--bg-base);
   overflow: hidden;
 }
 
@@ -42,6 +64,10 @@ button {
   border: none;
   background: none;
   cursor: pointer;
+  font-family: inherit;
+}
+
+input {
   font-family: inherit;
 }
 
@@ -55,6 +81,7 @@ button {
   max-width: 480px;
   margin: 0 auto;
   position: relative;
+  background: var(--bg-base);
 }
 
 /* ========================
@@ -62,8 +89,8 @@ button {
    ======================== */
 #top-header {
   height: var(--header-height);
-  background: var(--white);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-base);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -73,22 +100,22 @@ button {
 
 #header-title {
   font-size: 18px;
-  font-weight: 600;
-  color: var(--navy);
-  letter-spacing: -0.3px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.5px;
 }
 
 #header-week-badge {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--navy);
-  background: var(--light-fill);
-  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy-accent);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
   border-radius: 20px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
+  letter-spacing: 0.3px;
 }
 
 /* ========================
@@ -106,8 +133,8 @@ button {
    ======================== */
 #bottom-nav {
   height: var(--nav-height);
-  background: var(--white);
-  border-top: 1px solid var(--border);
+  background: var(--bg-base);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   flex-shrink: 0;
 }
@@ -119,8 +146,8 @@ button {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: var(--muted);
-  font-size: 11px;
+  color: var(--text-faint);
+  font-size: 10px;
   font-weight: 500;
   transition: color 0.15s;
 }
@@ -131,7 +158,7 @@ button {
 }
 
 .nav-btn.active {
-  color: var(--navy);
+  color: var(--navy-mid);
 }
 
 /* ========================
@@ -147,7 +174,7 @@ button {
   align-items: center;
   justify-content: center;
   height: 300px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 15px;
   gap: 8px;
 }
@@ -155,32 +182,348 @@ button {
 .screen-placeholder svg {
   width: 40px;
   height: 40px;
-  opacity: 0.4;
+  opacity: 0.3;
 }
+
 /* ========================
    HOME SCREEN
    ======================== */
 
-/* --- Page header row --- */
-.home-header {
+/* Hero image section — full bleed from top */
+.home-hero-wrap {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.home-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.home-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.3) 0%,
+    rgba(0,0,0,0.05) 35%,
+    rgba(0,0,0,0.5) 65%,
+    rgba(8,12,16,1) 100%
+  );
+}
+
+/* Week dot strip over hero */
+.home-week-strip {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  right: 0;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  padding: 18px 16px 12px;
+  justify-content: center;
+  gap: 8px;
+  z-index: 10;
+  padding: 0 20px;
+}
+
+.home-ws-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.home-ws-label {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+}
+
+.home-ws-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.home-ws-dot.done {
+  background: rgba(74,106,154,0.6);
+  border-color: rgba(74,106,154,0.8);
+}
+
+.home-ws-dot.today {
+  width: 8px;
+  height: 8px;
+  background: var(--navy-mid);
+  border-color: var(--navy-accent);
+}
+
+/* Greeting + title over hero */
+.home-hero-text {
+  position: absolute;
+  bottom: 18px;
+  left: 20px;
+  right: 20px;
+  z-index: 10;
 }
 
 .home-greeting {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--navy);
-}
-
-.home-date {
   font-size: 12px;
-  color: var(--muted);
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 4px;
+  font-weight: 400;
 }
 
-/* --- Calendar strip --- */
+.home-hero-title {
+  font-size: 38px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -1.5px;
+  line-height: 1.0;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.7);
+}
+
+/* Rest day hero variant */
+.home-hero-wrap.rest-day .home-hero-img {
+  object-position: center center;
+}
+
+/* Dark panel below hero */
+.home-dark-panel {
+  background: var(--bg-base);
+  padding: 18px 20px 0;
+}
+
+/* Day tag line */
+.home-day-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 5px;
+}
+
+.home-day-tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--navy-mid);
+  flex-shrink: 0;
+}
+
+.home-day-tag-text {
+  font-size: 11px;
+  color: var(--navy-accent);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+
+.home-session-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+}
+
+/* Stats row */
+.home-stats-row {
+  display: flex;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 22px;
+}
+
+.home-stat-item {
+  flex: 1;
+  padding: 13px 0;
+  text-align: center;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.home-stat-item:last-child {
+  border-right: none;
+}
+
+.home-stat-val {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+  letter-spacing: -0.5px;
+}
+
+.home-stat-lbl {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+/* Calendar section */
+.home-cal-section {
+  margin-bottom: 22px;
+}
+
+.home-cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.home-cal-title {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.home-cal-range {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.home-cal-row {
+  display: flex;
+  gap: 4px;
+}
+
+.home-cal-day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 7px 0;
+  border-radius: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  gap: 4px;
+}
+
+.home-cal-day-lbl {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.home-cal-day-num {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.home-cal-pip {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.home-cal-day.today {
+  background: var(--navy-dark);
+  border-color: var(--navy);
+}
+
+.home-cal-day.today .home-cal-day-lbl {
+  color: var(--navy-accent);
+}
+
+.home-cal-day.today .home-cal-day-num {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.home-cal-day.today .home-cal-pip {
+  background: var(--navy-mid);
+}
+
+.home-cal-day.completed {
+  background: var(--bg-base);
+  border-color: var(--border-subtle);
+}
+
+.home-cal-day.completed .home-cal-day-num {
+  color: var(--text-faint);
+}
+
+.home-cal-day.completed .home-cal-pip {
+  background: var(--navy);
+}
+
+.home-cal-day.missed {
+  background: var(--amber-fill);
+  border-color: #3A2010;
+}
+
+.home-cal-day.missed .home-cal-day-lbl {
+  color: #4A3020;
+}
+
+.home-cal-day.missed .home-cal-day-num {
+  color: var(--amber);
+}
+
+.home-cal-day.missed .home-cal-pip {
+  background: var(--amber);
+}
+
+.home-cal-day.rest .home-cal-day-num {
+  color: var(--text-faint);
+  opacity: 0.4;
+}
+
+.home-cal-day.rest .home-cal-day-lbl {
+  opacity: 0.4;
+}
+
+/* Start workout button */
+.home-start-btn {
+  display: block;
+  width: 100%;
+  background: var(--navy);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 700;
+  padding: 15px;
+  border-radius: 14px;
+  text-align: center;
+  letter-spacing: 0.3px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 0;
+  transition: background 0.15s;
+}
+
+.home-start-btn:active {
+  background: var(--navy-mid);
+}
+
+/* Rest day home card */
+.home-rest-panel {
+  background: var(--bg-base);
+  padding: 22px 20px 0;
+  text-align: center;
+}
+
+.home-rest-title {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+/* Legacy aliases — keep JS working */
+.home-header { display: none; }
+
 .calendar-strip {
   display: flex;
   gap: 6px;
@@ -189,9 +532,7 @@ button {
   scrollbar-width: none;
 }
 
-.calendar-strip::-webkit-scrollbar {
-  display: none;
-}
+.calendar-strip::-webkit-scrollbar { display: none; }
 
 .cal-day {
   display: flex;
@@ -204,7 +545,7 @@ button {
 .cal-label {
   font-size: 10px;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
@@ -218,23 +559,22 @@ button {
   justify-content: center;
   font-size: 13px;
   font-weight: 500;
-  border: 2px solid var(--border);
-  background: #F4F7FA;
-  color: var(--muted);
+  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  color: var(--text-muted);
 }
 
-/* Calendar day states */
 .cal-day.today .cal-circle {
   background: var(--navy);
-  border-color: #164070;
-  color: var(--white);
-  font-weight: 600;
+  border-color: var(--navy-mid);
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .cal-day.completed .cal-circle {
-  background: #E0EDF8;
+  background: var(--navy-dark);
   border-color: var(--navy);
-  color: var(--navy);
+  color: var(--navy-accent);
 }
 
 .cal-day.missed .cal-circle {
@@ -243,7 +583,6 @@ button {
   color: var(--amber);
 }
 
-/* Workout day dot indicator */
 .cal-dot {
   width: 5px;
   height: 5px;
@@ -251,32 +590,32 @@ button {
   background: var(--border);
 }
 
-.cal-day.today .cal-dot     { background: var(--navy); }
+.cal-day.today .cal-dot     { background: var(--navy-mid); }
 .cal-day.completed .cal-dot { background: var(--navy); }
 .cal-day.missed .cal-dot    { background: var(--amber); }
 .cal-day.rest .cal-dot      { background: transparent; }
 
-/* --- Section divider --- */
+/* Section label */
 .section-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   padding: 0 16px 8px;
 }
 
-/* --- Today's workout card --- */
+/* Today card (legacy — keep for JS compatibility) */
 .today-card {
   margin: 0 16px 16px;
-  background: var(--white);
+  background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 14px;
   overflow: hidden;
 }
 
 .today-card-header {
-  background: var(--navy);
+  background: var(--navy-dark);
   padding: 12px 14px;
   display: flex;
   align-items: center;
@@ -286,19 +625,20 @@ button {
 .today-card-title {
   font-size: 14px;
   font-weight: 600;
-  color: var(--white);
+  color: var(--text-primary);
 }
 
 .today-card-meta {
   font-size: 11px;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255,255,255,0.5);
 }
 
 .today-card-tag {
   font-size: 10px;
   font-weight: 600;
-  color: var(--navy);
-  background: var(--light-fill);
+  color: var(--navy-accent);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
   border-radius: 20px;
   padding: 3px 9px;
 }
@@ -312,7 +652,7 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 8px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .exercise-preview-row:last-child {
@@ -321,39 +661,40 @@ button {
 
 .exercise-preview-name {
   font-size: 13px;
-  color: var(--body-text);
+  color: var(--text-primary);
   font-weight: 500;
 }
 
 .exercise-preview-sets {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .today-card-footer {
   padding: 12px 14px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .start-btn {
   width: 100%;
   background: var(--navy);
-  color: var(--white);
+  color: var(--text-primary);
   font-size: 14px;
-  font-weight: 600;
-  padding: 11px;
+  font-weight: 700;
+  padding: 12px;
   border-radius: 10px;
   letter-spacing: 0.2px;
+  border: none;
+  cursor: pointer;
 }
 
-/* --- Muscle focus diagram --- */
-/* Full-width image container on home card */
+/* Muscle diagram */
 .home-muscle-img-wrap {
   width: 100%;
   height: 180px;
   border-radius: 10px;
   overflow: hidden;
-  background: var(--light-fill);
+  background: var(--bg-surface);
   margin: 10px 0 4px;
   display: flex;
   align-items: center;
@@ -364,11 +705,10 @@ button {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: var(--light-fill);
+  background: var(--bg-surface);
   display: block;
 }
 
-/* SVG fallback layout inside the image wrap */
 .home-muscle-svg-wrap {
   display: flex;
   align-items: center;
@@ -383,7 +723,6 @@ button {
   height: auto;
 }
 
-/* Horizontal tag row shown below real image */
 .muscle-tag-row {
   display: flex;
   flex-wrap: wrap;
@@ -421,7 +760,7 @@ button {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin-bottom: 1px;
 }
 
@@ -435,22 +774,22 @@ button {
 }
 
 .muscle-tag-primary {
-  background: var(--light-fill);
+  background: var(--navy-dark);
   border: 1.5px solid var(--navy);
-  color: var(--navy);
+  color: var(--navy-accent);
 }
 
 .muscle-tag-secondary {
-  background: var(--page-bg);
+  background: var(--bg-surface);
   border: 1.5px solid var(--border);
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
-/* --- Supplement snapshot --- */
+/* Supplement snapshot */
 .supps-snapshot {
   margin: 0 16px 20px;
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 12px 14px;
 }
@@ -465,12 +804,12 @@ button {
 .supps-snapshot-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--body-text);
+  color: var(--text-primary);
 }
 
 .supps-snapshot-link {
   font-size: 11px;
-  color: var(--mid-blue);
+  color: var(--navy-mid);
   font-weight: 500;
   background: none;
   border: none;
@@ -489,15 +828,16 @@ button {
   padding: 4px 10px;
   border-radius: 20px;
   border: 1px solid var(--border);
-  background: var(--page-bg);
-  color: var(--muted);
+  background: var(--bg-base);
+  color: var(--text-muted);
 }
 
 .supp-pill.done {
-  background: var(--light-fill);
+  background: var(--navy-dark);
   border-color: var(--navy);
-  color: var(--navy);
+  color: var(--navy-accent);
 }
+
 /* ========================
    SUPPS SCREEN
    ======================== */
@@ -515,18 +855,17 @@ button {
 
 .supps-screen-title {
   font-size: 18px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .supps-progress-label {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
-/* Progress bar */
 .supps-progress-bar-track {
-  height: 5px;
+  height: 4px;
   background: var(--border);
   border-radius: 99px;
   margin-bottom: 20px;
@@ -535,15 +874,14 @@ button {
 
 .supps-progress-bar-fill {
   height: 100%;
-  background: var(--navy);
+  background: var(--navy-mid);
   border-radius: 99px;
   transition: width 0.3s ease;
 }
 
-/* Supplement list card */
 .supps-list-card {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 20px;
@@ -554,7 +892,7 @@ button {
   align-items: center;
   gap: 14px;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   cursor: pointer;
   transition: background 0.15s;
   -webkit-user-select: none;
@@ -566,16 +904,15 @@ button {
 }
 
 .supp-row:active {
-  background: var(--page-bg);
+  background: var(--bg-elevated);
 }
 
-/* Checkbox circle */
 .supp-check {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: 2px solid var(--border);
-  background: var(--white);
+  border: 2px solid var(--border-mid);
+  background: var(--bg-base);
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -586,54 +923,50 @@ button {
 .supp-check svg {
   width: 14px;
   height: 14px;
-  stroke: var(--white);
+  stroke: var(--text-primary);
   opacity: 0;
   transition: opacity 0.2s;
 }
 
 .supp-row.checked .supp-check {
   background: var(--navy);
-  border-color: var(--navy);
+  border-color: var(--navy-mid);
 }
 
 .supp-row.checked .supp-check svg {
   opacity: 1;
 }
 
-/* Supp name */
 .supp-name {
   font-size: 15px;
   font-weight: 500;
-  color: var(--body-text);
+  color: var(--text-primary);
   flex: 1;
   transition: color 0.2s;
 }
 
 .supp-row.checked .supp-name {
-  color: var(--muted);
+  color: var(--text-muted);
   text-decoration: line-through;
-  text-decoration-color: var(--border);
+  text-decoration-color: var(--border-mid);
 }
 
-/* Supp time hint */
 .supp-time {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
-/* Reset note */
 .supps-reset-note {
   text-align: center;
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
   padding-bottom: 8px;
 }
 
-/* Edit button */
 .supps-edit-btn {
   font-size: 13px;
   font-weight: 500;
-  color: var(--navy);
+  color: var(--navy-accent);
   background: none;
   border: none;
   padding: 4px 0;
@@ -641,32 +974,29 @@ button {
 }
 
 .supps-edit-btn-done {
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
-/* Progress label row (normal mode) */
 .supps-header-row {
   margin-bottom: 6px;
 }
 
-/* Edit mode row */
 .supp-row-edit {
   cursor: default;
   padding: 12px 16px;
 }
 
 .supp-row-edit:active {
-  background: var(--white);
+  background: var(--bg-surface);
 }
 
-/* Delete (×) button */
 .supp-delete-btn {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #FDECEA;
-  border: none;
-  color: #C0392B;
+  background: var(--red-fill);
+  border: 1px solid #3A1010;
+  color: #E05050;
   font-size: 18px;
   line-height: 1;
   display: flex;
@@ -678,10 +1008,9 @@ button {
 }
 
 .supp-delete-btn:active {
-  background: #FBBCB8;
+  background: #300808;
 }
 
-/* Add row */
 .supp-add-row {
   display: flex;
   gap: 10px;
@@ -691,17 +1020,21 @@ button {
 .supp-add-input {
   flex: 1;
   height: 42px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-mid);
   border-radius: 10px;
   padding: 0 12px;
   font-size: 14px;
-  color: var(--body-text);
-  background: var(--white);
+  color: var(--text-primary);
+  background: var(--bg-input);
   outline: none;
 }
 
 .supp-add-input:focus {
-  border-color: var(--navy);
+  border-color: var(--navy-mid);
+}
+
+.supp-add-input::placeholder {
+  color: var(--text-muted);
 }
 
 .supp-add-btn {
@@ -709,7 +1042,7 @@ button {
   padding: 0 18px;
   border-radius: 10px;
   background: var(--navy);
-  color: var(--white);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   border: none;
@@ -725,22 +1058,24 @@ button {
 }
 
 .workout-screen-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   margin-bottom: 16px;
 }
 
 .workout-screen-title {
   font-size: 18px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 
 .workout-screen-meta {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
-/* Start button row */
 .workout-start-row {
   display: flex;
   align-items: center;
@@ -752,36 +1087,36 @@ button {
 .workout-duration-badge {
   font-size: 12px;
   font-weight: 500;
-  color: var(--mid-blue);
-  background: var(--light-fill);
-  border: 1px solid var(--border);
+  color: var(--navy-accent);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
   border-radius: 20px;
   padding: 5px 12px;
 }
 
 .workout-start-btn {
   background: var(--navy);
-  color: var(--white);
+  color: var(--text-primary);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   padding: 10px 22px;
   border-radius: 10px;
+  border: none;
+  cursor: pointer;
 }
 
-/* Section heading inside workout */
 .workout-section-heading {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
   text-transform: uppercase;
   padding: 0 0 8px;
 }
 
-/* Exercise list card */
 .exercise-list-card {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 16px;
@@ -792,7 +1127,7 @@ button {
   align-items: center;
   gap: 12px;
   padding: 13px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .exercise-row:last-child {
@@ -802,10 +1137,11 @@ button {
 .exercise-row-number {
   width: 22px;
   height: 22px;
-  border-radius: 50%;
-  background: var(--light-fill);
-  color: var(--navy);
-  font-size: 11px;
+  border-radius: 6px;
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
+  color: var(--navy-accent);
+  font-size: 10px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -820,26 +1156,26 @@ button {
 .exercise-row-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--body-text);
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 
 .exercise-row-detail {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .exercise-row-rest {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: right;
   flex-shrink: 0;
 }
 
 /* Buffer section */
 .buffer-section {
-  background: var(--buffer-bg);
-  border: 1px solid var(--buffer-border);
+  background: var(--purple-fill);
+  border: 1px solid var(--purple-border);
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 16px;
@@ -847,7 +1183,7 @@ button {
 
 .buffer-section-header {
   padding: 10px 14px;
-  border-bottom: 1px solid var(--buffer-border);
+  border-bottom: 1px solid var(--purple-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -856,12 +1192,12 @@ button {
 .buffer-section-title {
   font-size: 12px;
   font-weight: 600;
-  color: #7B4FA0;
+  color: #B07AD0;
 }
 
 .buffer-section-meta {
   font-size: 11px;
-  color: #9B6FC0;
+  color: #7B4FA0;
 }
 
 .buffer-exercise-row {
@@ -869,7 +1205,7 @@ button {
   align-items: center;
   gap: 12px;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--buffer-border);
+  border-bottom: 1px solid var(--purple-border);
 }
 
 .buffer-exercise-row:last-child {
@@ -879,28 +1215,22 @@ button {
 .buffer-exercise-name {
   font-size: 13px;
   font-weight: 500;
-  color: var(--body-text);
+  color: var(--text-primary);
   flex: 1;
 }
 
 .buffer-exercise-detail {
   font-size: 11px;
-  color: var(--muted);
-}
-/* Edit pencil button in workout header */
-.workout-screen-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 16px;
+  color: var(--text-muted);
 }
 
+/* Edit pencil button in workout header */
 .workout-edit-btn {
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--white);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -911,7 +1241,118 @@ button {
 .workout-edit-btn svg {
   width: 16px;
   height: 16px;
-  stroke: var(--navy);
+  stroke: var(--navy-accent);
+}
+
+/* Day selector tabs */
+.day-tab-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.day-tab {
+  flex: 1;
+  padding: 8px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.day-tab.active {
+  background: var(--navy);
+  color: var(--text-primary);
+  border-color: var(--navy-mid);
+}
+
+/* WOD preview */
+.wod-section-heading {
+  margin-top: 4px;
+}
+
+.wod-preview-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--navy);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.wod-preview-header {
+  background: var(--navy-dark);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wod-preview-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.wod-preview-format {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--navy-accent);
+  background: var(--bg-base);
+  border: 1px solid var(--navy);
+  border-radius: 20px;
+  padding: 3px 9px;
+}
+
+.wod-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.wod-preview-row:last-child {
+  border-bottom: none;
+}
+
+.wod-preview-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.wod-preview-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.wod-preview-reps {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--navy-accent);
+}
+
+/* Badges */
+.workout-badges-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.workout-warmup-badge {
+  font-size: 12px;
+  font-weight: 500;
+  color: #B07AD0;
+  background: var(--purple-fill);
+  border: 1px solid var(--purple-border);
+  border-radius: 20px;
+  padding: 5px 12px;
+  white-space: nowrap;
 }
 
 /* ========================
@@ -927,15 +1368,15 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
-  background: var(--white);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
   margin-bottom: 16px;
 }
 
 .editor-back-btn {
   font-size: 13px;
   font-weight: 500;
-  color: var(--navy);
+  color: var(--navy-accent);
   background: none;
   border: none;
   cursor: pointer;
@@ -945,15 +1386,15 @@ button {
 .editor-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--body-text);
+  color: var(--text-primary);
 }
 
 .editor-week-badge {
   font-size: 11px;
   font-weight: 600;
-  color: var(--navy);
-  background: var(--light-fill);
-  border: 1px solid var(--border);
+  color: var(--navy-accent);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
   border-radius: 20px;
   padding: 3px 10px;
 }
@@ -968,13 +1409,13 @@ button {
 .editor-day-label {
   font-size: 13px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   padding: 0 16px 10px;
 }
 
 .editor-list-card {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   overflow: hidden;
   margin: 0 16px 12px;
@@ -983,7 +1424,7 @@ button {
 .editor-empty {
   padding: 20px 16px;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: center;
 }
 
@@ -992,7 +1433,7 @@ button {
   align-items: center;
   gap: 10px;
   padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .editor-row:last-child {
@@ -1003,8 +1444,9 @@ button {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--light-fill);
-  color: var(--navy);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
+  color: var(--navy-accent);
   font-size: 10px;
   font-weight: 600;
   display: flex;
@@ -1017,14 +1459,14 @@ button {
   flex: 1;
   font-size: 13px;
   font-weight: 500;
-  color: var(--navy);
+  color: var(--navy-accent);
   text-align: left;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
   text-decoration: underline;
-  text-decoration-color: var(--border);
+  text-decoration-color: var(--border-mid);
   text-underline-offset: 2px;
 }
 
@@ -1039,9 +1481,9 @@ button {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--page-bg);
-  color: var(--navy);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-elevated);
+  color: var(--navy-accent);
   font-size: 13px;
   display: flex;
   align-items: center;
@@ -1059,9 +1501,9 @@ button {
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  background: #FDECEA;
-  border: none;
-  color: #C0392B;
+  background: var(--red-fill);
+  border: 1px solid #3A1010;
+  color: #E05050;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -1073,11 +1515,11 @@ button {
 .editor-wod-note {
   margin: 0 16px 12px;
   padding: 10px 14px;
-  background: var(--buffer-bg);
-  border: 1px solid var(--buffer-border);
+  background: var(--purple-fill);
+  border: 1px solid var(--purple-border);
   border-radius: 10px;
   font-size: 12px;
-  color: #7B4FA0;
+  color: #B07AD0;
 }
 
 .editor-add-btn {
@@ -1086,7 +1528,7 @@ button {
   margin: 0 16px 20px;
   padding: 13px;
   background: var(--navy);
-  color: var(--white);
+  color: var(--text-primary);
   font-size: 14px;
   font-weight: 600;
   border-radius: 12px;
@@ -1107,9 +1549,9 @@ button {
   padding: 11px 8px;
   font-size: 12px;
   font-weight: 500;
-  color: var(--muted);
-  background: var(--white);
-  border: 1px solid var(--border);
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   cursor: pointer;
   text-align: center;
@@ -1122,7 +1564,7 @@ button {
 .picker-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 20, 40, 0.6);
+  background: rgba(0,0,0,0.7);
   display: flex;
   align-items: flex-end;
   z-index: 300;
@@ -1130,8 +1572,9 @@ button {
 }
 
 .picker-card {
-  background: var(--white);
+  background: var(--bg-surface);
   border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border-mid);
   width: 100%;
   max-height: 82vh;
   display: flex;
@@ -1144,20 +1587,20 @@ button {
   align-items: center;
   justify-content: space-between;
   padding: 16px 18px 10px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
 .picker-title {
   font-size: 15px;
   font-weight: 600;
-  color: var(--body-text);
+  color: var(--text-primary);
 }
 
 .picker-cancel {
   font-size: 13px;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--text-muted);
   background: none;
   border: none;
   cursor: pointer;
@@ -1166,24 +1609,28 @@ button {
 
 .picker-search-wrap {
   padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
 .picker-search {
   width: 100%;
   height: 38px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-mid);
   border-radius: 10px;
   padding: 0 12px;
   font-size: 14px;
-  color: var(--body-text);
-  background: var(--page-bg);
+  color: var(--text-primary);
+  background: var(--bg-input);
   outline: none;
 }
 
+.picker-search::placeholder {
+  color: var(--text-muted);
+}
+
 .picker-search:focus {
-  border-color: var(--navy);
+  border-color: var(--navy-mid);
 }
 
 .picker-body {
@@ -1196,7 +1643,7 @@ button {
 .picker-group-label {
   font-size: 10px;
   font-weight: 700;
-  color: var(--muted);
+  color: var(--text-muted);
   letter-spacing: 0.8px;
   text-transform: uppercase;
   padding: 12px 18px 4px;
@@ -1209,10 +1656,10 @@ button {
   padding: 13px 18px;
   font-size: 14px;
   font-weight: 400;
-  color: var(--body-text);
+  color: var(--text-primary);
   background: none;
   border: none;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
   cursor: pointer;
   transition: background 0.1s;
 }
@@ -1222,125 +1669,16 @@ button {
 }
 
 .picker-row:active {
-  background: var(--light-fill);
+  background: var(--bg-elevated);
 }
 
 .picker-empty {
   padding: 20px 18px;
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: center;
 }
 
-/* Badges column (duration + warmup stacked) */
-.workout-badges-col {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.workout-warmup-badge {
-  font-size: 12px;
-  font-weight: 500;
-  color: #7B4FA0;
-  background: var(--buffer-bg);
-  border: 1px solid var(--buffer-border);
-  border-radius: 20px;
-  padding: 5px 12px;
-  white-space: nowrap;
-}
-
-/* WOD preview card */
-.wod-section-heading {
-  margin-top: 4px;
-}
-
-.wod-preview-card {
-  background: var(--white);
-  border: 1.5px solid var(--mid-blue);
-  border-radius: 14px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.wod-preview-header {
-  background: var(--navy);
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.wod-preview-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--white);
-}
-
-.wod-preview-format {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--navy);
-  background: var(--light-fill);
-  border-radius: 20px;
-  padding: 3px 9px;
-}
-
-.wod-preview-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 11px 14px;
-  border-bottom: 1px solid var(--border);
-}
-
-.wod-preview-row:last-child {
-  border-bottom: none;
-}
-
-.wod-preview-name {
-  flex: 1;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--body-text);
-}
-
-.wod-preview-meta {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.wod-preview-reps {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--navy);
-}
-
-/* Day selector tabs */
-.day-tab-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.day-tab {
-  flex: 1;
-  padding: 8px 4px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.day-tab.active {
-  background: var(--navy);
-  color: var(--white);
-  border-color: var(--navy);
-}
 /* ========================
    ACTIVE EXERCISE SCREEN
    ======================== */
@@ -1351,12 +1689,11 @@ button {
   height: 100%;
 }
 
-/* Exercise photo area */
 .exercise-photo-wrap {
   position: relative;
   width: 100%;
   height: 240px;
-  background: var(--light-fill);
+  background: var(--bg-surface);
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -1376,7 +1713,7 @@ button {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background: #f0f4f8;
+  background: var(--bg-surface);
 }
 
 .exercise-photo-loading {
@@ -1385,7 +1722,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--light-fill);
+  background: var(--bg-surface);
 }
 
 @keyframes spin {
@@ -1395,8 +1732,8 @@ button {
 .exercise-loading-spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid var(--border);
-  border-top-color: var(--navy);
+  border: 3px solid var(--border-mid);
+  border-top-color: var(--navy-mid);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -1409,17 +1746,16 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 13px;
 }
 
 .exercise-photo-placeholder svg {
   width: 48px;
   height: 48px;
-  opacity: 0.3;
+  opacity: 0.2;
 }
 
-/* Back button overlay */
 .active-back-btn {
   position: absolute;
   top: 12px;
@@ -1427,8 +1763,8 @@ button {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.9);
-  border: none;
+  background: rgba(8,12,16,0.8);
+  border: 1px solid var(--border-mid);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1439,44 +1775,44 @@ button {
 .active-back-btn svg {
   width: 18px;
   height: 18px;
-  stroke: var(--navy);
+  stroke: var(--text-primary);
 }
 
-/* Set counter badge overlay */
 .active-set-badge {
   position: absolute;
   top: 12px;
   right: 12px;
-  background: var(--navy);
-  color: var(--white);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
+  color: var(--navy-accent);
   font-size: 11px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 20px;
 }
 
-/* Exercise info panel */
 .active-info-panel {
   padding: 16px 16px 0;
+  background: var(--bg-base);
 }
 
 .active-exercise-name {
   font-size: 18px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 3px;
 }
 
 .active-exercise-meta {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin-bottom: 16px;
 }
 
 /* Rest timer */
 .rest-timer-block {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 16px;
   margin: 0 16px 14px;
@@ -1489,7 +1825,7 @@ button {
 .rest-timer-label {
   font-size: 11px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 4px;
@@ -1498,17 +1834,17 @@ button {
 .rest-timer-display {
   font-size: 36px;
   font-weight: 300;
-  color: var(--navy);
+  color: var(--navy-accent);
   letter-spacing: -1px;
   line-height: 1;
 }
 
 .rest-timer-display.running {
-  color: var(--mid-blue);
+  color: var(--navy-mid);
 }
 
 .rest-timer-display.done {
-  color: #3A9A6A;
+  color: var(--green);
 }
 
 .rest-timer-btn {
@@ -1517,25 +1853,27 @@ button {
   font-size: 13px;
   font-weight: 600;
   background: var(--navy);
-  color: var(--white);
+  color: var(--text-primary);
   flex-shrink: 0;
+  border: none;
+  cursor: pointer;
 }
 
-/* Weight log row */
+/* Weight log */
 .weight-log-block {
   display: flex;
   align-items: center;
   gap: 10px;
   margin: 0 16px 14px;
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 14px 16px;
 }
 
 .weight-log-label {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-weight: 500;
   flex-shrink: 0;
 }
@@ -1546,7 +1884,7 @@ button {
   outline: none;
   font-size: 22px;
   font-weight: 500;
-  color: var(--navy);
+  color: var(--text-primary);
   font-family: inherit;
   background: transparent;
   width: 80px;
@@ -1555,13 +1893,13 @@ button {
 
 .weight-log-unit {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .weight-log-hint {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin-left: auto;
 }
 
@@ -1573,7 +1911,7 @@ button {
 .difficulty-label {
   font-size: 11px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   margin-bottom: 8px;
@@ -1590,28 +1928,29 @@ button {
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
-  border: 2px solid var(--border);
-  background: var(--white);
-  color: var(--muted);
+  border: 1px solid var(--border-mid);
+  background: var(--bg-surface);
+  color: var(--text-muted);
   transition: all 0.15s;
+  cursor: pointer;
 }
 
 .diff-btn.selected-easy {
-  background: #E8F5EE;
-  border-color: #3A9A6A;
-  color: #2A7A54;
+  background: var(--green-fill);
+  border-color: var(--green);
+  color: #5ABA8A;
 }
 
 .diff-btn.selected-right {
-  background: var(--light-fill);
-  border-color: var(--navy);
-  color: var(--navy);
+  background: var(--navy-dark);
+  border-color: var(--navy-mid);
+  color: var(--navy-accent);
 }
 
 .diff-btn.selected-hard {
   background: var(--amber-fill);
   border-color: var(--amber);
-  color: #A07030;
+  color: #C09050;
 }
 
 /* Log set button */
@@ -1621,26 +1960,29 @@ button {
   margin: 0 16px 16px;
   padding: 14px;
   background: var(--navy);
-  color: var(--white);
+  color: var(--text-primary);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 12px;
   text-align: center;
+  border: none;
+  cursor: pointer;
 }
 
 .log-set-btn:disabled {
-  background: var(--border);
-  color: var(--muted);
+  background: var(--border-mid);
+  color: var(--text-faint);
 }
 
 /* Session progress bar */
 .session-progress-wrap {
   padding: 0 16px 6px;
+  background: var(--bg-base);
 }
 
 .session-progress-label {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin-bottom: 5px;
   display: flex;
   justify-content: space-between;
@@ -1655,7 +1997,7 @@ button {
 
 .session-progress-fill {
   height: 100%;
-  background: var(--navy);
+  background: var(--navy-mid);
   border-radius: 99px;
   transition: width 0.4s ease;
 }
@@ -1677,9 +2019,9 @@ button {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #E8F5EE;
-  border: 2px solid #3A9A6A;
-  color: #3A9A6A;
+  background: var(--green-fill);
+  border: 2px solid var(--green);
+  color: #5ABA8A;
   font-size: 24px;
   font-weight: 600;
   display: flex;
@@ -1690,28 +2032,28 @@ button {
 
 .session-complete-title {
   font-size: 20px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .session-complete-meta {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .session-summary-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 
 .session-summary-card {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 16px;
@@ -1720,11 +2062,11 @@ button {
 .session-summary-header {
   display: flex;
   padding: 8px 14px;
-  background: var(--light-fill);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
   font-size: 10px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -1737,7 +2079,7 @@ button {
   display: flex;
   align-items: center;
   padding: 11px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .session-summary-row:last-child { border-bottom: none; }
@@ -1746,15 +2088,15 @@ button {
   flex: 1;
   font-size: 13px;
   font-weight: 500;
-  color: var(--body-text);
+  color: var(--text-primary);
 }
 
 .session-summary-weight {
   width: 72px;
   text-align: right;
   font-size: 13px;
-  font-weight: 500;
-  color: var(--navy);
+  font-weight: 600;
+  color: var(--navy-accent);
 }
 
 .session-summary-diff {
@@ -1763,11 +2105,12 @@ button {
   font-size: 11px;
   font-weight: 600;
   text-transform: capitalize;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
-.diff-easy  { color: #2A7A54; }
-.diff-right { color: var(--navy); }
+.diff-easy  { color: #5ABA8A; }
+.diff-right { color: var(--navy-accent); }
+.diff-hard  { color: #C09050; }
 
 /* ========================
    REST DAY CARD
@@ -1776,7 +2119,7 @@ button {
 .rest-day-msg {
   padding: 16px 14px;
   font-size: 14px;
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: center;
 }
 
@@ -1787,7 +2130,7 @@ button {
 .checkin-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(10, 20, 40, 0.6);
+  background: rgba(0,0,0,0.75);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1802,7 +2145,8 @@ button {
 }
 
 .checkin-card {
-  background: var(--white);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-mid);
   border-radius: 20px;
   padding: 28px 22px 22px;
   width: 100%;
@@ -1820,9 +2164,9 @@ button {
   display: inline-block;
   font-size: 11px;
   font-weight: 600;
-  color: var(--navy);
-  background: var(--light-fill);
-  border: 1px solid var(--border);
+  color: var(--navy-accent);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
   border-radius: 20px;
   padding: 3px 10px;
   margin-bottom: 12px;
@@ -1830,16 +2174,16 @@ button {
 
 .checkin-card-title {
   font-size: 18px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 6px;
 }
 
 .checkin-card-body {
   font-size: 14px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin-bottom: 22px;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .checkin-btn-row {
@@ -1853,28 +2197,26 @@ button {
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
-  background: var(--page-bg);
-  border: 2px solid var(--border);
-  color: var(--muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.15s;
 }
 
 .checkin-btn:active {
-  background: var(--border);
+  background: var(--border-mid);
 }
 
 .checkin-btn-primary {
   background: var(--navy);
-  border-color: var(--navy);
-  color: var(--white);
+  border-color: var(--navy-mid);
+  color: var(--text-primary);
 }
 
 .checkin-btn-primary:active {
-  background: var(--mid-blue);
-  border-color: var(--mid-blue);
+  background: var(--navy-mid);
 }
-.diff-hard  { color: #A07030; }
 
 /* ========================
    PROGRESSION HINT
@@ -1886,19 +2228,19 @@ button {
   justify-content: space-between;
   margin: -8px 16px 14px;
   padding: 8px 14px;
-  background: var(--light-fill);
-  border: 1px solid var(--border);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
   border-radius: 10px;
   font-size: 11px;
 }
 
 .progression-last {
   font-weight: 600;
-  color: var(--navy);
+  color: var(--navy-accent);
 }
 
 .progression-reason {
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 /* ========================
@@ -1911,6 +2253,7 @@ button {
   align-items: center;
   padding: 32px 24px 24px;
   gap: 0;
+  background: var(--bg-base);
 }
 
 .warmup-header {
@@ -1920,14 +2263,14 @@ button {
 
 .warmup-title {
   font-size: 22px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .warmup-meta {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .warmup-timer-wrap {
@@ -1947,18 +2290,18 @@ button {
 .warmup-timer-display {
   font-size: 64px;
   font-weight: 200;
-  color: var(--navy);
+  color: var(--navy-accent);
   letter-spacing: -3px;
   line-height: 1;
 }
 
 .warmup-timer-display.done {
-  color: #3A9A6A;
+  color: var(--green);
 }
 
 .warmup-progress-track {
   width: 100%;
-  height: 6px;
+  height: 5px;
   background: var(--border);
   border-radius: 99px;
   overflow: hidden;
@@ -1966,14 +2309,14 @@ button {
 
 .warmup-progress-fill {
   height: 100%;
-  background: var(--navy);
+  background: var(--navy-mid);
   border-radius: 99px;
   transition: width 1s linear;
 }
 
 .warmup-message {
   font-size: 15px;
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: center;
   margin-bottom: 32px;
   line-height: 1.4;
@@ -1981,10 +2324,10 @@ button {
 
 .warmup-skip-btn {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-weight: 500;
   background: none;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-mid);
   border-radius: 10px;
   padding: 11px 28px;
   cursor: pointer;
@@ -1996,6 +2339,7 @@ button {
 
 .wod-screen {
   padding: 18px 16px 32px;
+  background: var(--bg-base);
 }
 
 .wod-header {
@@ -2004,19 +2348,19 @@ button {
 
 .wod-label {
   font-size: 20px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
   margin-bottom: 3px;
 }
 
 .wod-day-meta {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .wod-timer-block {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 20px 16px 16px;
   margin-bottom: 20px;
@@ -2029,7 +2373,7 @@ button {
 .wod-timer-label {
   font-size: 11px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   align-self: flex-start;
@@ -2038,22 +2382,22 @@ button {
 .wod-timer-display {
   font-size: 56px;
   font-weight: 200;
-  color: var(--navy);
+  color: var(--navy-accent);
   letter-spacing: -2px;
   line-height: 1;
 }
 
 .wod-timer-display.running {
-  color: var(--mid-blue);
+  color: var(--navy-mid);
 }
 
 .wod-timer-display.done {
-  color: #3A9A6A;
+  color: var(--green);
 }
 
 .wod-timer-track {
   width: 100%;
-  height: 5px;
+  height: 4px;
   background: var(--border);
   border-radius: 99px;
   overflow: hidden;
@@ -2061,23 +2405,23 @@ button {
 
 .wod-timer-fill {
   height: 100%;
-  background: var(--navy);
+  background: var(--navy-mid);
   border-radius: 99px;
   transition: width 1s linear;
 }
 
 .wod-section-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
   text-transform: uppercase;
   margin-bottom: 8px;
 }
 
 .wod-movements-card {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 20px;
@@ -2088,7 +2432,7 @@ button {
   align-items: center;
   gap: 12px;
   padding: 13px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .wod-movement-row:last-child {
@@ -2098,9 +2442,10 @@ button {
 .wod-movement-number {
   width: 22px;
   height: 22px;
-  border-radius: 50%;
-  background: var(--light-fill);
-  color: var(--navy);
+  border-radius: 6px;
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
+  color: var(--navy-accent);
   font-size: 11px;
   font-weight: 600;
   display: flex;
@@ -2116,29 +2461,29 @@ button {
 .wod-movement-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--body-text);
+  color: var(--text-primary);
   margin-bottom: 2px;
 }
 
 .wod-movement-meta {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .wod-movement-reps {
   font-size: 12px;
   font-weight: 600;
-  color: var(--navy);
-  background: var(--light-fill);
-  border: 1px solid var(--border);
+  color: var(--navy-accent);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
   border-radius: 20px;
   padding: 3px 10px;
   flex-shrink: 0;
 }
 
 .wod-rounds-block {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 14px 16px;
   display: flex;
@@ -2150,7 +2495,7 @@ button {
 .wod-rounds-label {
   font-size: 13px;
   font-weight: 500;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .wod-rounds-controls {
@@ -2161,8 +2506,8 @@ button {
 
 .wod-rounds-count {
   font-size: 22px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
   min-width: 48px;
   text-align: center;
 }
@@ -2171,9 +2516,9 @@ button {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--light-fill);
-  border: 1px solid var(--border);
-  color: var(--navy);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
+  color: var(--navy-accent);
   font-size: 20px;
   font-weight: 500;
   display: flex;
@@ -2185,8 +2530,8 @@ button {
 
 .wod-rounds-btn.wod-rounds-btn-add {
   background: var(--navy);
-  border-color: var(--navy);
-  color: var(--white);
+  border-color: var(--navy-mid);
+  color: var(--text-primary);
 }
 
 /* ========================
@@ -2197,7 +2542,6 @@ button {
   padding: 0 0 32px;
 }
 
-/* Empty state */
 .progress-empty {
   display: flex;
   flex-direction: column;
@@ -2211,22 +2555,21 @@ button {
 .progress-empty svg {
   width: 44px;
   height: 44px;
-  stroke: var(--border);
+  stroke: var(--border-mid);
 }
 
 .progress-empty-title {
   font-size: 17px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .progress-empty-body {
   font-size: 13px;
-  color: var(--muted);
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
-/* List header */
 .progress-header {
   display: flex;
   align-items: baseline;
@@ -2236,16 +2579,15 @@ button {
 
 .progress-title {
   font-size: 18px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .progress-subtitle {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
-/* Exercise cards list */
 .progress-list {
   display: flex;
   flex-direction: column;
@@ -2254,8 +2596,8 @@ button {
 }
 
 .progress-card {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 14px 14px 10px;
   cursor: pointer;
@@ -2279,18 +2621,17 @@ button {
 .progress-card-name {
   font-size: 13px;
   font-weight: 600;
-  color: var(--body-text);
+  color: var(--text-primary);
   flex: 1;
   line-height: 1.3;
 }
 
 .progress-card-meta {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
   margin-bottom: 10px;
 }
 
-/* Trend badge */
 .progress-trend {
   font-size: 11px;
   font-weight: 600;
@@ -2300,12 +2641,11 @@ button {
   flex-shrink: 0;
 }
 
-.trend-up   { background: #E8F5EE; color: #2A7A54; }
-.trend-down { background: var(--amber-fill); color: #A07030; }
-.trend-same { background: var(--light-fill); color: var(--navy); }
-.trend-new  { background: var(--page-bg); color: var(--muted); border: 1px solid var(--border); }
+.trend-up   { background: var(--green-fill); color: #5ABA8A; border: 1px solid var(--green); }
+.trend-down { background: var(--amber-fill); color: #C09050; border: 1px solid var(--amber); }
+.trend-same { background: var(--navy-dark);  color: var(--navy-accent); border: 1px solid var(--navy); }
+.trend-new  { background: var(--bg-elevated); color: var(--text-muted); border: 1px solid var(--border-mid); }
 
-/* Mini sparkline */
 .progress-mini-chart {
   margin-top: 4px;
 }
@@ -2327,7 +2667,7 @@ button {
 .detail-back-btn {
   font-size: 13px;
   font-weight: 500;
-  color: var(--navy);
+  color: var(--navy-accent);
   background: none;
   border: none;
   cursor: pointer;
@@ -2336,8 +2676,8 @@ button {
 
 .detail-exercise-name {
   font-size: 18px;
-  font-weight: 600;
-  color: var(--navy);
+  font-weight: 700;
+  color: var(--text-primary);
   padding: 8px 16px 4px;
   line-height: 1.3;
 }
@@ -2351,30 +2691,30 @@ button {
 
 .detail-session-count {
   font-size: 11px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .detail-chart-wrap {
   margin: 0 16px 20px;
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   padding: 16px 12px 12px;
   overflow: hidden;
 }
 
 .detail-section-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
   text-transform: uppercase;
   padding: 0 16px 8px;
 }
 
 .detail-list-card {
-  background: var(--white);
-  border: 1px solid var(--border);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 14px;
   overflow: hidden;
   margin: 0 16px;
@@ -2384,11 +2724,11 @@ button {
   display: grid;
   grid-template-columns: 1fr 72px 44px 44px;
   padding: 7px 14px;
-  background: var(--light-fill);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
   font-size: 10px;
   font-weight: 600;
-  color: var(--muted);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -2398,7 +2738,7 @@ button {
   grid-template-columns: 1fr 72px 44px 44px;
   align-items: center;
   padding: 11px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .detail-row:last-child {
@@ -2407,19 +2747,19 @@ button {
 
 .detail-date {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .detail-weight {
   font-size: 13px;
   font-weight: 600;
-  color: var(--navy);
+  color: var(--navy-accent);
   text-align: right;
 }
 
 .detail-sets {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: right;
 }
 
@@ -2427,6 +2767,6 @@ button {
   font-size: 11px;
   font-weight: 600;
   text-transform: capitalize;
-  color: var(--muted);
+  color: var(--text-muted);
   text-align: right;
 }

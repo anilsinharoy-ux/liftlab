@@ -19,19 +19,33 @@ const EXERCISEDB_KEY = '89873a376emshb4aac58b1f59da0p158863jsne076af2868db';
 
 function getWorkoutPhotoUrl(weekType, dayIndex, isRest = false) {
   const PHOTOS = {
-    'A-0': 4853666,   // Chest: bench press
-    'A-1': 9644816,   // Back: pull-ups
-    'A-2': 34669288,  // Shoulders: shoulder press
-    'A-3': 29259727,  // Legs: squat
-    'B-0': 9602280,   // CrossFit
-    'B-1': 34794695,  // CrossFit
-    'B-2': 9602280,
-    'B-3': 34794695,
-    'rest': 32084028, // Rest/recovery
+    'A-0': 'Images/Chest day.jpg',
+    'A-1': 'Images/back_day.jpg',
+    'A-2': 'Images/Leg day.jpg',
+    'A-3': 'Images/arms day.jpg',
+    'B-0': 'Images/Back Squat .webp',
+    'B-1': 'Images/kettlebell.jpg',
+    'B-2': 'Images/Power clean.webp',
+    'B-3': 'Images/thrusters.webp',
+    'rest': 'Images/rest day.webp',
   };
   const key = isRest ? 'rest' : `${weekType}-${dayIndex}`;
-  const id = PHOTOS[key] || PHOTOS['B-0'];
-  return `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=400&h=280&dpr=1`;
+  return PHOTOS[key] || PHOTOS['rest'];
+}
+
+function getWorkoutHeroTitle(weekType, dayIndex, isRest = false) {
+  if (isRest) return { title: 'Rest day', sub: 'Recovery is part of the program' };
+  const TITLES = {
+    'A-0': { title: 'Chest &\nShoulders',   sub: 'Day 1 · Upper Push · Week A' },
+    'A-1': { title: 'Back &\nBiceps',        sub: 'Day 2 · Upper Pull · Week A' },
+    'A-2': { title: 'Leg\nDay',              sub: 'Day 3 · Legs · Week A' },
+    'A-3': { title: 'Arms\nDay',             sub: 'Day 4 · Full Body · Week A' },
+    'B-0': { title: 'Strength\n& Power',     sub: 'Day 1 · CrossFit · Week B' },
+    'B-1': { title: 'Endurance\n& Gymnastics', sub: 'Day 2 · CrossFit · Week B' },
+    'B-2': { title: 'Olympic\nLifting',      sub: 'Day 3 · CrossFit · Week B' },
+    'B-3': { title: 'Full Body\n& Intensity', sub: 'Day 4 · CrossFit · Week B' },
+  };
+  return TITLES[`${weekType}-${dayIndex}`] || { title: 'Train', sub: '' };
 }
 
 // Maps our exercise names to ExerciseDB search terms
@@ -132,27 +146,124 @@ function renderHome() {
 
   currentDayIndex = getTodayProgramDayIndex();
 
-  const calendarHTML = buildCalendarStrip(state);
-  const todayWorkout = getTodayWorkout(state);
-  const suppsHTML = buildSuppsSnapshot();
+  const todayOffset = getTodayDayOffset();
+  const scheduled   = state ? state.scheduledOffsets : [0, 1, 3, 4];
+  const checkin     = state ? state.checkins[getTodayKey()] : null;
+  const weekType    = state ? state.weekType : 'A';
+  const isRestDay   = !scheduled.includes(todayOffset) || checkin === 'no';
 
-  container.innerHTML = `
-    <div class="home-header">
-      <span class="home-greeting">Good ${getTimeOfDay()}, Anil 👋</span>
-      <span class="home-date">${getTodayDateLabel()}</span>
+  const photoUrl = getWorkoutPhotoUrl(weekType, currentDayIndex, isRestDay);
+  const hero     = getWorkoutHeroTitle(weekType, currentDayIndex, isRestDay);
+
+  // Build the title lines (split on \n for line breaks)
+  const titleLines = hero.title.split('\n').join('<br>');
+
+  // Week dot strip
+  const monday = getMondayDate();
+  const todayKey = getTodayKey();
+  const dayLetters = ['M','T','W','T','F','S','S'];
+  const weekDots = dayLetters.map((ltr, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dk = dateToDayKey(d);
+    const isToday = dk === todayKey;
+    const isPast  = d < new Date() && !isToday;
+    const isWorkout = scheduled.includes(i);
+    const ci = state ? state.checkins[dk] : null;
+    let cls = '';
+    if (isToday) cls = 'today';
+    else if (isPast && isWorkout && ci === 'yes') cls = 'done';
+    return `<div class="home-ws-day">
+      <span class="home-ws-label">${ltr}</span>
+      <div class="home-ws-dot ${cls}"></div>
+    </div>`;
+  }).join('');
+
+  // Full 7-day calendar below
+  const calRows = dayLetters.map((ltr, i) => {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dk = dateToDayKey(d);
+    const isToday = dk === todayKey;
+    const isPast  = d < new Date() && !isToday;
+    const isWorkout = scheduled.includes(i);
+    const ci = state ? state.checkins[dk] : null;
+    let cls = '';
+    if (isToday) cls = 'today';
+    else if (isPast && isWorkout && ci === 'yes') cls = 'completed';
+    else if (isPast && isWorkout && ci === 'no')  cls = 'missed';
+    else if (!isWorkout) cls = 'rest';
+    const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    return `<div class="home-cal-day ${cls}">
+      <span class="home-cal-day-lbl">${dayNames[i]}</span>
+      <span class="home-cal-day-num">${d.getDate()}</span>
+      <div class="home-cal-pip"></div>
+    </div>`;
+  }).join('');
+
+  // Stats row (only for workout days)
+  const program = getWeekProgram();
+  const day = program[currentDayIndex];
+  const exCount = day ? day.exercises.length : 0;
+  const hasBuf  = getBufferState().exercises && getBufferState().exercises.length > 0;
+
+  const statsHTML = isRestDay ? '' : `
+    <div class="home-stats-row">
+      <div class="home-stat-item">
+        <div class="home-stat-val">30</div>
+        <div class="home-stat-lbl">Minutes</div>
+      </div>
+      <div class="home-stat-item">
+        <div class="home-stat-val">${exCount}</div>
+        <div class="home-stat-lbl">Exercises</div>
+      </div>
+      <div class="home-stat-item">
+        <div class="home-stat-val">${hasBuf ? '+10' : '—'}</div>
+        <div class="home-stat-lbl">Buffer</div>
+      </div>
     </div>
-
-    <div class="calendar-strip">${calendarHTML}</div>
-
-    <div class="section-label">Today's session</div>
-    ${todayWorkout}
-
-    <div class="section-label">Supplements</div>
-    ${suppsHTML}
   `;
 
-  const suppsLink = document.getElementById('supps-see-all');
-  if (suppsLink) suppsLink.addEventListener('click', () => navigateTo('supps'));
+  // Date range label
+  const monday2 = getMondayDate();
+  const sunday  = new Date(monday2); sunday.setDate(monday2.getDate() + 6);
+  const rangeLabel = `${monday2.toLocaleDateString('en-CA',{month:'short',day:'numeric'})} – ${sunday.toLocaleDateString('en-CA',{month:'short',day:'numeric'})}`;
+
+  const startBtnHTML = isRestDay ? '' : `
+    <button class="home-start-btn" id="home-start-btn">Start workout →</button>
+  `;
+
+  container.innerHTML = `
+    <div class="home-hero-wrap${isRestDay ? ' rest-day' : ''}">
+      <img class="home-hero-img" src="${photoUrl}" alt="${hero.title.replace('\n',' ')}" />
+      <div class="home-hero-overlay"></div>
+      <div class="home-week-strip">${weekDots}</div>
+      <div class="home-hero-text">
+        <div class="home-greeting">Good ${getTimeOfDay()}, Anil</div>
+        <div class="home-hero-title">${titleLines}</div>
+      </div>
+    </div>
+
+    <div class="home-dark-panel">
+      <div class="home-day-tag">
+        <div class="home-day-tag-dot"></div>
+        <span class="home-day-tag-text">${hero.sub}</span>
+      </div>
+      <div class="home-session-sub">${getTodayDateLabel()}${isRestDay ? '' : ` · ${exCount} exercises`}</div>
+
+      ${statsHTML}
+
+      <div class="home-cal-section">
+        <div class="home-cal-header">
+          <span class="home-cal-title">This week</span>
+          <span class="home-cal-range">${rangeLabel}</span>
+        </div>
+        <div class="home-cal-row">${calRows}</div>
+      </div>
+
+      ${startBtnHTML}
+    </div>
+  `;
 
   const homeStartBtn = document.getElementById('home-start-btn');
   if (homeStartBtn) homeStartBtn.addEventListener('click', () => navigateTo('workout'));
@@ -253,9 +364,9 @@ function getTodayWorkout(state) {
 }
 
 function getMuscleMap(dayIndex, weekType = 'A') {
-  const P = '#1E5080'; // primary — navy
-  const S = '#5890B8'; // secondary — softer blue
-  const I = '#D0E0EE'; // inactive — light blue-grey
+  const P = '#2A5A9A'; // primary — dark navy accent
+  const S = '#1A3A6A'; // secondary — darker navy
+  const I = '#0D1828'; // inactive — very dark
 
   const crossfitDays = [
     {
@@ -1010,12 +1121,12 @@ function buildMiniChart(sessions) {
   const line = pts.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   const area = `${pts[0].x.toFixed(1)},${H} ${line} ${pts[pts.length - 1].x.toFixed(1)},${H}`;
   const dots = pts.map(p =>
-    `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="#1E5080"/>`
+    `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="#4A6A9A"/>`
   ).join('');
 
   return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
-    <polygon points="${area}" fill="#E8F0FA" opacity="0.8"/>
-    <polyline points="${line}" fill="none" stroke="#1E5080" stroke-width="1.5"
+    <polygon points="${area}" fill="#1A3A6A" opacity="0.5"/>
+    <polyline points="${line}" fill="none" stroke="#2A5A9A" stroke-width="1.5"
               stroke-linecap="round" stroke-linejoin="round"/>
     ${dots}
   </svg>`;
@@ -1046,9 +1157,9 @@ function buildFullChart(sessions) {
     const y = toY(w).toFixed(1);
     return `
       <line x1="${PL}" y1="${y}" x2="${W - PR}" y2="${y}"
-            stroke="#C8D8E8" stroke-width="1" stroke-dasharray="3,3"/>
+            stroke="#111C28" stroke-width="1" stroke-dasharray="3,3"/>
       <text x="${PL - 5}" y="${y}" text-anchor="end" dominant-baseline="middle"
-            font-size="9" fill="#6A90B0">${w}</text>`;
+            font-size="9" fill="#3A5A70">${w}</text>`;
   }).join('');
 
   // X axis date labels — show up to 4
@@ -1057,18 +1168,18 @@ function buildFullChart(sessions) {
     if (i !== 0 && i !== sessions.length - 1 && i % step !== 0) return '';
     const label = s.date.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' });
     return `<text x="${toX(i).toFixed(1)}" y="${H - 6}" text-anchor="middle"
-                  font-size="8" fill="#6A90B0">${label}</text>`;
+                  font-size="8" fill="#3A5A70">${label}</text>`;
   }).join('');
 
   const dots = pts.map(p =>
-    `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#1E5080"/>`
+    `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="#4A6A9A"/>`
   ).join('');
 
   return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg"
                style="width:100%;height:auto;display:block">
     ${gridLines}
-    <polygon points="${area}" fill="#E8F0FA" opacity="0.6"/>
-    <polyline points="${line}" fill="none" stroke="#1E5080" stroke-width="2"
+    <polygon points="${area}" fill="#1A3A6A" opacity="0.4"/>
+    <polyline points="${line}" fill="none" stroke="#2A5A9A" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round"/>
     ${dots}
     ${xLabels}
