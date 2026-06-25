@@ -950,10 +950,13 @@ function renderWorkout() {
     <button class="wt-day-tab ${i === currentDayIndex ? 'active' : ''}" data-day="${i}">Day ${d.day}</button>
   `).join('');
 
-  // Exercise cards
+  // Exercise cards — thumbnail uses day photo (reliable, no external API needed)
   const exerciseCards = dayExercises.map((e, i) => `
     <div class="wt-ex-card">
-      <div class="wt-ex-num-badge">${i + 1}</div>
+      <div class="wt-ex-thumb">
+        <img class="wt-ex-thumb-img" src="${photoUrl}" alt="${e.name}" referrerpolicy="no-referrer" />
+        <span class="wt-ex-thumb-num">${i + 1}</span>
+      </div>
       <div class="wt-ex-info">
         <div class="wt-ex-name">${e.name}</div>
         <div class="wt-ex-detail">${e.sets} sets · ${e.reps} reps</div>
