@@ -27,7 +27,7 @@ function getWorkoutPhotoUrl(weekType, dayIndex, isRest = false) {
     'B-1': 'Images/kettlebell.jpg',
     'B-2': 'Images/Power clean.webp',
     'B-3': 'Images/thrusters.webp',
-    'rest': 'Images/rest day.webp',
+    'rest': 'Images/rest_day.webp',
   };
   const key = isRest ? 'rest' : `${weekType}-${dayIndex}`;
   return PHOTOS[key] || PHOTOS['rest'];
