@@ -19,15 +19,15 @@ const EXERCISEDB_KEY = '89873a376emshb4aac58b1f59da0p158863jsne076af2868db';
 
 function getWorkoutPhotoUrl(weekType, dayIndex, isRest = false) {
   const PHOTOS = {
-    'A-0': 'Images/Chest day.jpg',
-    'A-1': 'Images/back_day.jpg',
-    'A-2': 'Images/Leg day.jpg',
-    'A-3': 'Images/arms day.jpg',
-    'B-0': 'Images/Back Squat .webp',
-    'B-1': 'Images/kettlebell.jpg',
-    'B-2': 'Images/Power clean.webp',
-    'B-3': 'Images/thrusters.webp',
-    'rest': 'Images/rest_day.webp',
+    'A-0': 'images/Chest day.jpg',
+    'A-1': 'images/back_day.jpg',
+    'A-2': 'images/Leg day.jpg',
+    'A-3': 'images/arms day.jpg',
+    'B-0': 'images/Back Squat .webp',
+    'B-1': 'images/kettlebell.jpg',
+    'B-2': 'images/Power clean.webp',
+    'B-3': 'images/thrusters.webp',
+    'rest': 'images/rest_day.webp',
   };
   const key = isRest ? 'rest' : `${weekType}-${dayIndex}`;
   return PHOTOS[key] || PHOTOS['rest'];
