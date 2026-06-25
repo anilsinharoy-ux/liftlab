@@ -1,4 +1,4 @@
-const CACHE_NAME = 'liftlab-v12';
+const CACHE_NAME = 'liftlab-v13';
 const GIF_CACHE  = 'liftlab-gifs-v1';
 
 const CORE_ASSETS = [
@@ -11,7 +11,7 @@ const CORE_ASSETS = [
   './icons/icon-512.png',
 ];
 
-// Install: pre-cache all core assets
+// Install: pre-cache core assets for offline use
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(CORE_ASSETS))
@@ -36,8 +36,8 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Exercise GIFs — cache on first load, serve from cache offline
-  if (url.hostname === 'v2.exercisedb.io') {
+  // Pexels / external images — cache-first (no need to refetch photos)
+  if (url.hostname === 'images.pexels.com' || url.hostname === 'v2.exercisedb.io') {
     event.respondWith(
       caches.open(GIF_CACHE).then(cache =>
         cache.match(event.request).then(cached => {
@@ -52,8 +52,16 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Core assets — cache-first, fall back to network
+  // Core assets — network-first, fall back to cache when offline
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request))
+    fetch(event.request)
+      .then(res => {
+        if (res.ok) {
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return res;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
