@@ -2770,3 +2770,321 @@ input {
   color: var(--text-muted);
   text-align: right;
 }
+
+/* ========================
+   WORKOUT TAB — DAY PREVIEW
+   ======================== */
+
+.wt-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.wt-hero {
+  position: relative;
+  height: 220px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.wt-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.wt-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.15) 0%,
+    rgba(0,0,0,0.05) 35%,
+    rgba(8,12,16,0.88) 100%
+  );
+}
+
+.wt-back-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.45);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.wt-back-btn svg {
+  width: 20px;
+  height: 20px;
+  stroke: #ffffff;
+}
+
+.wt-hero-text {
+  position: absolute;
+  bottom: 14px;
+  left: 16px;
+  right: 16px;
+  z-index: 10;
+}
+
+.wt-hero-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  margin-bottom: 4px;
+  text-shadow: 0 1px 12px rgba(0,0,0,0.6);
+}
+
+.wt-hero-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  font-weight: 400;
+}
+
+/* Day tabs */
+.wt-day-tabs-wrap {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.wt-day-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.wt-day-tabs::-webkit-scrollbar { display: none; }
+
+.wt-day-tab {
+  flex-shrink: 0;
+  padding: 7px 18px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.wt-day-tab.active {
+  background: var(--navy);
+  border-color: var(--navy-mid);
+  color: #ffffff;
+}
+
+/* Sections */
+.wt-section {
+  padding: 16px 16px 0;
+}
+
+.wt-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.wt-section-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wt-section-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.wt-section-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.wt-section-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wt-week-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy-accent);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.wt-format-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--navy-accent);
+  background: var(--navy-dark);
+  border: 1px solid var(--navy);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.wt-amber-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--amber);
+  background: var(--amber-fill);
+  border: 1px solid var(--amber);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.wt-edit-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.wt-edit-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--text-muted);
+}
+
+.wt-warmup-line {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* Exercise list */
+.wt-ex-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+}
+
+.wt-ex-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.wt-ex-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-mid);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.wt-ex-thumb-plain {
+  background: var(--bg-input);
+}
+
+.wt-ex-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wt-ex-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border-mid);
+  border-top-color: var(--navy-mid);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.wt-ex-thumb-num {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.wt-ex-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.wt-ex-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wt-ex-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.wt-ex-rest {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+/* Start bar — sticky at bottom of scroll area */
+.wt-start-bar {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 16px 16px;
+  margin-top: auto;
+  background: linear-gradient(to top, var(--bg-base) 65%, transparent);
+}
+
+.wt-start-btn {
+  width: 100%;
+  height: 52px;
+  background: var(--navy);
+  border: 1px solid var(--navy-mid);
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.wt-start-btn:active {
+  background: var(--navy-mid);
+}

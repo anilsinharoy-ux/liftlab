@@ -931,53 +931,40 @@ function resetFullProgram(weekType) {
 }
 
 function renderWorkout() {
-  const weekState = getWeekState();
-  const program = getWeekProgram();
-  const day = program[currentDayIndex];
-  const container = document.getElementById('screen-container');
-  const buf = getBufferState();
+  const weekState  = getWeekState();
+  const weekType   = weekState.weekType;
+  const program    = getWeekProgram();
+  const day        = program[currentDayIndex];
+  const container  = document.getElementById('screen-container');
+  const buf        = getBufferState();
 
-  const dayExercises = getDayExercises(weekState.weekType, currentDayIndex);
-  const exerciseRows = dayExercises.map((e, i) => `
-    <div class="exercise-row">
-      <div class="exercise-row-number">${i + 1}</div>
-      <div class="exercise-row-info">
-        <div class="exercise-row-name">${e.name}</div>
-        <div class="exercise-row-detail">${e.sets} sets · ${e.reps} reps</div>
-      </div>
-      <div class="exercise-row-rest">${e.rest}s rest</div>
-    </div>
-  `).join('');
-
-  // Day selector tabs
-  const dayTabs = program.map((d, i) => `
-    <button class="day-tab ${i === currentDayIndex ? 'active' : ''}" data-day="${i}">
-      Day ${d.day}
-    </button>
-  `).join('');
-
-  const hasBuffer = buf.exercises && buf.exercises.length > 0;
-  const bufferRows = hasBuffer ? buf.exercises.map(e => `
-    <div class="buffer-exercise-row">
-      <span class="buffer-exercise-name">${e.name}</span>
-      <span class="buffer-exercise-detail">${e.sets} sets · ${e.reps} reps</span>
-    </div>
-  `).join('') : '';
-
-  const bufferSection = hasBuffer ? `
-    <div class="buffer-section">
-      <div class="buffer-section-header">
-        <span class="buffer-section-title">Catch-up from ${getDayName(buf.fromDayKey)}</span>
-        <span class="buffer-section-meta">+10 min</span>
-      </div>
-      ${bufferRows}
-    </div>
-  ` : '';
-
-  const isCrossFit = !!day.wod;
+  const dayExercises = getDayExercises(weekType, currentDayIndex);
+  const isCrossFit   = !!day.wod;
+  const hasBuffer    = buf.exercises && buf.exercises.length > 0;
   const baseDuration = isCrossFit ? 35 : 30;
-  const durationMins  = hasBuffer ? baseDuration + 10 : baseDuration;
+  const durationMins = hasBuffer ? baseDuration + 10 : baseDuration;
+  const photoUrl     = getWorkoutPhotoUrl(weekType, currentDayIndex);
 
+  // Day selector pills
+  const dayTabs = program.map((d, i) => `
+    <button class="wt-day-tab ${i === currentDayIndex ? 'active' : ''}" data-day="${i}">Day ${d.day}</button>
+  `).join('');
+
+  // Exercise cards — thumbnail placeholder loaded async below
+  const exerciseCards = dayExercises.map((e, i) => `
+    <div class="wt-ex-card">
+      <div class="wt-ex-thumb" id="wt-thumb-${i}">
+        <div class="wt-ex-spinner"></div>
+      </div>
+      <div class="wt-ex-info">
+        <div class="wt-ex-name">${e.name}</div>
+        <div class="wt-ex-detail">${e.sets} sets · ${e.reps} reps</div>
+      </div>
+      <div class="wt-ex-rest">${e.rest}s</div>
+    </div>
+  `).join('');
+
+  // WOD section (CrossFit only)
   const wodSection = isCrossFit ? (() => {
     const wod = day.wod;
     const movementRows = wod.movements.map(m => `
@@ -988,70 +975,138 @@ function renderWorkout() {
       </div>
     `).join('');
     return `
-      <div class="workout-section-heading wod-section-heading">WOD</div>
-      <div class="wod-preview-card">
-        <div class="wod-preview-header">
+      <div class="wt-section">
+        <div class="wt-section-header">
+          <div class="wt-section-left">
+            <span class="wt-section-title">WOD</span>
+            <span class="wt-section-meta">${wod.label}</span>
+          </div>
+          <span class="wt-format-badge">${wod.format}</span>
+        </div>
+        <div class="wod-preview-card"><div class="wod-preview-header">
           <span class="wod-preview-label">${wod.label}</span>
           <span class="wod-preview-format">${wod.format}</span>
-        </div>
-        ${movementRows}
+        </div>${movementRows}</div>
       </div>
     `;
   })() : '';
 
-  const warmupBadge = isCrossFit
-    ? `<span class="workout-warmup-badge">🚴 5 min warm-up</span>`
+  // Buffer section
+  const bufferSection = hasBuffer ? `
+    <div class="wt-section">
+      <div class="wt-section-header">
+        <div class="wt-section-left">
+          <span class="wt-section-title">Catch-up</span>
+          <span class="wt-section-meta">From ${getDayName(buf.fromDayKey)}</span>
+        </div>
+        <span class="wt-amber-badge">+10 min</span>
+      </div>
+      <div class="wt-ex-list">
+        ${buf.exercises.map(e => `
+          <div class="wt-ex-card">
+            <div class="wt-ex-thumb wt-ex-thumb-plain">
+              <span class="wt-ex-thumb-num">+</span>
+            </div>
+            <div class="wt-ex-info">
+              <div class="wt-ex-name">${e.name}</div>
+              <div class="wt-ex-detail">${e.sets} sets · ${e.reps} reps</div>
+            </div>
+            <div class="wt-ex-rest">${e.rest}s</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  ` : '';
+
+  const warmupLine = isCrossFit
+    ? `<div class="wt-warmup-line">🚴 5 min warm-up included</div>`
     : '';
 
   container.innerHTML = `
-    <div class="workout-screen">
+    <div class="wt-screen">
 
-      <div class="workout-screen-header">
-        <div>
-          <div class="workout-screen-title">${day.label}</div>
-          <div class="workout-screen-meta">Week ${weekState.weekType} · ${day.muscles}</div>
-        </div>
-        <button class="workout-edit-btn" id="workout-edit-btn" aria-label="Edit workout">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      <div class="wt-hero">
+        <img class="wt-hero-img" src="${photoUrl}" alt="${day.label}" referrerpolicy="no-referrer" />
+        <div class="wt-hero-overlay"></div>
+        <button class="wt-back-btn" id="wt-back-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="15 18 9 12 15 6"/>
           </svg>
         </button>
-      </div>
-
-      <div class="day-tab-row">${dayTabs}</div>
-
-      <div class="workout-start-row">
-        <div class="workout-badges-col">
-          <span class="workout-duration-badge">⏱ ${durationMins} min session</span>
-          ${warmupBadge}
+        <div class="wt-hero-text">
+          <div class="wt-hero-title">${day.label}</div>
+          <div class="wt-hero-sub">Day ${day.day} · ${day.muscles} · Week ${weekType} · ${durationMins} min</div>
         </div>
-        <button class="workout-start-btn">Start workout</button>
       </div>
 
-      <div class="workout-section-heading">${isCrossFit ? 'Strength' : 'Exercises'}</div>
-      <div class="exercise-list-card">${exerciseRows}</div>
+      <div class="wt-day-tabs-wrap">
+        <div class="wt-day-tabs">${dayTabs}</div>
+      </div>
+
+      <div class="wt-section">
+        <div class="wt-section-header">
+          <div class="wt-section-left">
+            <span class="wt-section-title">Main workout</span>
+            <span class="wt-section-meta">${dayExercises.length} exercises · ${durationMins} min</span>
+          </div>
+          <div class="wt-section-right">
+            <span class="wt-week-badge">Week ${weekType}</span>
+            <button class="wt-edit-btn" id="wt-edit-btn" aria-label="Edit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        ${warmupLine}
+        <div class="wt-ex-list">${exerciseCards}</div>
+      </div>
 
       ${wodSection}
       ${bufferSection}
 
+      <div class="wt-start-bar">
+        <button class="wt-start-btn" id="wt-start-btn">Start workout →</button>
+      </div>
+
     </div>
   `;
 
-  // Wire up day tab switching
-  container.querySelectorAll('.day-tab').forEach(btn => {
+  // Day tab switching
+  container.querySelectorAll('.wt-day-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       currentDayIndex = parseInt(btn.dataset.day);
       renderWorkout();
     });
   });
 
-  container.querySelector('.workout-start-btn').addEventListener('click', () => {
-    startActiveSession(currentDayIndex);
-  });
+  document.getElementById('wt-back-btn').addEventListener('click', () => navigateTo('home'));
+  document.getElementById('wt-start-btn').addEventListener('click', () => startActiveSession(currentDayIndex));
+  document.getElementById('wt-edit-btn').addEventListener('click', () => renderWorkoutEditor(currentDayIndex));
 
-  document.getElementById('workout-edit-btn').addEventListener('click', () => {
-    renderWorkoutEditor(currentDayIndex);
+  // Async: load exercise thumbnails
+  dayExercises.forEach((e, i) => {
+    const thumbId = `wt-thumb-${i}`;
+    fetchExerciseGif(e.name).then(url => {
+      const thumb = document.getElementById(thumbId);
+      if (!thumb) return;
+      if (url) {
+        const img = new Image();
+        img.referrerPolicy = 'no-referrer';
+        img.onload = () => {
+          const t = document.getElementById(thumbId);
+          if (t) t.innerHTML = `<img class="wt-ex-thumb-img" referrerpolicy="no-referrer" src="${url}" alt="${e.name}" />`;
+        };
+        img.onerror = () => {
+          const t = document.getElementById(thumbId);
+          if (t) t.innerHTML = `<span class="wt-ex-thumb-num">${i + 1}</span>`;
+        };
+        img.src = url;
+      } else {
+        thumb.innerHTML = `<span class="wt-ex-thumb-num">${i + 1}</span>`;
+      }
+    });
   });
 }
 
