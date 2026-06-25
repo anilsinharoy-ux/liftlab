@@ -950,12 +950,10 @@ function renderWorkout() {
     <button class="wt-day-tab ${i === currentDayIndex ? 'active' : ''}" data-day="${i}">Day ${d.day}</button>
   `).join('');
 
-  // Exercise cards — thumbnail placeholder loaded async below
+  // Exercise cards
   const exerciseCards = dayExercises.map((e, i) => `
     <div class="wt-ex-card">
-      <div class="wt-ex-thumb" id="wt-thumb-${i}">
-        <div class="wt-ex-spinner"></div>
-      </div>
+      <div class="wt-ex-num-badge">${i + 1}</div>
       <div class="wt-ex-info">
         <div class="wt-ex-name">${e.name}</div>
         <div class="wt-ex-detail">${e.sets} sets · ${e.reps} reps</div>
@@ -1085,29 +1083,6 @@ function renderWorkout() {
   document.getElementById('wt-start-btn').addEventListener('click', () => startActiveSession(currentDayIndex));
   document.getElementById('wt-edit-btn').addEventListener('click', () => renderWorkoutEditor(currentDayIndex));
 
-  // Async: load exercise thumbnails
-  dayExercises.forEach((e, i) => {
-    const thumbId = `wt-thumb-${i}`;
-    fetchExerciseGif(e.name).then(url => {
-      const thumb = document.getElementById(thumbId);
-      if (!thumb) return;
-      if (url) {
-        const img = new Image();
-        img.referrerPolicy = 'no-referrer';
-        img.onload = () => {
-          const t = document.getElementById(thumbId);
-          if (t) t.innerHTML = `<img class="wt-ex-thumb-img" referrerpolicy="no-referrer" src="${url}" alt="${e.name}" />`;
-        };
-        img.onerror = () => {
-          const t = document.getElementById(thumbId);
-          if (t) t.innerHTML = `<span class="wt-ex-thumb-num">${i + 1}</span>`;
-        };
-        img.src = url;
-      } else {
-        thumb.innerHTML = `<span class="wt-ex-thumb-num">${i + 1}</span>`;
-      }
-    });
-  });
 }
 
 // ========================
