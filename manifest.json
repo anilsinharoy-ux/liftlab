@@ -4,8 +4,8 @@
   "description": "Personal fitness tracking PWA",
   "start_url": "./",
   "display": "standalone",
-  "theme_color": "#1E5080",
-  "background_color": "#F0F4F8",
+  "theme_color": "#0A0A0A",
+  "background_color": "#0A0A0A",
   "orientation": "portrait",
   "icons": [
     {
