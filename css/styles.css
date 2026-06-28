@@ -8,11 +8,11 @@
   --bg-elevated:    #1C1C1C;
   --bg-input:       #0D0D0D;
 
-  /* Neutral charcoal ramp (replaces navy) */
-  --navy-dark:      #161616;
-  --navy:           #2A2A2A;
-  --navy-mid:       #404040;
-  --navy-accent:    #A0A0A0;
+  /* Indigo accent ramp — Electric Indigo */
+  --navy-dark:      #1A1640;
+  --navy:           #2E28A0;
+  --navy-mid:       #5B4EFF;
+  --navy-accent:    #7B70FF;
 
   /* Text ramp */
   --text-primary:   #FFFFFF;
@@ -32,9 +32,9 @@
   --amber-fill:     #1A1200;
   --red:            #EF4444;
   --red-fill:       #1A0606;
-  --purple:         #A855F7;
-  --purple-fill:    #120A1E;
-  --purple-border:  #251640;
+  --purple:         #5B4EFF;
+  --purple-fill:    #0D0B2E;
+  --purple-border:  #1A1640;
 
   /* Layout */
   --nav-height:     64px;
