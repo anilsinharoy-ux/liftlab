@@ -120,6 +120,13 @@ function navigateTo(tabName) {
   const screenContainer = document.getElementById('screen-container');
   screenContainer.innerHTML = '';
   tabs[tabName]();
+
+  const bannerLabel = document.getElementById('active-banner-label');
+  if (bannerLabel && session) {
+    bannerLabel.textContent = tabName === 'workout'
+      ? 'Session in progress'
+      : 'Session in progress — tap to return';
+  }
 }
 
 document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -230,6 +237,20 @@ function renderHome() {
     </div>
   `;
 
+  // Return card — shown when a session is in progress and user is on a different tab
+  const returnCard = session ? `
+    <div class="active-return-card" id="active-return-card">
+      <div class="active-return-left">
+        <div class="active-return-dot"></div>
+        <div>
+          <div class="active-return-name">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
+          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}</div>
+        </div>
+      </div>
+      <span class="active-return-cta">Return →</span>
+    </div>
+  ` : '';
+
   // Build dark panel content based on state
   let darkPanelContent;
 
@@ -294,9 +315,17 @@ function renderHome() {
     </div>
 
     <div class="home-dark-panel">
+      ${returnCard}
       ${darkPanelContent}
     </div>
   `;
+
+  // Return card click
+  const returnCardEl = document.getElementById('active-return-card');
+  if (returnCardEl) returnCardEl.addEventListener('click', () => {
+    navigateTo('workout');
+    renderActiveExercise();
+  });
 
   // Event listeners
   const yesBtn = document.getElementById('checkin-yes');
@@ -723,8 +752,23 @@ function renderSupps(editMode = false) {
     </div>
   ` : '';
 
+  const returnCard = session ? `
+    <div class="active-return-card" id="active-return-card">
+      <div class="active-return-left">
+        <div class="active-return-dot"></div>
+        <div>
+          <div class="active-return-name">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
+          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}</div>
+        </div>
+      </div>
+      <span class="active-return-cta">Return →</span>
+    </div>
+  ` : '';
+
   container.innerHTML = `
     <div class="supps-screen">
+
+      ${returnCard}
 
       <div class="supps-screen-header">
         <span class="supps-screen-title">Supplements</span>
@@ -755,6 +799,12 @@ function renderSupps(editMode = false) {
 
     </div>
   `;
+
+  const returnCardEl = document.getElementById('active-return-card');
+  if (returnCardEl) returnCardEl.addEventListener('click', () => {
+    navigateTo('workout');
+    renderActiveExercise();
+  });
 
   document.getElementById('supps-edit-toggle').addEventListener('click', () => {
     renderSupps(!editMode);
@@ -1614,9 +1664,23 @@ function renderProgress() {
   const container = document.getElementById('screen-container');
   const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
 
+  const returnCard = session ? `
+    <div class="active-return-card" id="active-return-card">
+      <div class="active-return-left">
+        <div class="active-return-dot"></div>
+        <div>
+          <div class="active-return-name">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
+          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}</div>
+        </div>
+      </div>
+      <span class="active-return-cta">Return →</span>
+    </div>
+  ` : '';
+
   if (!all.length) {
     container.innerHTML = `
       <div class="progress-screen">
+        ${returnCard}
         <div class="progress-empty">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
@@ -1626,16 +1690,22 @@ function renderProgress() {
         </div>
       </div>
     `;
-    return;
+  } else {
+    container.innerHTML = `
+      <div class="progress-screen">
+        ${returnCard}
+        ${buildTrainingHeatmap()}
+        ${buildMuscleBreakdown()}
+        ${buildSessionCards()}
+      </div>
+    `;
   }
 
-  container.innerHTML = `
-    <div class="progress-screen">
-      ${buildTrainingHeatmap()}
-      ${buildMuscleBreakdown()}
-      ${buildSessionCards()}
-    </div>
-  `;
+  const returnCardEl = document.getElementById('active-return-card');
+  if (returnCardEl) returnCardEl.addEventListener('click', () => {
+    navigateTo('workout');
+    renderActiveExercise();
+  });
 }
 
 function renderExerciseDetail(name, sessions) {
@@ -2112,6 +2182,7 @@ function getSuggestedWeight(exIdx) {
 // ========================
 
 let session = null;
+let elapsedInterval = null;
 
 let warmupTimerId = null;
 
@@ -2120,6 +2191,123 @@ function clearWarmupTimer() {
     clearInterval(warmupTimerId);
     warmupTimerId = null;
   }
+}
+
+// ========================
+// SESSION PERSISTENCE
+// ========================
+
+function saveSession() {
+  if (!session) return;
+  const toSave = {
+    dayIndex: session.dayIndex,
+    day: session.day,
+    exIdx: session.exIdx,
+    setNum: session.setNum,
+    weight: session.weight,
+    difficulty: session.difficulty,
+    logs: session.logs,
+    restRemaining: 0,
+    timerState: 'idle',
+    startedAt: session.startedAt,
+    exercises: session.exercises,
+    wod: session.wod,
+  };
+  localStorage.setItem('liftlab_active_session', JSON.stringify(toSave));
+}
+
+function clearSession() {
+  localStorage.removeItem('liftlab_active_session');
+  session = null;
+  updateActiveBorder(false);
+}
+
+function updateActiveBorder(isActive) {
+  const app    = document.getElementById('app');
+  const banner = document.getElementById('active-session-banner');
+  if (isActive) {
+    app.classList.add('session-active');
+    banner.classList.remove('hidden');
+    startElapsedTimer();
+  } else {
+    app.classList.remove('session-active');
+    banner.classList.add('hidden');
+    stopElapsedTimer();
+  }
+}
+
+function startElapsedTimer() {
+  stopElapsedTimer();
+  elapsedInterval = setInterval(() => {
+    if (!session || !session.startedAt) return;
+    const elapsed = Math.floor((Date.now() - session.startedAt) / 1000);
+    const m = Math.floor(elapsed / 60);
+    const s = elapsed % 60;
+    const timerEl = document.getElementById('active-banner-timer');
+    if (timerEl) timerEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+  }, 1000);
+}
+
+function stopElapsedTimer() {
+  if (elapsedInterval) {
+    clearInterval(elapsedInterval);
+    elapsedInterval = null;
+  }
+}
+
+function checkForActiveSession() {
+  const saved = localStorage.getItem('liftlab_active_session');
+  if (!saved) return false;
+  try {
+    const parsed = JSON.parse(saved);
+    if (!parsed || !parsed.exercises || !parsed.exercises.length) {
+      localStorage.removeItem('liftlab_active_session');
+      return false;
+    }
+    showResumePrompt(parsed);
+    return true;
+  } catch (e) {
+    localStorage.removeItem('liftlab_active_session');
+    return false;
+  }
+}
+
+function showResumePrompt(saved) {
+  const container = document.getElementById('screen-container');
+  const ex      = saved.exercises[saved.exIdx];
+  const exName  = ex ? ex.name : 'your workout';
+  const setInfo = ex ? `Set ${saved.setNum} of ${ex.sets}` : '';
+  const elapsed = saved.startedAt
+    ? Math.floor((Date.now() - saved.startedAt) / 60000)
+    : 0;
+
+  container.innerHTML = `
+    <div class="resume-screen">
+      <div class="resume-icon">▶</div>
+      <div class="resume-title">Workout in progress</div>
+      <div class="resume-ex">${exName}</div>
+      <div class="resume-set">${setInfo} · ${elapsed} min elapsed</div>
+      <button class="resume-btn-yes" id="resume-yes">Resume session</button>
+      <button class="resume-btn-end" id="resume-end">End session</button>
+    </div>
+  `;
+
+  document.getElementById('resume-yes').addEventListener('click', () => {
+    session = saved;
+    session.timerId = null;
+    session.restRemaining = 0;
+    session.timerState = 'idle';
+    if (!session.day) session.day = getWeekProgram()[session.dayIndex];
+    updateActiveBorder(true);
+    navigateTo('workout');
+    renderActiveExercise();
+  });
+
+  document.getElementById('resume-end').addEventListener('click', () => {
+    clearSession();
+    updateActiveBorder(false);
+    renderHome();
+  });
 }
 
 function startActiveSession(dayIndex) {
@@ -2158,8 +2346,11 @@ function beginStrengthSession(dayIndex) {
     restRemaining: 0,
     timerState: 'idle',
     wod: day.wod || null,
+    startedAt: Date.now(),
   };
   session.weight = getSuggestedWeight(0);
+  updateActiveBorder(true);
+  saveSession();
   renderActiveExercise();
 }
 
@@ -2263,7 +2454,7 @@ function renderActiveExercise() {
 
   document.getElementById('active-back-btn').addEventListener('click', () => {
     clearRestTimer();
-    session = null;
+    clearSession();
     renderWorkout();
   });
 
@@ -2272,6 +2463,7 @@ function renderActiveExercise() {
 
   document.getElementById('weight-input').addEventListener('input', e => {
     session.weight = e.target.value;
+    saveSession();
   });
 
   document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -2280,6 +2472,7 @@ function renderActiveExercise() {
       document.querySelectorAll('.diff-btn').forEach(b => { b.className = 'diff-btn'; });
       btn.className = `diff-btn selected-${session.difficulty}`;
       document.getElementById('log-set-btn').disabled = false;
+      saveSession();
     });
   });
 
@@ -2344,6 +2537,7 @@ function logCurrentSet() {
   };
 
   session.logs.push(entry);
+  saveSession();
   const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
   all.push(entry);
   localStorage.setItem('liftlab_weights', JSON.stringify(all));
@@ -2368,11 +2562,13 @@ function advanceSession() {
 
   if (session.setNum < ex.sets) {
     session.setNum++;
+    saveSession();
     renderActiveExercise();
   } else if (session.exIdx < session.exercises.length - 1) {
     session.exIdx++;
     session.setNum = 1;
     session.weight = getSuggestedWeight(session.exIdx);
+    saveSession();
     renderActiveExercise();
   } else if (session.wod) {
     renderWodScreen();
@@ -2424,7 +2620,7 @@ function renderSessionComplete() {
 
   document.getElementById('done-btn').addEventListener('click', () => {
     saveBufferState({ exercises: [], fromDayKey: null, fromDayIndex: null });
-    session = null;
+    clearSession();
     navigateTo('home');
   });
 }
@@ -2723,4 +2919,6 @@ function getTodayKey() {
 // ========================
 // INIT
 // ========================
-navigateTo('home');
+if (!checkForActiveSession()) {
+  navigateTo('home');
+}

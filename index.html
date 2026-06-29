@@ -19,6 +19,15 @@
   <!-- App Shell -->
   <div id="app">
 
+    <!-- Active session banner (hidden until a session starts) -->
+    <div id="active-session-banner" class="active-banner hidden">
+      <div class="active-banner-left">
+        <div class="active-banner-dot"></div>
+        <span class="active-banner-label" id="active-banner-label">Session in progress</span>
+      </div>
+      <span class="active-banner-timer" id="active-banner-timer">0:00</span>
+    </div>
+
     <!-- Top Header -->
     <header id="top-header">
       <span id="header-title">LiftLab</span>
