@@ -710,17 +710,17 @@ const PROGRAM_B = [
     hasWarmup: true,
     warmupDuration: 300,
     exercises: [
-      { name: 'Back Squat',    sets: 4, reps: '5',  rest: 120 },
-      { name: 'Strict Pull-ups', sets: 3, reps: '8', rest: 90  },
+      { name: 'Back Squat',     sets: 4, reps: '5',  rest: 120, image: 'images/Back Squat .webp' },
+      { name: 'Strict Pull-ups', sets: 3, reps: '8', rest: 90,  image: 'images/Strict Pull-ups .jpeg' },
     ],
     wod: {
       format: 'AMRAP',
       duration: 720,
       label: 'AMRAP 12 min',
       movements: [
-        { name: 'Front Squats',        reps: '10 reps' },
-        { name: 'Burpees',             reps: '10 reps' },
-        { name: 'Kettlebell Swings',   reps: '10 reps' },
+        { name: 'Front Squats',      reps: '10 reps', image: 'images/Front Squats .jpeg' },
+        { name: 'Burpees',           reps: '10 reps', image: 'images/Burpees .jpeg' },
+        { name: 'Kettlebell Swings', reps: '10 reps', image: 'images/kettlebell.jpg' },
       ],
     },
   },
@@ -731,17 +731,17 @@ const PROGRAM_B = [
     hasWarmup: true,
     warmupDuration: 300,
     exercises: [
-      { name: 'Romanian Deadlift',             sets: 4, reps: '6',  rest: 120 },
-      { name: 'Seated Dumbbell Shoulder Press', sets: 3, reps: '10', rest: 90  },
+      { name: 'Romanian Deadlift',              sets: 4, reps: '6',  rest: 120, image: 'images/Romanian Deadlift .jpeg' },
+      { name: 'Seated Dumbbell Shoulder Press', sets: 3, reps: '10', rest: 90,  image: 'images/Dumbbell Shoulder Press.jpeg' },
     ],
     wod: {
       format: 'EMOM',
       duration: 720,
       label: 'EMOM 12 min',
       movements: [
-        { name: 'Wall Balls',          reps: '15 reps', minute: 1 },
-        { name: 'Kettlebell Swings',   reps: '12 reps', minute: 2 },
-        { name: 'V-Ups',               reps: '10 reps', minute: 3 },
+        { name: 'Wall Balls',        reps: '15 reps', minute: 1, image: 'images/Wall Balls.jpeg' },
+        { name: 'Kettlebell Swings', reps: '12 reps', minute: 2, image: 'images/kettlebell.jpg' },
+        { name: 'V-Ups',             reps: '10 reps', minute: 3, image: 'images/V-Ups.jpeg' },
       ],
     },
   },
@@ -752,17 +752,17 @@ const PROGRAM_B = [
     hasWarmup: true,
     warmupDuration: 300,
     exercises: [
-      { name: 'Power Clean',    sets: 4, reps: '3', rest: 120 },
-      { name: 'Weighted Dips',  sets: 3, reps: '8', rest: 90  },
+      { name: 'Power Clean',   sets: 4, reps: '3', rest: 120, image: 'images/Power clean.webp' },
+      { name: 'Weighted Dips', sets: 3, reps: '8', rest: 90,  image: 'images/Weighted Dips .jpeg' },
     ],
     wod: {
       format: 'Rounds for Time',
       rounds: 4,
       label: '4 Rounds for Time',
       movements: [
-        { name: 'Hang Power Cleans',       reps: '10 reps' },
-        { name: 'Lateral Barbell Burpees', reps: '12 reps' },
-        { name: 'Push-ups',                reps: '10 reps' },
+        { name: 'Hang Power Cleans',       reps: '10 reps', image: 'images/Power clean.webp' },
+        { name: 'Lateral Barbell Burpees', reps: '12 reps', image: 'images/Burpees .jpeg' },
+        { name: 'Push-ups',                reps: '10 reps', image: 'images/Push-ups.jpeg' },
       ],
     },
   },
@@ -773,17 +773,17 @@ const PROGRAM_B = [
     hasWarmup: true,
     warmupDuration: 300,
     exercises: [
-      { name: 'Front Squat',    sets: 4, reps: '5', rest: 120 },
-      { name: 'Strict Pull-ups', sets: 3, reps: '8', rest: 90  },
+      { name: 'Front Squat',    sets: 4, reps: '5', rest: 120, image: 'images/Front Squats .jpeg' },
+      { name: 'Strict Pull-ups', sets: 3, reps: '8', rest: 90, image: 'images/Strict Pull-ups .jpeg' },
     ],
     wod: {
       format: 'Rounds for Time',
       rounds: 3,
       label: '3 Rounds for Time',
       movements: [
-        { name: 'Thrusters',       reps: '15 reps' },
-        { name: 'Push-ups',        reps: '12 reps' },
-        { name: 'Burpees Over Bar', reps: '10 reps' },
+        { name: 'Thrusters',        reps: '15 reps', image: 'images/thrusters.webp' },
+        { name: 'Push-ups',         reps: '12 reps', image: 'images/Push-ups.jpeg' },
+        { name: 'Burpees Over Bar', reps: '10 reps', image: 'images/Burpees .jpeg' },
       ],
     },
   },
@@ -970,6 +970,7 @@ function renderWorkout() {
     const wod = day.wod;
     const movementRows = wod.movements.map(m => `
       <div class="wod-preview-row">
+        ${m.image ? `<img class="wod-preview-thumb" src="${m.image}" alt="${m.name}" />` : ''}
         <span class="wod-preview-name">${m.name}</span>
         ${m.minute ? `<span class="wod-preview-meta">Min ${m.minute}</span>` : ''}
         <span class="wod-preview-reps">${m.reps}</span>
@@ -2249,7 +2250,7 @@ function renderWodScreen() {
 
   const movementRows = wod.movements.map((m, i) => `
     <div class="wod-movement-row">
-      <div class="wod-movement-number">${i + 1}</div>
+      ${m.image ? `<img class="wod-movement-thumb" src="${m.image}" alt="${m.name}" />` : `<div class="wod-movement-number">${i + 1}</div>`}
       <div class="wod-movement-info">
         <div class="wod-movement-name">${m.name}</div>
         ${m.minute ? `<div class="wod-movement-meta">Minute ${m.minute}</div>` : ''}

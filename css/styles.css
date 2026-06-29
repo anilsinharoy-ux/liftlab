@@ -1328,12 +1328,21 @@ input {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 11px 14px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .wod-preview-row:last-child {
   border-bottom: none;
+}
+
+.wod-preview-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
 }
 
 .wod-preview-name {
@@ -2448,12 +2457,21 @@ input {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 13px 14px;
+  padding: 10px 14px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
 .wod-movement-row:last-child {
   border-bottom: none;
+}
+
+.wod-movement-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--bg-elevated);
 }
 
 .wod-movement-number {
