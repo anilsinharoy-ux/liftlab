@@ -3529,3 +3529,83 @@ input {
 .home-cal-day.missed .home-cal-pip  { background: #F59E0B; }
 .home-cal-day.rest .home-cal-pip    { background: transparent; }
 .home-cal-day.upcoming .home-cal-pip { background: #1C1C1C; }
+
+/* ========================
+   HOME — CHECK-IN REDESIGN
+   ======================== */
+
+.home-checkin-card {
+  background: #111111;
+  border: 1px solid #1C1C1C;
+  border-radius: 12px;
+  padding: 13px 14px;
+}
+
+.home-checkin-q {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 10px;
+}
+
+.home-checkin-btns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.home-checkin-yes {
+  padding: 11px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #4A3FE0 0%, #7B6FFF 100%);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.home-checkin-rest {
+  padding: 11px;
+  border-radius: 10px;
+  border: 1px solid #2A2A2A;
+  background: #1A1A1A;
+  color: #666666;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.home-rest-card {
+  background: #111111;
+  border: 1px solid #1C1C1C;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.home-rest-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #555566;
+  margin-bottom: 3px;
+}
+
+.home-rest-sub {
+  font-size: 11px;
+  color: #333348;
+}
+
+.home-cal-day.today-yes .home-cal-num    { background: #22C55E; color: #ffffff; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.home-cal-day.today-yes .home-cal-pip    { background: #22C55E; }
+.home-cal-day.today-rest .home-cal-num   { background: #1A1A1A; color: #333344; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.home-cal-day.today-rest .home-cal-pip   { background: transparent; }
+.home-cal-day.today-pending .home-cal-num { background: #1C1C1C; color: #555566; border: 1px solid #333333; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.home-cal-day.today-pending .home-cal-pip { background: transparent; }
+.home-cal-day.done .home-cal-num         { background: rgba(91,78,255,0.18); color: #7B70FF; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.home-cal-day.done .home-cal-pip         { background: #5B4EFF; }
+.home-cal-day.missed .home-cal-num       { background: rgba(245,158,11,0.1); color: #F59E0B; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+.home-cal-day.missed .home-cal-pip       { background: #F59E0B; }
+.home-cal-day.rest .home-cal-num         { background: #111111; color: #2A2A3A; }
+.home-cal-day.rest .home-cal-pip         { background: transparent; }
+.home-cal-day.future .home-cal-num       { color: #222233; }
+.home-cal-day.future .home-cal-pip       { background: transparent; }

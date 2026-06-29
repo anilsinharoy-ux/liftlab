@@ -145,91 +145,75 @@ function renderHome() {
   if (weekBadge) weekBadge.textContent = `Week ${state.weekType}`;
 
   currentDayIndex = getTodayProgramDayIndex();
+  const weekType = state.weekType;
 
-  const todayOffset = getTodayDayOffset();
-  const scheduled   = state ? state.scheduledOffsets : [0, 1, 3, 4];
-  const checkin     = state ? state.checkins[getTodayKey()] : null;
-  const weekType    = state ? state.weekType : 'A';
-  const isRestDay   = !scheduled.includes(todayOffset) || checkin === 'no';
+  const checkinKey = `liftlab_checkin_${getTodayKey()}`;
+  const todayAns   = localStorage.getItem(checkinKey);
+  const isRestDay  = todayAns === 'rest';
+  const isPending  = todayAns === null;
 
-  const photoUrl = getWorkoutPhotoUrl(weekType, currentDayIndex, isRestDay);
-  const hero     = getWorkoutHeroTitle(weekType, currentDayIndex, isRestDay);
+  // Hero section — rest day uses rest photo/title, pending/yes use today's workout
+  const heroPhotoUrl = getWorkoutPhotoUrl(weekType, currentDayIndex, isRestDay);
+  const heroData     = getWorkoutHeroTitle(weekType, currentDayIndex, isRestDay);
+  const titleLines   = heroData.title.split('\n').join('<br>');
 
-  // Build the title lines (split on \n for line breaks)
-  const titleLines = hero.title.split('\n').join('<br>');
+  // Sub-pill text: rest day shows next program day, otherwise the standard sub
+  const program = getWeekProgram();
+  const todayProgDay = program[currentDayIndex];
+  const subPillText = isRestDay
+    ? `Next up — ${todayProgDay ? todayProgDay.label : 'Training day'}`
+    : heroData.sub;
 
-  // Week dot strip
-  const monday = getMondayDate();
+  // Week dot strip (reads new checkin keys)
+  const monday   = getMondayDate();
   const todayKey = getTodayKey();
   const dayLetters = ['M','T','W','T','F','S','S'];
   const weekDots = dayLetters.map((ltr, i) => {
-    const d = new Date(monday);
+    const d  = new Date(monday);
     d.setDate(monday.getDate() + i);
-    const dk = dateToDayKey(d);
-    const isToday = dk === todayKey;
-    const isPast  = d < new Date() && !isToday;
-    const isWorkout = scheduled.includes(i);
-    const ci = state ? state.checkins[dk] : null;
+    const dk  = dateToDayKey(d);
+    const ck  = localStorage.getItem(`liftlab_checkin_${dk}`);
+    const isTodayDot = dk === todayKey;
+    const isPastDot  = d < new Date() && !isTodayDot;
     let cls = '';
-    if (isToday) cls = 'today';
-    else if (isPast && isWorkout && ci === 'yes') cls = 'done';
+    if (isTodayDot && ck === 'yes') cls = 'today-yes';
+    else if (isTodayDot)             cls = 'today';
+    else if (isPastDot && ck === 'yes') cls = 'done';
     return `<div class="home-ws-day">
       <span class="home-ws-label">${ltr}</span>
       <div class="home-ws-dot ${cls}"></div>
     </div>`;
   }).join('');
 
-  // Full 7-day calendar
+  // Calendar rows — read from liftlab_checkin_${dk}, no scheduledOffsets
   const calRows = dayLetters.map((ltr, i) => {
-    const d = new Date(monday);
+    const d  = new Date(monday);
     d.setDate(monday.getDate() + i);
-    const dk = dateToDayKey(d);
-    const isToday   = dk === todayKey;
-    const isPast    = d < new Date() && !isToday;
-    const isWorkout = scheduled.includes(i);
-    const ci = state ? state.checkins[dk] : null;
+    const dk       = dateToDayKey(d);
+    const isToday  = dk === todayKey;
+    const isPast   = d < new Date() && !isToday;
+    const ans      = localStorage.getItem(`liftlab_checkin_${dk}`);
     let cls = '';
-    if (isToday) cls = 'today';
-    else if (isPast && isWorkout && ci === 'yes') cls = 'done';
-    else if (isPast && isWorkout && ci === 'no')  cls = 'missed';
-    else if (!isWorkout) cls = 'rest';
-    else cls = 'upcoming';
+    if (isToday) {
+      if (todayAns === 'yes')       cls = 'today-yes';
+      else if (todayAns === 'rest') cls = 'today-rest';
+      else                          cls = 'today-pending';
+    } else if (isPast && ans === 'yes')  cls = 'done';
+    else if (isPast && ans === 'rest')   cls = 'rest';
+    else if (isPast && !ans)             cls = 'missed';
+    else                                 cls = 'future';
     const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     return `<div class="home-cal-day ${cls}">
-      <span class="home-cal-day-lbl">${dayNames[i]}</span>
-      <span class="home-cal-day-num">${d.getDate()}</span>
+      <span class="home-cal-lbl">${dayNames[i]}</span>
+      <div class="home-cal-num">${d.getDate()}</div>
       <div class="home-cal-pip"></div>
     </div>`;
   }).join('');
 
-  // Stats row (only for workout days)
-  const program = getWeekProgram();
-  const day = program[currentDayIndex];
-  const exCount = day ? day.exercises.length : 0;
-  const hasBuf  = getBufferState().exercises && getBufferState().exercises.length > 0;
-
-  const statsHTML = isRestDay ? '' : `
-    <div class="home-stats-row">
-      <div class="home-stat-card">
-        <div class="home-stat-val">30</div>
-        <div class="home-stat-lbl">Minutes</div>
-      </div>
-      <div class="home-stat-card">
-        <div class="home-stat-val">${exCount}</div>
-        <div class="home-stat-lbl">Exercises</div>
-      </div>
-      <div class="home-stat-card">
-        <div class="home-stat-val">${hasBuf ? '+10' : '—'}</div>
-        <div class="home-stat-lbl">Buffer</div>
-      </div>
-    </div>
-  `;
-
-  // Date range label
-  const monday2 = getMondayDate();
-  const sunday  = new Date(monday2); sunday.setDate(monday2.getDate() + 6);
+  // Calendar card (same structure in all 3 states)
+  const monday2  = getMondayDate();
+  const sunday   = new Date(monday2); sunday.setDate(monday2.getDate() + 6);
   const rangeLabel = `${monday2.toLocaleDateString('en-CA',{month:'short',day:'numeric'})} – ${sunday.toLocaleDateString('en-CA',{month:'short',day:'numeric'})}`;
-
   const calendarCardHTML = `
     <div class="home-cal-card">
       <div class="home-cal-header">
@@ -246,13 +230,57 @@ function renderHome() {
     </div>
   `;
 
-  const startBtnHTML = isRestDay ? '' : `
-    <button class="home-start-btn" id="home-start-btn">Start workout →</button>
-  `;
+  // Build dark panel content based on state
+  let darkPanelContent;
+
+  if (isPending) {
+    // State 1 — no answer yet: check-in card + calendar
+    darkPanelContent = `
+      <div class="home-checkin-card">
+        <div class="home-checkin-q">Training today?</div>
+        <div class="home-checkin-btns">
+          <button class="home-checkin-yes" id="checkin-yes">Yes, let's go</button>
+          <button class="home-checkin-rest" id="checkin-rest">Rest day</button>
+        </div>
+      </div>
+      ${calendarCardHTML}
+    `;
+  } else if (todayAns === 'yes') {
+    // State 2 — training day: calendar + stats + start button
+    const exCount = todayProgDay ? todayProgDay.exercises.length : 0;
+    const hasBuf  = getBufferState().exercises && getBufferState().exercises.length > 0;
+    darkPanelContent = `
+      ${calendarCardHTML}
+      <div class="home-stats-row">
+        <div class="home-stat-card">
+          <div class="home-stat-val">30</div>
+          <div class="home-stat-lbl">Minutes</div>
+        </div>
+        <div class="home-stat-card">
+          <div class="home-stat-val">${exCount}</div>
+          <div class="home-stat-lbl">Exercises</div>
+        </div>
+        <div class="home-stat-card">
+          <div class="home-stat-val">${hasBuf ? '+10' : '—'}</div>
+          <div class="home-stat-lbl">Buffer</div>
+        </div>
+      </div>
+      <button class="home-start-btn" id="home-start-btn">Start workout →</button>
+    `;
+  } else {
+    // State 3 — rest day: calendar + rest card
+    darkPanelContent = `
+      ${calendarCardHTML}
+      <div class="home-rest-card">
+        <div class="home-rest-title">Enjoy your rest day</div>
+        <div class="home-rest-sub">${todayProgDay ? todayProgDay.label : 'Training day'} is ready when you are</div>
+      </div>
+    `;
+  }
 
   container.innerHTML = `
     <div class="home-hero-wrap${isRestDay ? ' rest-day' : ''}">
-      <img class="home-hero-img" src="${photoUrl}" alt="${hero.title.replace('\n',' ')}" />
+      <img class="home-hero-img" src="${heroPhotoUrl}" alt="${heroData.title.replace('\n',' ')}" />
       <div class="home-hero-overlay"></div>
       <div class="home-week-strip">${weekDots}</div>
       <div class="home-hero-text">
@@ -260,17 +288,28 @@ function renderHome() {
         <div class="home-hero-title">${titleLines}</div>
         <div class="home-hero-sub-pill">
           <div class="home-hero-sub-dot"></div>
-          <span class="home-hero-sub-text">${hero.sub}</span>
+          <span class="home-hero-sub-text">${subPillText}</span>
         </div>
       </div>
     </div>
 
     <div class="home-dark-panel">
-      ${calendarCardHTML}
-      ${statsHTML}
-      ${startBtnHTML}
+      ${darkPanelContent}
     </div>
   `;
+
+  // Event listeners
+  const yesBtn = document.getElementById('checkin-yes');
+  if (yesBtn) yesBtn.addEventListener('click', () => {
+    localStorage.setItem(checkinKey, 'yes');
+    renderHome();
+  });
+
+  const restBtn = document.getElementById('checkin-rest');
+  if (restBtn) restBtn.addEventListener('click', () => {
+    localStorage.setItem(checkinKey, 'rest');
+    renderHome();
+  });
 
   const homeStartBtn = document.getElementById('home-start-btn');
   if (homeStartBtn) homeStartBtn.addEventListener('click', () => navigateTo('workout'));
@@ -1861,21 +1900,14 @@ function getTodayDayOffset() {
 
 function getWeekState() {
   const mondayKey = dateToDayKey(getMondayDate());
-  const raw = localStorage.getItem('liftlab_week');
+  const raw    = localStorage.getItem('liftlab_week');
   const stored = raw ? JSON.parse(raw) : null;
 
   if (!stored || stored.mondayKey !== mondayKey) {
     const weekType = stored ? (stored.weekType === 'A' ? 'B' : 'A') : 'A';
-    // New week: clear buffer and missed log
     localStorage.removeItem('liftlab_buffer');
     localStorage.removeItem('liftlab_missed');
-    return {
-      mondayKey,
-      weekType,
-      daysPlanned: null,
-      scheduledOffsets: [0, 1, 3, 4],
-      checkins: {},
-    };
+    return { mondayKey, weekType };
   }
   return stored;
 }
@@ -1885,15 +1917,15 @@ function saveWeekState(state) {
 }
 
 function getTodayProgramDayIndex() {
-  const state = getWeekState();
-  const monday = getMondayDate();
+  const monday   = getMondayDate();
   const todayKey = getTodayKey();
   let done = 0;
   for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
+    const d  = new Date(monday);
     d.setDate(monday.getDate() + i);
-    if (dateToDayKey(d) === todayKey) break;
-    if (state.checkins[dateToDayKey(d)] === 'yes') done++;
+    const dk = dateToDayKey(d);
+    if (dk === todayKey) break;
+    if (localStorage.getItem(`liftlab_checkin_${dk}`) === 'yes') done++;
   }
   return Math.min(done, PROGRAM_A.length - 1);
 }
@@ -1928,20 +1960,25 @@ function saveMissedLog(days) {
 }
 
 function getUnhandledMissedDays() {
-  const state = getWeekState();
-  const monday = getMondayDate();
-  const todayOffset = getTodayDayOffset();
-  const handled = getMissedLog();
-  const missed = [];
+  const monday   = getMondayDate();
+  const todayKey = getTodayKey();
+  const handled  = getMissedLog();
+  const missed   = [];
 
-  for (const offset of state.scheduledOffsets) {
-    if (offset >= todayOffset) continue;
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + offset);
-    const dayKey = dateToDayKey(d);
-    const checkin = state.checkins[dayKey];
-    if (checkin === 'no' && !handled.includes(dayKey)) {
-      missed.push({ dayKey, offset });
+  // Start at i=1 — Monday has no previous day to compare against
+  for (let i = 1; i < 7; i++) {
+    const d  = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dk = dateToDayKey(d);
+    if (dk === todayKey) break;
+
+    const ans  = localStorage.getItem(`liftlab_checkin_${dk}`);
+    const prev = new Date(monday);
+    prev.setDate(monday.getDate() + i - 1);
+    const prevAns = localStorage.getItem(`liftlab_checkin_${dateToDayKey(prev)}`);
+
+    if ((!ans || ans !== 'yes') && prevAns === 'yes' && !handled.includes(dk)) {
+      missed.push({ dayKey: dk, offset: i });
     }
   }
   return missed;
@@ -1951,11 +1988,17 @@ function checkMissedDays(onDone) {
   const missed = getUnhandledMissedDays();
   if (!missed.length) { onDone(); return; }
 
-  const first = missed[0];
-  const state = getWeekState();
-  const yesCount = Object.values(state.checkins).filter(v => v === 'yes').length;
-  const dayIndex = Math.min(yesCount, PROGRAM_A.length - 1);
-  const shortlists = state.weekType === 'B' ? CROSSFIT_BUFFER_SHORTLISTS : BUFFER_SHORTLISTS;
+  const first  = missed[0];
+  const state  = getWeekState();
+  const monday = getMondayDate();
+  let yesCount = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    if (localStorage.getItem(`liftlab_checkin_${dateToDayKey(d)}`) === 'yes') yesCount++;
+  }
+  const dayIndex     = Math.min(yesCount, PROGRAM_A.length - 1);
+  const shortlists   = state.weekType === 'B' ? CROSSFIT_BUFFER_SHORTLISTS : BUFFER_SHORTLISTS;
   const bufExercises = shortlists[dayIndex] || shortlists[0];
 
   showMissedDayModal(first, bufExercises, onDone);
@@ -1994,85 +2037,14 @@ function showMissedDayModal(missed, bufExercises, onDone) {
 
 function checkAndShowCheckins() {
   if (checkinsShown) return;
-  checkinsShown = true;
-
-  const state = getWeekState();
-
-  if (state.daysPlanned === null) {
-    showWeeklyCheckinModal(state, () => {
-      const fresh = getWeekState();
-      if (!fresh.checkins[getTodayKey()]) {
-        showDailyCheckinModal(fresh, () => {
-          checkMissedDays(() => renderHome());
-        });
-      } else {
-        checkMissedDays(() => renderHome());
-      }
-    });
-    return;
-  }
-
-  if (!state.checkins[getTodayKey()]) {
-    showDailyCheckinModal(state, () => {
-      checkMissedDays(() => renderHome());
-    });
-  } else {
+  // Only run the missed-day check once per session, and only after user has answered yes
+  const todayAns = localStorage.getItem(`liftlab_checkin_${getTodayKey()}`);
+  if (todayAns === 'yes') {
+    checkinsShown = true;
     checkMissedDays(() => renderHome());
   }
 }
 
-function showWeeklyCheckinModal(state, onDone) {
-  const overlay = document.createElement('div');
-  overlay.className = 'checkin-overlay';
-  overlay.innerHTML = `
-    <div class="checkin-card">
-      <div class="checkin-card-week">Week ${state.weekType}</div>
-      <div class="checkin-card-title">New week, fresh start</div>
-      <div class="checkin-card-body">How many days are you planning to work out this week?</div>
-      <div class="checkin-btn-row">
-        <button class="checkin-btn" data-val="3">3 days</button>
-        <button class="checkin-btn checkin-btn-primary" data-val="4">4 days</button>
-      </div>
-    </div>
-  `;
-  document.getElementById('app').appendChild(overlay);
-
-  overlay.querySelectorAll('.checkin-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const days = parseInt(btn.dataset.val);
-      state.daysPlanned = days;
-      state.scheduledOffsets = days === 3 ? [0, 1, 3] : [0, 1, 3, 4];
-      saveWeekState(state);
-      overlay.remove();
-      onDone();
-    });
-  });
-}
-
-function showDailyCheckinModal(state, onDone) {
-  const overlay = document.createElement('div');
-  overlay.className = 'checkin-overlay';
-  overlay.innerHTML = `
-    <div class="checkin-card">
-      <div class="checkin-card-title">Good ${getTimeOfDay()}, Anil</div>
-      <div class="checkin-card-body">Are you working out today?</div>
-      <div class="checkin-btn-row">
-        <button class="checkin-btn" data-val="no">Rest day</button>
-        <button class="checkin-btn checkin-btn-primary" data-val="yes">Yes, let's go</button>
-      </div>
-    </div>
-  `;
-  document.getElementById('app').appendChild(overlay);
-
-  overlay.querySelectorAll('.checkin-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      state.checkins[getTodayKey()] = btn.dataset.val;
-      saveWeekState(state);
-      overlay.remove();
-      onDone();
-    });
-  });
-}
 
 // ========================
 // WEIGHT PROGRESSION
