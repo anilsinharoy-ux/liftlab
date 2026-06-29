@@ -653,12 +653,12 @@ const PROGRAM_A = [
     label: 'Day 1 — Upper Push',
     muscles: 'Chest · Shoulders · Triceps',
     exercises: [
-      { name: 'Incline Barbell Bench Press',          sets: 3, reps: '8–12', rest: 60 },
-      { name: 'Flat Machine Chest Press',             sets: 3, reps: '8–12', rest: 60 },
-      { name: 'Dumbbell Shoulder Press',              sets: 3, reps: '8–12', rest: 60 },
-      { name: 'Standing Dumbbell Side Lateral Raise', sets: 2, reps: '8–12', rest: 45 },
-      { name: 'Seated Overhead EZ Bar Tricep Ext',   sets: 2, reps: '8–12', rest: 45 },
-      { name: 'Single Arm Cable Press Down',          sets: 2, reps: '8–12', rest: 45 },
+      { name: 'Incline Barbell Bench Press',          sets: 3, reps: '8–12', rest: 60, image: 'images/Incline Barbell Bench Press.jpeg' },
+      { name: 'Flat Machine Chest Press',             sets: 3, reps: '8–12', rest: 60, image: 'images/Flat Machine Chest Press.jpeg' },
+      { name: 'Dumbbell Shoulder Press',              sets: 3, reps: '8–12', rest: 60, image: 'images/Dumbbell Shoulder Press.jpeg' },
+      { name: 'Standing Dumbbell Side Lateral Raise', sets: 2, reps: '8–12', rest: 45, image: 'images/Standing Dumbbell Side Lateral Raise .jpeg' },
+      { name: 'Seated Overhead EZ Bar Tricep Ext',   sets: 2, reps: '8–12', rest: 45, image: 'images/Seated Overhead EZ Bar Tricep Extension .jpeg' },
+      { name: 'Single Arm Cable Press Down',          sets: 2, reps: '8–12', rest: 45, image: 'images/Single Arm Cable Press Down .jpeg' },
     ]
   },
   {
@@ -954,7 +954,7 @@ function renderWorkout() {
   const exerciseCards = dayExercises.map((e, i) => `
     <div class="wt-ex-card">
       <div class="wt-ex-thumb">
-        <img class="wt-ex-thumb-img" src="${photoUrl}" alt="${e.name}" referrerpolicy="no-referrer" />
+        <img class="wt-ex-thumb-img" src="${e.image || photoUrl}" alt="${e.name}" referrerpolicy="no-referrer" />
         <span class="wt-ex-thumb-num">${i + 1}</span>
       </div>
       <div class="wt-ex-info">
@@ -1924,7 +1924,7 @@ function renderActiveExercise() {
       <div class="exercise-photo-wrap">
         <div id="exercise-img-wrap" class="exercise-img-wrap">
           <img class="exercise-gif" referrerpolicy="no-referrer"
-            src="${getWorkoutPhotoUrl(getWeekState().weekType, session.dayIndex)}"
+            src="${ex.image || getWorkoutPhotoUrl(getWeekState().weekType, session.dayIndex)}"
             alt="${ex.name}" />
         </div>
         <button class="active-back-btn" id="active-back-btn">
