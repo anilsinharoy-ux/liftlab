@@ -48,65 +48,6 @@ function getWorkoutHeroTitle(weekType, dayIndex, isRest = false) {
   return TITLES[`${weekType}-${dayIndex}`] || { title: 'Train', sub: '' };
 }
 
-// ========================
-// EXERCISE IMAGE MAP
-// ========================
-const EXERCISE_IMAGE_MAP = {
-  // Program A — Day 1 Upper Push
-  'Incline Barbell Bench Press':               'Images/Incline Barbell Bench Press.jpeg',
-  'Flat Machine Chest Press':                  'Images/Flat Machine Chest Press.jpeg',
-  'Dumbbell Shoulder Press':                   'Images/Dumbbell Shoulder Press .jpeg',
-  'Standing Dumbbell Side Lateral Raise':      'Images/Standing Dumbbell Side Lateral Raise .jpeg',
-  'Seated Overhead EZ Bar Tricep Ext':         'Images/Seated Overhead EZ Bar Tricep Extension .jpeg',
-  'Single Arm Cable Press Down':               'Images/Single Arm Cable Press Down .jpeg',
-  // Program A — Day 2 Upper Pull
-  'Wide Grip Pull Down':                       'Images/Wide Grip Pull Down .jpeg',
-  'Chest Supported Machine Row':               'Images/Chest Supported Machine Row .jpeg',
-  'Narrow Grip Low Pulley Cable Row':          'Images/Narrow Grip Low Pulley Cable Row .jpeg',
-  'EZ Bar Preacher Curl':                      'Images/EZ Bar Preacher Curl.jpg',
-  'Standing Alternating Dumbbell Hammer Curl': 'Images/Standing Alternating Dumbbell Hammer Curl.jpeg',
-  'Rope Face Pull':                            'Images/Rope Face Pull .jpeg',
-  // Program A — Day 3 Legs
-  'Leg Curl Machine':                          'Images/Leg Curl Machine .jpeg',
-  'Leg Extension Machine':                     'Images/Leg Extension Machine.jpeg',
-  'Leg Press':                                 'Images/Leg Press .jpeg',
-  'Hack Squat':                                'Images/Hack Squat .jpeg',
-  'Barbell Walking Lunge':                     'Images/Walking Lunge .jpeg',
-  'Seated Calf Raise':                         'Images/Seated Calf Raise .jpeg',
-  // Program A — Day 4 Arms
-  'Incline Dumbbell Bench Press':              'Images/Incline Dumbbell Bench Press .jpeg',
-  'Narrow Grip Pull Down':                     'Images/Wide Grip Pull Down .jpeg',
-  'Narrow Grip Bench Press':                   'Images/Narrow Grip Bench Press .jpeg',
-  'EZ Bar Bicep Curls':                        'Images/EZ Bar Preacher Curl.jpg',
-  'EZ Bar Skullcrusher':                       'Images/EZ Bar Skullcrusher .jpeg',
-  'Dumbbell Rear Delt Lateral Raise':          'Images/Dumbbell Rear Delt Lateral Raise .jpeg',
-  // Program B — CrossFit Day 1
-  'Back Squat':                                'Images/Back Squat .webp',
-  'Strict Pull-ups':                           'Images/Strict Pull-ups .jpeg',
-  'Front Squats':                              'Images/Front Squats .jpeg',
-  'Burpees':                                   'Images/Burpees .jpeg',
-  'Kettlebell Swings':                         'Images/Kettlebell Swings .jpeg',
-  // Program B — CrossFit Day 2
-  'Romanian Deadlift':                         'Images/Romanian Deadlift .jpeg',
-  'Seated Dumbbell Shoulder Press':            'Images/Dumbbell Shoulder Press .jpeg',
-  'Wall Balls':                                'Images/Wall Balls.jpeg',
-  'V-Ups':                                     'Images/V-Ups.jpeg',
-  // Program B — CrossFit Day 3
-  'Power Clean':                               'Images/Power clean.webp',
-  'Weighted Dips':                             'Images/Weighted Dips .jpeg',
-  'Hang Power Cleans':                         'Images/Power clean.webp',
-  'Lateral Barbell Burpees':                   'Images/Burpees .jpeg',
-  'Push-ups':                                  'Images/Push-ups.jpeg',
-  // Program B — CrossFit Day 4
-  'Front Squat':                               'Images/Front Squats .jpeg',
-  'Thrusters':                                 'Images/thrusters.webp',
-  'Burpees Over Bar':                          'Images/Burpees .jpeg',
-};
-
-function getExerciseImage(name) {
-  return EXERCISE_IMAGE_MAP[name] || null;
-}
-
 // Maps our exercise names to ExerciseDB search terms
 const EXERCISE_NAME_MAP = {
   'Incline Barbell Bench Press':               'barbell incline bench press',
@@ -1009,17 +950,12 @@ function renderWorkout() {
     <button class="wt-day-tab ${i === currentDayIndex ? 'active' : ''}" data-day="${i}">Day ${d.day}</button>
   `).join('');
 
-  // Exercise cards — use per-exercise images from EXERCISE_IMAGE_MAP
-  const exerciseCards = dayExercises.map((e, i) => {
-    const imgSrc = getExerciseImage(e.name);
-    const thumbHTML = imgSrc
-      ? `<img class="wt-ex-thumb-img" src="${imgSrc}" alt="${e.name}" />`
-      : `<span class="wt-ex-thumb-num">${i + 1}</span>`;
-    return `
+  // Exercise cards — thumbnail uses day photo (reliable, no external API needed)
+  const exerciseCards = dayExercises.map((e, i) => `
     <div class="wt-ex-card">
-      <div class="wt-ex-thumb ${imgSrc ? 'wt-ex-thumb-img-wrap' : 'wt-ex-thumb-plain'}">
-        ${thumbHTML}
-        ${imgSrc ? `<span class="wt-ex-thumb-num-overlay">${i + 1}</span>` : ''}
+      <div class="wt-ex-thumb">
+        <img class="wt-ex-thumb-img" src="${photoUrl}" alt="${e.name}" referrerpolicy="no-referrer" />
+        <span class="wt-ex-thumb-num">${i + 1}</span>
       </div>
       <div class="wt-ex-info">
         <div class="wt-ex-name">${e.name}</div>
@@ -1027,7 +963,7 @@ function renderWorkout() {
       </div>
       <div class="wt-ex-rest">${e.rest}s</div>
     </div>
-  `}).join('');
+  `).join('');
 
   // WOD section (CrossFit only)
   const wodSection = isCrossFit ? (() => {
