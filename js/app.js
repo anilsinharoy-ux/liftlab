@@ -1340,12 +1340,235 @@ function buildFullChart(sessions) {
   </svg>`;
 }
 
+// ========================
+// PROGRESS TAB — REDESIGN
+// ========================
+
+const MUSCLE_MAP = {
+  'Incline Barbell Bench Press': 'Chest',
+  'Flat Machine Chest Press': 'Chest',
+  'Incline Dumbbell Bench Press': 'Chest',
+  'Narrow Grip Bench Press': 'Chest',
+  'Dumbbell Shoulder Press': 'Shoulders',
+  'Standing Dumbbell Side Lateral Raise': 'Shoulders',
+  'Seated Dumbbell Shoulder Press': 'Shoulders',
+  'Seated Overhead EZ Bar Tricep Extension': 'Triceps',
+  'Seated Overhead EZ Bar Tricep Ext': 'Triceps',
+  'Single Arm Cable Press Down': 'Triceps',
+  'EZ Bar Skullcrusher': 'Triceps',
+  'Wide Grip Pull Down': 'Back',
+  'Chest Supported Machine Row': 'Back',
+  'Narrow Grip Low Pulley Cable Row': 'Back',
+  'Narrow Grip Pull Down': 'Back',
+  'Rope Face Pull': 'Back',
+  'EZ Bar Preacher Curl': 'Biceps',
+  'Standing Alternating Dumbbell Hammer Curl': 'Biceps',
+  'EZ Bar Bicep Curls': 'Biceps',
+  'Dumbbell Rear Delt Lateral Raise': 'Back',
+  'Leg Curl Machine': 'Legs',
+  'Leg Extension Machine': 'Legs',
+  'Leg Press': 'Legs',
+  'Hack Squat': 'Legs',
+  'Barbell Walking Lunge': 'Legs',
+  'Seated Calf Raise': 'Legs',
+  'Back Squat': 'Legs',
+  'Front Squat': 'Legs',
+  'Romanian Deadlift': 'Legs',
+  'Strict Pull-ups': 'Back',
+  'Weighted Dips': 'Triceps',
+  'Power Clean': 'Back',
+};
+
+const WORKOUT_ANCHORS = [
+  { label: 'Upper Push', keys: ['Incline Barbell Bench Press','Flat Machine Chest Press','Single Arm Cable Press Down'] },
+  { label: 'Upper Pull', keys: ['Wide Grip Pull Down','Chest Supported Machine Row','Narrow Grip Low Pulley Cable Row'] },
+  { label: 'Legs',       keys: ['Leg Curl Machine','Leg Extension Machine','Leg Press','Hack Squat','Seated Calf Raise'] },
+  { label: 'CrossFit',   keys: ['Back Squat','Front Squat','Romanian Deadlift','Power Clean','Strict Pull-ups','Weighted Dips'] },
+];
+
+function inferWorkoutLabel(exNames) {
+  const s = new Set(exNames);
+  let best = '', bestScore = 0;
+  for (const { label, keys } of WORKOUT_ANCHORS) {
+    const score = keys.filter(k => s.has(k)).length;
+    if (score > bestScore) { bestScore = score; best = label; }
+  }
+  return best || 'Arms';
+}
+
+function buildTrainingHeatmap() {
+  const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const todayNum = now.getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startOffset = (new Date(year, month, 1).getDay() + 6) % 7;
+
+  const trainedDays = new Set();
+  for (const e of all) {
+    const d = new Date(e.ts);
+    if (d.getFullYear() === year && d.getMonth() === month) trainedDays.add(d.getDate());
+  }
+
+  const dowHdrs = ['M','T','W','T','F','S','S'].map(l => `<span>${l}</span>`).join('');
+  const empties = Array(startOffset).fill('<div class="heat-cell h-empty"></div>').join('');
+
+  let cells = '';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const isToday  = d === todayNum;
+    const isFuture = d > todayNum;
+    const trained  = trainedDays.has(d);
+    let cls = 'heat-cell';
+    if (isFuture)       cls += ' h-future';
+    else if (isToday)   cls += trained ? ' h-trained h-today' : ' h-today';
+    else if (trained)   cls += ' h-trained';
+    else                cls += ' h-rest';
+    cells += `<div class="${cls}">${d}</div>`;
+  }
+
+  return `
+    <div class="progress-section-card">
+      <div class="progress-section-title">TRAINING THIS MONTH</div>
+      <div class="heat-dow">${dowHdrs}</div>
+      <div class="heat-grid">${empties}${cells}</div>
+      <div class="heat-legend">
+        <div class="heat-legend-sq" style="background:#1A1A1A"></div>
+        <span class="heat-legend-label">rest</span>
+        <div class="heat-legend-sq" style="background:#5B4EFF"></div>
+        <span class="heat-legend-label">trained</span>
+      </div>
+    </div>
+  `;
+}
+
+function buildMuscleBreakdown() {
+  const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+  const now = new Date();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  monday.setHours(0, 0, 0, 0);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 7);
+
+  const muscleSets = {};
+  for (const e of all) {
+    const d = new Date(e.ts);
+    if (d >= monday && d < sunday) {
+      const m = MUSCLE_MAP[e.exerciseName];
+      if (m) muscleSets[m] = (muscleSets[m] || 0) + 1;
+    }
+  }
+
+  const entries = Object.entries(muscleSets).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return '';
+
+  const maxSets = entries[0][1];
+  const barColor = s => s / maxSets >= 0.75 ? '#5B4EFF' : s / maxSets >= 0.4 ? '#4A3FE0' : '#2E28A0';
+
+  const rows = entries.map(([muscle, sets]) => `
+    <div class="muscle-row">
+      <div class="muscle-name">${muscle}</div>
+      <div class="muscle-track">
+        <div class="muscle-fill" style="width:${Math.round((sets/maxSets)*100)}%;background:${barColor(sets)}"></div>
+      </div>
+      <div class="muscle-count">${sets} sets</div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="progress-section-card">
+      <div class="progress-section-title">THIS WEEK — MUSCLE GROUPS</div>
+      <div class="muscle-grid">${rows}</div>
+    </div>
+  `;
+}
+
+function buildSessionCards() {
+  const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+  if (!all.length) return '';
+
+  const sorted = [...all].sort((a, b) => a.ts - b.ts);
+  const sessions = [];
+  let cur = [sorted[0]];
+  for (let i = 1; i < sorted.length; i++) {
+    sorted[i].ts - sorted[i - 1].ts < 10800000 ? cur.push(sorted[i]) : (sessions.push(cur), cur = [sorted[i]]);
+  }
+  sessions.push(cur);
+
+  // All-time best weight per exercise
+  const allTimeBest = {};
+  for (const e of all) {
+    if (e.weight > 0 && (!allTimeBest[e.exerciseName] || e.weight > allTimeBest[e.exerciseName]))
+      allTimeBest[e.exerciseName] = e.weight;
+  }
+
+  // Per-exercise averaged session history for ↑ detection
+  const exHistory = {};
+  for (const sess of sessions) {
+    const byEx = {};
+    for (const e of sess) { if (!byEx[e.exerciseName]) byEx[e.exerciseName] = []; byEx[e.exerciseName].push(e); }
+    for (const [name, entries] of Object.entries(byEx)) {
+      const vals = entries.filter(e => e.weight > 0).map(e => e.weight);
+      if (!vals.length) continue;
+      const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10;
+      if (!exHistory[name]) exHistory[name] = [];
+      exHistory[name].push({ sessionTs: sess[0].ts, avgWeight: avg });
+    }
+  }
+
+  const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const WDAYS  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  return sessions.slice(-10).reverse().map(sess => {
+    const d = new Date(sess[0].ts);
+    const workoutLabel = inferWorkoutLabel([...new Set(sess.map(e => e.exerciseName))]);
+    const dateStr = `${DAYS[d.getDay()]} ${MONTHS[d.getMonth()]} ${d.getDate()} · ${workoutLabel}`;
+    const dur = Math.max(20, Math.round((sess[sess.length - 1].ts - sess[0].ts) / 60000));
+
+    const byEx = {};
+    for (const e of sess) { if (!byEx[e.exerciseName]) byEx[e.exerciseName] = []; byEx[e.exerciseName].push(e); }
+
+    const exRows = Object.entries(byEx).map(([name, entries]) => {
+      const vals = entries.filter(e => e.weight > 0).map(e => e.weight);
+      if (!vals.length) return '';
+      const avg = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10;
+      const maxLogged = Math.max(...vals);
+      const hist = exHistory[name] || [];
+      const idx  = hist.findIndex(h => h.sessionTs === sess[0].ts);
+      const isUp = idx > 0 && avg > hist[idx - 1].avgWeight;
+      const isPB = idx > 0 && maxLogged >= (allTimeBest[name] || 0);
+      return `
+        <div class="session-summary-ex">
+          <span class="session-ex-name">${name}</span>
+          <div class="session-ex-right">
+            <span class="session-ex-weight">${avg} kg</span>
+            ${isUp ? `<span class="session-ex-up">↑</span>` : ''}
+            ${isPB ? `<span class="session-ex-pb">PB</span>` : ''}
+          </div>
+        </div>
+      `;
+    }).filter(Boolean).join('');
+
+    if (!exRows) return '';
+    return `
+      <div class="session-summary-card">
+        <div class="session-summary-hdr">
+          <span class="session-summary-date">${dateStr}</span>
+          <span class="session-summary-badge">${dur} min</span>
+        </div>
+        ${exRows}
+      </div>
+    `;
+  }).filter(Boolean).join('');
+}
+
 function renderProgress() {
   const container = document.getElementById('screen-container');
-  const data = getProgressData();
-  const names = Object.keys(data);
+  const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
 
-  if (!names.length) {
+  if (!all.length) {
     container.innerHTML = `
       <div class="progress-screen">
         <div class="progress-empty">
@@ -1360,55 +1583,13 @@ function renderProgress() {
     return;
   }
 
-  // Sort by most recently used
-  names.sort((a, b) => data[b][data[b].length - 1].ts - data[a][data[a].length - 1].ts);
-
-  const cards = names.map(name => {
-    const sessions = data[name];
-    const last = sessions[sessions.length - 1];
-    const prev = sessions[sessions.length - 2];
-
-    let trend = 'new';
-    let trendLabel = 'First session';
-    let trendClass = 'trend-new';
-    if (prev) {
-      const diff = Math.round((last.avgWeight - prev.avgWeight) * 10) / 10;
-      if (diff > 0)      { trend = 'up';   trendLabel = `↑ +${diff} kg`;   trendClass = 'trend-up';   }
-      else if (diff < 0) { trend = 'down'; trendLabel = `↓ ${diff} kg`;    trendClass = 'trend-down'; }
-      else               { trend = 'same'; trendLabel = '→ same weight';    trendClass = 'trend-same'; }
-    }
-
-    const miniChart = sessions.length >= 2 ? buildMiniChart(sessions) : '';
-    const sessionCount = sessions.length;
-
-    return `
-      <div class="progress-card" data-name="${name}">
-        <div class="progress-card-top">
-          <div class="progress-card-name">${name}</div>
-          <span class="progress-trend ${trendClass}">${trendLabel}</span>
-        </div>
-        <div class="progress-card-meta">${last.avgWeight} kg avg · ${sessionCount} session${sessionCount > 1 ? 's' : ''}</div>
-        ${miniChart ? `<div class="progress-mini-chart">${miniChart}</div>` : ''}
-      </div>
-    `;
-  }).join('');
-
   container.innerHTML = `
     <div class="progress-screen">
-      <div class="progress-header">
-        <span class="progress-title">Progress</span>
-        <span class="progress-subtitle">${names.length} exercise${names.length > 1 ? 's' : ''} tracked</span>
-      </div>
-      <div class="progress-list">${cards}</div>
+      ${buildTrainingHeatmap()}
+      ${buildMuscleBreakdown()}
+      ${buildSessionCards()}
     </div>
   `;
-
-  container.querySelectorAll('.progress-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const name = card.dataset.name;
-      renderExerciseDetail(name, data[name]);
-    });
-  });
 }
 
 function renderExerciseDetail(name, sessions) {

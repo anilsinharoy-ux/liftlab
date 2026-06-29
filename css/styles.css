@@ -3216,3 +3216,211 @@ input {
   border-radius: 50%;
   flex-shrink: 0;
 }
+
+/* ========================
+   PROGRESS TAB — REDESIGN
+   ======================== */
+
+.progress-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 14px 32px;
+}
+
+.progress-section-card {
+  background: #111111;
+  border: 1px solid #1C1C1C;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.progress-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: #555566;
+  margin-bottom: 12px;
+}
+
+/* --- Heatmap --- */
+
+.heat-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.heat-dow span {
+  text-align: center;
+  font-size: 10px;
+  color: #404055;
+  font-weight: 500;
+}
+
+.heat-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.heat-cell {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.heat-cell.h-empty    { background: transparent; }
+.heat-cell.h-future   { background: transparent; color: #2a2a3a; }
+.heat-cell.h-rest     { background: #1A1A1A; color: #303040; }
+.heat-cell.h-trained  { background: #5B4EFF; color: #ffffff; }
+.heat-cell.h-today    { background: #1C1C1C; color: #7B70FF; border: 1px solid #3a3480; }
+
+.heat-legend {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.heat-legend-sq {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.heat-legend-label {
+  font-size: 10px;
+  color: #404055;
+  margin-right: 8px;
+}
+
+/* --- Muscle breakdown --- */
+
+.muscle-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.muscle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.muscle-name {
+  font-size: 12px;
+  color: #ccccdd;
+  width: 72px;
+  flex-shrink: 0;
+}
+
+.muscle-track {
+  flex: 1;
+  height: 6px;
+  background: #1C1C1C;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.muscle-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.muscle-count {
+  font-size: 11px;
+  color: #555566;
+  width: 44px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* --- Session cards --- */
+
+.session-summary-card {
+  background: #111111;
+  border: 1px solid #1C1C1C;
+  border-radius: 14px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.session-summary-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.session-summary-date {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ccccdd;
+}
+
+.session-summary-badge {
+  font-size: 10px;
+  font-weight: 500;
+  color: #7B70FF;
+  background: rgba(91,78,255,0.12);
+  border: 1px solid rgba(91,78,255,0.2);
+  border-radius: 8px;
+  padding: 2px 8px;
+}
+
+.session-summary-ex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.session-ex-name {
+  font-size: 12px;
+  color: #888899;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-ex-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.session-ex-weight {
+  font-size: 12px;
+  font-weight: 500;
+  color: #ccccdd;
+}
+
+.session-ex-up {
+  font-size: 12px;
+  color: #22C55E;
+  font-weight: 700;
+}
+
+.session-ex-pb {
+  font-size: 10px;
+  font-weight: 700;
+  color: #F59E0B;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
