@@ -666,12 +666,12 @@ const PROGRAM_A = [
     label: 'Day 2 — Upper Pull',
     muscles: 'Back · Biceps',
     exercises: [
-      { name: 'Wide Grip Pull Down',                        sets: 3, reps: '8–12', rest: 60 },
-      { name: 'Chest Supported Machine Row',                sets: 3, reps: '8–12', rest: 60 },
-      { name: 'Narrow Grip Low Pulley Cable Row',           sets: 3, reps: '8–12', rest: 60 },
-      { name: 'EZ Bar Preacher Curl',                       sets: 2, reps: '8–12', rest: 45 },
-      { name: 'Standing Alternating Dumbbell Hammer Curl',  sets: 2, reps: '8–12', rest: 45 },
-      { name: 'Rope Face Pull',                             sets: 2, reps: '8–12', rest: 45 },
+      { name: 'Wide Grip Pull Down',                        sets: 3, reps: '8–12', rest: 60, image: 'images/Wide Grip Pull Down .jpeg' },
+      { name: 'Chest Supported Machine Row',                sets: 3, reps: '8–12', rest: 60, image: 'images/Chest Supported Machine Row .jpeg' },
+      { name: 'Narrow Grip Low Pulley Cable Row',           sets: 3, reps: '8–12', rest: 60, image: 'images/Narrow Grip Low Pulley Cable Row .jpeg' },
+      { name: 'EZ Bar Preacher Curl',                       sets: 2, reps: '8–12', rest: 45, image: 'images/EZ Bar Preacher Curl.jpg' },
+      { name: 'Standing Alternating Dumbbell Hammer Curl',  sets: 2, reps: '8–12', rest: 45, image: 'images/Standing Alternating Dumbbell Hammer Curl.jpeg' },
+      { name: 'Rope Face Pull',                             sets: 2, reps: '8–12', rest: 45, image: 'images/Rope Face Pull .jpeg' },
     ]
   },
   {
@@ -679,12 +679,12 @@ const PROGRAM_A = [
     label: 'Day 3 — Legs',
     muscles: 'Quads · Hamstrings · Calves',
     exercises: [
-      { name: 'Leg Curl Machine',       sets: 3, reps: '8–12',     rest: 60 },
-      { name: 'Leg Extension Machine',  sets: 3, reps: '8–12',     rest: 60 },
-      { name: 'Leg Press',              sets: 3, reps: '8–12',     rest: 60 },
-      { name: 'Hack Squat',             sets: 3, reps: '8–12',     rest: 60 },
-      { name: 'Barbell Walking Lunge',  sets: 2, reps: '10 each',  rest: 45 },
-      { name: 'Seated Calf Raise',      sets: 3, reps: '12–15',    rest: 45 },
+      { name: 'Leg Curl Machine',       sets: 3, reps: '8–12',     rest: 60, image: 'images/Leg Curl Machine .jpeg' },
+      { name: 'Leg Extension Machine',  sets: 3, reps: '8–12',     rest: 60, image: 'images/Leg Extension Machine.jpeg' },
+      { name: 'Leg Press',              sets: 3, reps: '8–12',     rest: 60, image: 'images/Leg Press .jpeg' },
+      { name: 'Hack Squat',             sets: 3, reps: '8–12',     rest: 60, image: 'images/Hack Squat .jpeg' },
+      { name: 'Barbell Walking Lunge',  sets: 2, reps: '10 each',  rest: 45, image: 'images/Walking Lunge .jpeg' },
+      { name: 'Seated Calf Raise',      sets: 3, reps: '12–15',    rest: 45, image: 'images/Seated Calf Raise .jpeg' },
     ]
   },
   {
@@ -692,12 +692,12 @@ const PROGRAM_A = [
     label: 'Day 4 — Full Body / Arms',
     muscles: 'Chest · Back · Arms',
     exercises: [
-      { name: 'Incline Dumbbell Bench Press',             sets: 3, reps: '8–12', rest: 60 },
-      { name: 'Narrow Grip Pull Down',                    sets: 3, reps: '8–12', rest: 60 },
-      { name: 'Narrow Grip Bench Press',                  sets: 2, reps: '8–12', rest: 60 },
-      { name: 'EZ Bar Bicep Curls',                       sets: 3, reps: '8–12', rest: 45 },
-      { name: 'EZ Bar Skullcrusher',                      sets: 2, reps: '8–12', rest: 45 },
-      { name: 'Dumbbell Rear Delt Lateral Raise',         sets: 2, reps: '8–12', rest: 45 },
+      { name: 'Incline Dumbbell Bench Press',             sets: 3, reps: '8–12', rest: 60, image: 'images/Incline Dumbbell Bench Press .jpeg' },
+      { name: 'Narrow Grip Pull Down',                    sets: 3, reps: '8–12', rest: 60, image: 'images/Wide Grip Pull Down .jpeg' },
+      { name: 'Narrow Grip Bench Press',                  sets: 2, reps: '8–12', rest: 60, image: 'images/Narrow Grip Bench Press .jpeg' },
+      { name: 'EZ Bar Bicep Curls',                       sets: 3, reps: '8–12', rest: 45, image: 'images/EZ Bar Preacher Curl.jpg' },
+      { name: 'EZ Bar Skullcrusher',                      sets: 2, reps: '8–12', rest: 45, image: 'images/EZ Bar Skullcrusher .jpeg' },
+      { name: 'Dumbbell Rear Delt Lateral Raise',         sets: 2, reps: '8–12', rest: 45, image: 'images/Dumbbell Rear Delt Lateral Raise .jpeg' },
     ]
   }
 ];
