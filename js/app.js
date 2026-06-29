@@ -710,7 +710,7 @@ const PROGRAM_B = [
     hasWarmup: true,
     warmupDuration: 300,
     exercises: [
-      { name: 'Back Squat',     sets: 4, reps: '5',  rest: 120, image: 'images/Back Squat .webp' },
+      { name: 'Back Squat',     sets: 4, reps: '5',  rest: 120, image: 'images/Back Squat.jpeg' },
       { name: 'Strict Pull-ups', sets: 3, reps: '8', rest: 90,  image: 'images/Strict Pull-ups .jpeg' },
     ],
     wod: {
@@ -720,7 +720,7 @@ const PROGRAM_B = [
       movements: [
         { name: 'Front Squats',      reps: '10 reps', image: 'images/Front Squats .jpeg' },
         { name: 'Burpees',           reps: '10 reps', image: 'images/Burpees .jpeg' },
-        { name: 'Kettlebell Swings', reps: '10 reps', image: 'images/kettlebell.jpg' },
+        { name: 'Kettlebell Swings', reps: '10 reps', image: 'images/Kettlebell swings.jpeg' },
       ],
     },
   },
@@ -740,7 +740,7 @@ const PROGRAM_B = [
       label: 'EMOM 12 min',
       movements: [
         { name: 'Wall Balls',        reps: '15 reps', minute: 1, image: 'images/Wall Balls.jpeg' },
-        { name: 'Kettlebell Swings', reps: '12 reps', minute: 2, image: 'images/kettlebell.jpg' },
+        { name: 'Kettlebell Swings', reps: '12 reps', minute: 2, image: 'images/Kettlebell swings.jpeg' },
         { name: 'V-Ups',             reps: '10 reps', minute: 3, image: 'images/V-Ups.jpeg' },
       ],
     },
@@ -760,7 +760,7 @@ const PROGRAM_B = [
       rounds: 4,
       label: '4 Rounds for Time',
       movements: [
-        { name: 'Hang Power Cleans',       reps: '10 reps', image: 'images/Power clean.webp' },
+        { name: 'Hang Power Cleans',       reps: '10 reps', image: 'images/Hang Power Clean.jpeg' },
         { name: 'Lateral Barbell Burpees', reps: '12 reps', image: 'images/Burpees .jpeg' },
         { name: 'Push-ups',                reps: '10 reps', image: 'images/Push-ups.jpeg' },
       ],
@@ -781,7 +781,7 @@ const PROGRAM_B = [
       rounds: 3,
       label: '3 Rounds for Time',
       movements: [
-        { name: 'Thrusters',        reps: '15 reps', image: 'images/thrusters.webp' },
+        { name: 'Thrusters',        reps: '15 reps', image: 'images/Thrusters.jpeg' },
         { name: 'Push-ups',         reps: '12 reps', image: 'images/Push-ups.jpeg' },
         { name: 'Burpees Over Bar', reps: '10 reps', image: 'images/Burpees .jpeg' },
       ],
