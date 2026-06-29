@@ -3113,3 +3113,106 @@ input {
 .wt-start-btn:active {
   opacity: 0.85;
 }
+
+/* ========================
+   SUPPLEMENT STREAK TRACKER
+   ======================== */
+
+.streak-card {
+  background: #111111;
+  border: 1px solid #1C1C1C;
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.streak-number {
+  font-size: 36px;
+  font-weight: 500;
+  color: #5B4EFF;
+  line-height: 1;
+}
+
+.streak-label {
+  font-size: 11px;
+  color: #555566;
+  margin-top: 2px;
+}
+
+.freeze-badge {
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.25);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: #F59E0B;
+}
+
+.streak-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.streak-cal-hdr {
+  font-size: 9px;
+  color: #333344;
+  text-align: center;
+  padding: 2px 0;
+}
+
+.streak-day {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: #222233;
+}
+
+.streak-day.done {
+  background: #5B4EFF;
+  color: #ffffff;
+}
+
+.streak-day.today {
+  background: #4A3FE0;
+  color: #ffffff;
+  border: 2px solid #7B70FF;
+}
+
+.streak-day.freeze {
+  background: rgba(245,158,11,0.15);
+  color: #F59E0B;
+  border: 1px solid rgba(245,158,11,0.3);
+}
+
+.streak-day.missed {
+  background: #1C1C1C;
+  color: #2a2a3a;
+}
+
+.streak-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.streak-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #555566;
+}
+
+.streak-leg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}

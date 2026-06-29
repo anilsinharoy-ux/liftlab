@@ -522,7 +522,124 @@ function saveCheckedSupps(checked) {
   localStorage.setItem('liftlab_supps', JSON.stringify({ date: getTodayKey(), checked }));
 }
 
+// ========================
+// STREAK TRACKING
+// ========================
+
+function getStreakData() {
+  const raw = localStorage.getItem('liftlab_streak');
+  if (!raw) return { currentStreak: 0, freezeUsed: false, lastCompleteDay: null, history: {} };
+  try { return JSON.parse(raw); } catch(e) { return { currentStreak: 0, freezeUsed: false, lastCompleteDay: null, history: {} }; }
+}
+
+function saveStreakData(data) {
+  localStorage.setItem('liftlab_streak', JSON.stringify(data));
+}
+
+function keyToDate(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+function processStreakMissedDays() {
+  const data = getStreakData();
+  if (!data.lastCompleteDay) return data;
+  const todayDate = new Date();
+  todayDate.setHours(0, 0, 0, 0);
+  let cursor = keyToDate(data.lastCompleteDay);
+  cursor.setDate(cursor.getDate() + 1);
+  let changed = false;
+  while (cursor < todayDate) {
+    const key = `${cursor.getFullYear()}-${cursor.getMonth() + 1}-${cursor.getDate()}`;
+    if (!data.history[key]) {
+      if (!data.freezeUsed) {
+        data.history[key] = 'freeze';
+        data.freezeUsed = true;
+      } else {
+        data.history[key] = 'missed';
+        data.currentStreak = 0;
+        data.freezeUsed = false;
+      }
+      changed = true;
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  if (changed) saveStreakData(data);
+  return data;
+}
+
+function markTodayDone() {
+  const data = processStreakMissedDays();
+  const today = getTodayKey();
+  if (data.history[today] === 'done') return;
+  data.history[today] = 'done';
+  data.currentStreak += 1;
+  data.freezeUsed = false;
+  data.lastCompleteDay = today;
+  saveStreakData(data);
+}
+
+function buildStreakCalendar(data) {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const todayNum = now.getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const startOffset = (new Date(year, month, 1).getDay() + 6) % 7;
+  const hdrs = ['M','T','W','T','F','S','S'].map(l => `<div class="streak-cal-hdr">${l}</div>`).join('');
+  const blanks = Array(startOffset).fill('<div></div>').join('');
+  let cells = '';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = `${year}-${month + 1}-${d}`;
+    const status = data.history[key];
+    const isToday = d === todayNum;
+    const isFuture = new Date(year, month, d) > new Date(year, month, todayNum);
+    if (isFuture) {
+      cells += `<div class="streak-day" style="color:#222233;background:transparent">${d}</div>`;
+    } else if (isToday) {
+      cells += `<div class="streak-day ${status === 'done' ? 'done ' : ''}today">${d}</div>`;
+    } else if (status === 'done') {
+      cells += `<div class="streak-day done">${d}</div>`;
+    } else if (status === 'freeze') {
+      cells += `<div class="streak-day freeze">${d}</div>`;
+    } else if (status === 'missed') {
+      cells += `<div class="streak-day missed">${d}</div>`;
+    } else {
+      cells += `<div class="streak-day" style="color:#222233">${d}</div>`;
+    }
+  }
+  return `<div class="streak-cal-grid">${hdrs}${blanks}${cells}</div>`;
+}
+
+function renderStreakCard(data) {
+  const freezeLabel = data.freezeUsed ? '0 freezes left' : '1 freeze left';
+  return `
+    <div class="streak-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px">
+        <div>
+          <div class="streak-number">${data.currentStreak}</div>
+          <div class="streak-label">day streak</div>
+        </div>
+        <div class="freeze-badge">${freezeLabel}</div>
+      </div>
+      ${buildStreakCalendar(data)}
+      <div class="streak-legend">
+        <div class="streak-leg-item">
+          <div class="streak-leg-dot" style="background:#5B4EFF"></div>taken
+        </div>
+        <div class="streak-leg-item">
+          <div class="streak-leg-dot" style="background:rgba(245,158,11,0.5);border:1px solid rgba(245,158,11,0.3)"></div>freeze day
+        </div>
+        <div class="streak-leg-item">
+          <div class="streak-leg-dot" style="background:#1C1C1C"></div>missed
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderSupps(editMode = false) {
+  const streakData = editMode ? getStreakData() : processStreakMissedDays();
   const container = document.getElementById('screen-container');
   const list = getSuppsCustomList();
   const checked = getCheckedSupps();
@@ -570,6 +687,8 @@ function renderSupps(editMode = false) {
           : `<button class="supps-edit-btn" id="supps-edit-toggle">Edit</button>`
         }
       </div>
+
+      ${!editMode ? renderStreakCard(streakData) : ''}
 
       ${!editMode ? `
         <div class="supps-header-row">
@@ -634,6 +753,7 @@ function renderSupps(editMode = false) {
           ? current.filter(n => n !== name)
           : [...current, name];
         saveCheckedSupps(updated);
+        if (getSuppsCustomList().every(s => updated.includes(s.name))) markTodayDone();
         renderSupps();
       });
     });
