@@ -179,20 +179,21 @@ function renderHome() {
     </div>`;
   }).join('');
 
-  // Full 7-day calendar below
+  // Full 7-day calendar
   const calRows = dayLetters.map((ltr, i) => {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
     const dk = dateToDayKey(d);
-    const isToday = dk === todayKey;
-    const isPast  = d < new Date() && !isToday;
+    const isToday   = dk === todayKey;
+    const isPast    = d < new Date() && !isToday;
     const isWorkout = scheduled.includes(i);
     const ci = state ? state.checkins[dk] : null;
     let cls = '';
     if (isToday) cls = 'today';
-    else if (isPast && isWorkout && ci === 'yes') cls = 'completed';
+    else if (isPast && isWorkout && ci === 'yes') cls = 'done';
     else if (isPast && isWorkout && ci === 'no')  cls = 'missed';
     else if (!isWorkout) cls = 'rest';
+    else cls = 'upcoming';
     const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     return `<div class="home-cal-day ${cls}">
       <span class="home-cal-day-lbl">${dayNames[i]}</span>
@@ -209,15 +210,15 @@ function renderHome() {
 
   const statsHTML = isRestDay ? '' : `
     <div class="home-stats-row">
-      <div class="home-stat-item">
+      <div class="home-stat-card">
         <div class="home-stat-val">30</div>
         <div class="home-stat-lbl">Minutes</div>
       </div>
-      <div class="home-stat-item">
+      <div class="home-stat-card">
         <div class="home-stat-val">${exCount}</div>
         <div class="home-stat-lbl">Exercises</div>
       </div>
-      <div class="home-stat-item">
+      <div class="home-stat-card">
         <div class="home-stat-val">${hasBuf ? '+10' : '—'}</div>
         <div class="home-stat-lbl">Buffer</div>
       </div>
@@ -228,6 +229,22 @@ function renderHome() {
   const monday2 = getMondayDate();
   const sunday  = new Date(monday2); sunday.setDate(monday2.getDate() + 6);
   const rangeLabel = `${monday2.toLocaleDateString('en-CA',{month:'short',day:'numeric'})} – ${sunday.toLocaleDateString('en-CA',{month:'short',day:'numeric'})}`;
+
+  const calendarCardHTML = `
+    <div class="home-cal-card">
+      <div class="home-cal-header">
+        <span class="home-cal-title">This week</span>
+        <span class="home-cal-range">${rangeLabel}</span>
+      </div>
+      <div class="home-cal-row">${calRows}</div>
+      <div class="home-cal-legend">
+        <div class="home-leg-item"><div class="home-leg-dot" style="background:#22C55E;"></div><span>today</span></div>
+        <div class="home-leg-item"><div class="home-leg-dot" style="background:#5B4EFF;"></div><span>done</span></div>
+        <div class="home-leg-item"><div class="home-leg-dot" style="background:#F59E0B;"></div><span>missed</span></div>
+        <div class="home-leg-item"><div class="home-leg-dot" style="background:#1C1C1C; border:1px solid #333;"></div><span>rest</span></div>
+      </div>
+    </div>
+  `;
 
   const startBtnHTML = isRestDay ? '' : `
     <button class="home-start-btn" id="home-start-btn">Start workout →</button>
@@ -241,26 +258,16 @@ function renderHome() {
       <div class="home-hero-text">
         <div class="home-greeting">Good ${getTimeOfDay()}, Anil</div>
         <div class="home-hero-title">${titleLines}</div>
+        <div class="home-hero-sub-pill">
+          <div class="home-hero-sub-dot"></div>
+          <span class="home-hero-sub-text">${hero.sub}</span>
+        </div>
       </div>
     </div>
 
     <div class="home-dark-panel">
-      <div class="home-day-tag">
-        <div class="home-day-tag-dot"></div>
-        <span class="home-day-tag-text">${hero.sub}</span>
-      </div>
-      <div class="home-session-sub">${getTodayDateLabel()}${isRestDay ? '' : ` · ${exCount} exercises`}</div>
-
+      ${calendarCardHTML}
       ${statsHTML}
-
-      <div class="home-cal-section">
-        <div class="home-cal-header">
-          <span class="home-cal-title">This week</span>
-          <span class="home-cal-range">${rangeLabel}</span>
-        </div>
-        <div class="home-cal-row">${calRows}</div>
-      </div>
-
       ${startBtnHTML}
     </div>
   `;

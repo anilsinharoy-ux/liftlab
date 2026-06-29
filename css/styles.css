@@ -3424,3 +3424,108 @@ input {
   border-radius: 5px;
   padding: 1px 5px;
 }
+
+/* ========================
+   HOME SCREEN — REDESIGN
+   ======================== */
+
+.home-hero-sub-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(91, 78, 255, 0.2);
+  border: 1px solid rgba(91, 78, 255, 0.35);
+  border-radius: 20px;
+  padding: 3px 10px;
+  margin-top: 5px;
+}
+
+.home-hero-sub-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #7B70FF;
+  flex-shrink: 0;
+}
+
+.home-hero-sub-text {
+  font-size: 10px;
+  color: #9B90FF;
+}
+
+.home-cal-card {
+  background: #111111;
+  border: 1px solid #1C1C1C;
+  border-radius: 12px;
+  padding: 11px 12px;
+}
+
+.home-cal-legend {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.home-leg-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: #444455;
+}
+
+.home-leg-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.home-stat-card {
+  background: #111111;
+  border: 1px solid #1C1C1C;
+  border-radius: 10px;
+  padding: 10px 10px 8px;
+  border-top: 2px solid #5B4EFF;
+  flex: 1;
+}
+
+.home-cal-day.today .home-cal-day-num {
+  background: #22C55E;
+  color: #ffffff;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-cal-day.done .home-cal-day-num {
+  background: rgba(91, 78, 255, 0.18);
+  color: #7B70FF;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-cal-day.missed .home-cal-day-num {
+  background: rgba(245, 158, 11, 0.12);
+  color: #F59E0B;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-cal-day.today .home-cal-pip   { background: #22C55E; }
+.home-cal-day.done .home-cal-pip    { background: #5B4EFF; }
+.home-cal-day.missed .home-cal-pip  { background: #F59E0B; }
+.home-cal-day.rest .home-cal-pip    { background: transparent; }
+.home-cal-day.upcoming .home-cal-pip { background: #1C1C1C; }
