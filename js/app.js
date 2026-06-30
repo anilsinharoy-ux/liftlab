@@ -1739,7 +1739,7 @@ function buildSessionCards() {
         <div class="session-summary-ex">
           <span class="session-ex-name">${name}</span>
           <div class="session-ex-right">
-            <span class="session-ex-weight">${avg} kg</span>
+            <span class="session-ex-weight">${avg} lbs</span>
             ${isUp ? `<span class="session-ex-up">↑</span>` : ''}
             ${isPB ? `<span class="session-ex-pb">PB</span>` : ''}
           </div>
@@ -1823,8 +1823,8 @@ function renderExerciseDetail(name, sessions) {
   let trendClass = 'trend-new';
   if (prev) {
     const diff = Math.round((last.avgWeight - prev.avgWeight) * 10) / 10;
-    if (diff > 0)      { trendLabel = `↑ +${diff} kg this session`;  trendClass = 'trend-up';   }
-    else if (diff < 0) { trendLabel = `↓ ${diff} kg this session`;   trendClass = 'trend-down'; }
+    if (diff > 0)      { trendLabel = `↑ +${diff} lbs this session`;  trendClass = 'trend-up';   }
+    else if (diff < 0) { trendLabel = `↓ ${diff} lbs this session`;   trendClass = 'trend-down'; }
     else               { trendLabel = '→ Holding weight';             trendClass = 'trend-same'; }
   }
 
@@ -1834,7 +1834,7 @@ function renderExerciseDetail(name, sessions) {
     return `
       <div class="detail-row">
         <span class="detail-date">${dateStr}</span>
-        <span class="detail-weight">${s.avgWeight} kg</span>
+        <span class="detail-weight">${s.avgWeight} lbs</span>
         <span class="detail-sets">${s.sets} sets</span>
         <span class="detail-diff ${diffClass}">${s.difficulty || '—'}</span>
       </div>
@@ -1855,7 +1855,7 @@ function renderExerciseDetail(name, sessions) {
       <div class="detail-section-label">Recent sessions</div>
       <div class="detail-list-card">
         <div class="detail-list-header">
-          <span>Date</span><span>Avg kg</span><span>Sets</span><span>Feel</span>
+          <span>Date</span><span>Avg lbs</span><span>Sets</span><span>Feel</span>
         </div>
         ${recentRows}
       </div>
@@ -2261,7 +2261,7 @@ function getProgressionSuggestion(exerciseName) {
     const prevAllEasy = prev &&
       prev.map(l => l.difficulty).filter(Boolean).every(d => d === 'easy');
 
-    const bump = prevAllEasy ? 5 : 2.5;
+    const bump = prevAllEasy ? 10 : 5;
     const reason = prevAllEasy
       ? 'Easy 2 sessions running — increase weight'
       : 'Easy last time — try more';
@@ -2572,7 +2572,7 @@ function renderActiveExercise() {
   const progression = getProgressionSuggestion(ex.name);
   const progressionHint = progression && progression.reason ? `
     <div class="progression-hint">
-      <span class="progression-last">Last: ${progression.lastWeight} kg</span>
+      <span class="progression-last">Last: ${progression.lastWeight} lbs</span>
       <span class="progression-reason">${progression.reason}</span>
     </div>
   ` : '';
@@ -2621,8 +2621,8 @@ function renderActiveExercise() {
       <div class="weight-log-block">
         <span class="weight-log-label">Weight</span>
         <input type="number" class="weight-log-input" id="weight-input"
-               placeholder="0" value="${session.weight}" inputmode="decimal" min="0" step="0.5">
-        <span class="weight-log-unit">kg</span>
+               placeholder="0" value="${session.weight}" inputmode="decimal" min="0" step="2.5">
+        <span class="weight-log-unit">lbs</span>
       </div>
       ${progressionHint}
 
@@ -2783,7 +2783,7 @@ function renderSessionComplete() {
     return `
       <div class="session-summary-row">
         <span class="session-summary-name">${ex.name}</span>
-        <span class="session-summary-weight">${avgWeight ? avgWeight + ' kg' : '—'}</span>
+        <span class="session-summary-weight">${avgWeight ? avgWeight + ' lbs' : '—'}</span>
         <span class="session-summary-diff ${diffClass}">${lastDiff}</span>
       </div>
     `;
@@ -3110,6 +3110,21 @@ function getTodayKey() {
 // ========================
 // INIT
 // ========================
+function migrateWeightsToLbs() {
+  if (localStorage.getItem('liftlab_unit_migration_v1') === 'done') return;
+  const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+  const converted = all.map(entry => {
+    if (entry.weight) {
+      const lbs = entry.weight * 2.20462;
+      entry.weight = Math.round(lbs / 2.5) * 2.5;
+    }
+    return entry;
+  });
+  localStorage.setItem('liftlab_weights', JSON.stringify(converted));
+  localStorage.setItem('liftlab_unit_migration_v1', 'done');
+}
+
+migrateWeightsToLbs();
 document.getElementById('pause-workout-btn').addEventListener('click', togglePauseWorkout);
 
 if (!checkForActiveSession()) {
