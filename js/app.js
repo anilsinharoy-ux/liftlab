@@ -133,7 +133,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     if (btn.dataset.tab === 'workout') {
       if (session && session.paused) {
-        resumeWorkout();
+        togglePauseWorkout();
       } else if (session && !session.paused) {
         navigateTo('workout');
         renderActiveExercise();
@@ -338,7 +338,7 @@ function renderHome() {
   const returnCardEl = document.getElementById('active-return-card');
   if (returnCardEl) returnCardEl.addEventListener('click', () => {
     if (session && session.paused) {
-      resumeWorkout();
+      togglePauseWorkout();
     } else {
       navigateTo('workout');
       renderActiveExercise();
@@ -822,7 +822,7 @@ function renderSupps(editMode = false) {
   const returnCardEl = document.getElementById('active-return-card');
   if (returnCardEl) returnCardEl.addEventListener('click', () => {
     if (session && session.paused) {
-      resumeWorkout();
+      togglePauseWorkout();
     } else {
       navigateTo('workout');
       renderActiveExercise();
@@ -1728,7 +1728,7 @@ function renderProgress() {
   const returnCardEl = document.getElementById('active-return-card');
   if (returnCardEl) returnCardEl.addEventListener('click', () => {
     if (session && session.paused) {
-      resumeWorkout();
+      togglePauseWorkout();
     } else {
       navigateTo('workout');
       renderActiveExercise();
@@ -2316,32 +2316,44 @@ function showWorkoutControls(show) {
   }
 }
 
-function pauseWorkout() {
-  clearRestTimer();
-  session.paused = true;
-  saveSession();
-  showWorkoutControls(false);
-  document.getElementById('app').classList.remove('session-active');
-  document.getElementById('app').classList.add('session-paused');
-  const banner = document.getElementById('active-session-banner');
-  if (banner) banner.classList.add('paused');
-  const label = document.getElementById('active-banner-label');
-  if (label) label.textContent = 'Workout paused — tap to resume';
-  navigateTo('home');
+function togglePauseWorkout() {
+  if (!session) return;
+  if (session.paused) {
+    session.paused = false;
+    saveSession();
+    document.getElementById('app').classList.remove('session-paused');
+    document.getElementById('app').classList.add('session-active');
+    const banner = document.getElementById('active-session-banner');
+    if (banner) banner.classList.remove('paused');
+    const label = document.getElementById('active-banner-label');
+    if (label) label.textContent = 'Session in progress';
+    renderActiveExercise();
+  } else {
+    clearRestTimer();
+    session.paused = true;
+    saveSession();
+    document.getElementById('app').classList.remove('session-active');
+    document.getElementById('app').classList.add('session-paused');
+    const banner = document.getElementById('active-session-banner');
+    if (banner) banner.classList.add('paused');
+    const label = document.getElementById('active-banner-label');
+    if (label) label.textContent = 'Workout paused — tap to resume';
+    updatePauseButtonUI();
+  }
 }
 
-function resumeWorkout() {
-  if (!session) return;
-  session.paused = false;
-  saveSession();
-  document.getElementById('app').classList.remove('session-paused');
-  document.getElementById('app').classList.add('session-active');
-  const banner = document.getElementById('active-session-banner');
-  if (banner) banner.classList.remove('paused');
-  const label = document.getElementById('active-banner-label');
-  if (label) label.textContent = 'Session in progress';
-  navigateTo('workout');
-  renderActiveExercise();
+function updatePauseButtonUI() {
+  const btn = document.getElementById('pause-workout-btn');
+  if (!btn) return;
+  if (session && session.paused) {
+    btn.textContent = 'Resume';
+    btn.classList.remove('pause-btn');
+    btn.classList.add('resume-btn');
+  } else {
+    btn.textContent = 'Pause';
+    btn.classList.remove('resume-btn');
+    btn.classList.add('pause-btn');
+  }
 }
 
 function endWorkoutPrompt() {
@@ -2576,8 +2588,8 @@ function renderActiveExercise() {
 
   document.getElementById('log-set-btn').addEventListener('click', logCurrentSet);
 
-  document.getElementById('pause-workout-btn').addEventListener('click', pauseWorkout);
   document.getElementById('end-workout-btn').addEventListener('click', endWorkoutPrompt);
+  updatePauseButtonUI();
 }
 
 function handleRestBtn() {
@@ -3020,6 +3032,8 @@ function getTodayKey() {
 // ========================
 // INIT
 // ========================
+document.getElementById('pause-workout-btn').addEventListener('click', togglePauseWorkout);
+
 if (!checkForActiveSession()) {
   navigateTo('home');
 }

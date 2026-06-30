@@ -3820,6 +3820,18 @@ input {
   cursor: pointer;
 }
 
+.resume-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #5B4EFF, #7B70FF);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 #bottom-nav.hidden { display: none; }
 
 .confirm-overlay {
