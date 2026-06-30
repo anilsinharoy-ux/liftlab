@@ -279,6 +279,7 @@ function renderHome() {
         <div class="home-checkin-btns">
           <button class="home-checkin-yes" id="checkin-yes">Yes, let's go</button>
           <button class="home-checkin-rest" id="checkin-rest">Rest day</button>
+          <button class="home-checkin-skip" id="checkin-skip">Skip</button>
         </div>
       </div>
       ${calendarCardHTML}
@@ -304,6 +305,14 @@ function renderHome() {
         </div>
       </div>
       <button class="home-start-btn" id="home-start-btn">Start workout →</button>
+    `;
+  } else if (todayAns === 'skip') {
+    darkPanelContent = `
+      ${calendarCardHTML}
+      <div class="home-rest-card">
+        <div class="home-rest-title">Workout skipped</div>
+        <div class="home-rest-sub">Buffer queued for your next session</div>
+      </div>
     `;
   } else {
     // State 3 — rest day: calendar + rest card
@@ -360,6 +369,9 @@ function renderHome() {
     localStorage.setItem(checkinKey, 'rest');
     renderHome();
   });
+
+  const skipBtn = document.getElementById('checkin-skip');
+  if (skipBtn) skipBtn.addEventListener('click', () => showSkipConfirm(currentDayIndex));
 
   const homeStartBtn = document.getElementById('home-start-btn');
   if (homeStartBtn) homeStartBtn.addEventListener('click', () => {
@@ -2302,6 +2314,73 @@ function showMissedDayModal(missed, bufExercises, onDone) {
   });
 }
 
+function getCurrentWeekKey() {
+  return getWeekState().mondayKey;
+}
+
+function queueDayBuffer(dayIndex) {
+  const weekState = getWeekState();
+  const shortlists = weekState.weekType === 'B' ? CROSSFIT_BUFFER_SHORTLISTS : BUFFER_SHORTLISTS;
+  const bufExercises = shortlists[dayIndex] || shortlists[0];
+  const program = getWeekProgram();
+  const queue = JSON.parse(localStorage.getItem('liftlab_buffer_queue') || '[]');
+  const thisWeek = getCurrentWeekKey();
+  const filtered = queue.filter(q => q.weekKey !== thisWeek);
+  filtered.push({
+    dayIndex,
+    dayLabel: program[dayIndex].label,
+    exercises: bufExercises,
+    queuedAt: Date.now(),
+    weekKey: thisWeek,
+  });
+  localStorage.setItem('liftlab_buffer_queue', JSON.stringify(filtered));
+}
+
+function getPendingBuffer() {
+  const queue = JSON.parse(localStorage.getItem('liftlab_buffer_queue') || '[]');
+  const thisWeek = getCurrentWeekKey();
+  const thisWeekQueue = queue.filter(q => q.weekKey === thisWeek);
+  if (!thisWeekQueue.length) return null;
+  return thisWeekQueue[thisWeekQueue.length - 1];
+}
+
+function clearPendingBuffer() {
+  const queue = JSON.parse(localStorage.getItem('liftlab_buffer_queue') || '[]');
+  const thisWeek = getCurrentWeekKey();
+  localStorage.setItem('liftlab_buffer_queue', JSON.stringify(
+    queue.filter(q => q.weekKey !== thisWeek)
+  ));
+}
+
+function showSkipConfirm(dayIndex) {
+  const program = getWeekProgram();
+  const dayName = program[dayIndex].label;
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `
+    <div class="confirm-card">
+      <div class="confirm-title">Skip ${dayName}?</div>
+      <div class="confirm-sub">Key exercises will be added to<br>your next workout this week.</div>
+      <div class="confirm-btns">
+        <button class="confirm-yes confirm-yes-skip" id="confirm-skip-yes">Skip this day</button>
+        <button class="confirm-no" id="confirm-skip-no">Cancel</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('app').appendChild(overlay);
+
+  document.getElementById('confirm-skip-yes').addEventListener('click', () => {
+    queueDayBuffer(dayIndex);
+    localStorage.setItem(`liftlab_checkin_${getTodayKey()}`, 'skip');
+    overlay.remove();
+    renderHome();
+  });
+
+  document.getElementById('confirm-skip-no').addEventListener('click', () => {
+    overlay.remove();
+  });
+}
+
 function checkAndShowCheckins() {
   if (checkinsShown) return;
   // Only run the missed-day check once per session, and only after user has answered yes
@@ -2639,6 +2718,15 @@ function beginStrengthSession(dayIndex) {
     wod: day.wod || null,
     startedAt: Date.now(),
   };
+  const pending = getPendingBuffer();
+  if (pending) {
+    session.exercises = session.exercises.concat(pending.exercises);
+    session.hasBuffer = true;
+    session.bufferFromDay = pending.dayLabel;
+    clearPendingBuffer();
+  } else {
+    session.hasBuffer = false;
+  }
   session.weight = getSuggestedWeight(0);
   updateActiveBorder(true);
   saveSession();
