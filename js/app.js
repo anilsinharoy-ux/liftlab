@@ -746,7 +746,7 @@ function getStreakBadgeHTML() {
   return `
     <div class="supps-complete-streak">
       <i class="ti ti-flame" aria-hidden="true"></i>
-      ${count} day streak
+      <span id="supps-streak-count">0</span> day streak
     </div>
   `;
 }
@@ -755,8 +755,12 @@ function buildCompleteCardHTML() {
   const total = getSuppsCustomList().length;
   return `
     <div class="supps-complete-card" id="supps-complete-card">
-      <div class="supps-complete-ring">
-        <i class="ti ti-check supps-complete-icon" aria-hidden="true"></i>
+      <div class="supps-complete-ring-wrap">
+        <div class="supps-ripple"></div>
+        <div class="supps-ripple supps-ripple-delay"></div>
+        <div class="supps-complete-ring">
+          <i class="ti ti-check supps-complete-icon" aria-hidden="true"></i>
+        </div>
       </div>
       <div class="supps-complete-title">Stack complete</div>
       <div class="supps-complete-sub">All ${total} supplements logged for today</div>
@@ -766,15 +770,98 @@ function buildCompleteCardHTML() {
   `;
 }
 
-function renderSupps(editMode = false) {
-  const streakData = editMode ? getStreakData() : processStreakMissedDays();
-  const container = document.getElementById('screen-container');
+function buildChecklistHTML() {
   const list = getSuppsCustomList();
   const checked = getCheckedSupps();
   const total = list.length;
   const doneCount = checked.filter(n => list.some(s => s.name === n)).length;
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
-  const complete = !editMode && allSuppsComplete();
+  const complete = allSuppsComplete();
+  const noteHTML = (complete && suppsViewExpanded)
+    ? `<div class="supps-expanded-note">All ${total} taken today — uncheck any to edit</div>`
+    : '';
+  const rows = list.map(s => {
+    const isDone = checked.includes(s.name);
+    return `
+      <div class="supp-row ${isDone ? 'checked' : ''}" data-supp="${s.name}">
+        <div class="supp-check">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <span class="supp-name">${s.name}</span>
+        <span class="supp-time">${s.time}</span>
+      </div>
+    `;
+  }).join('');
+  return `
+    <div class="supps-header-row">
+      <span class="supps-progress-label">${doneCount} of ${total} taken</span>
+    </div>
+    <div class="supps-progress-bar-track">
+      <div class="supps-progress-bar-fill" style="width: ${pct}%"></div>
+    </div>
+    <div class="supps-list-card supps-checklist-card">
+      ${noteHTML}
+      ${rows}
+    </div>
+    <p class="supps-reset-note">Checklist resets automatically at midnight</p>
+  `;
+}
+
+function attachSuppsCheckboxListeners() {
+  document.querySelectorAll('.supp-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const name = row.dataset.supp;
+      const current = getCheckedSupps();
+      const updated = current.includes(name)
+        ? current.filter(n => n !== name)
+        : [...current, name];
+      saveCheckedSupps(updated);
+      if (getSuppsCustomList().every(s => updated.includes(s.name))) markTodayDone();
+      renderSuppsChecklistArea();
+    });
+  });
+}
+
+function animateStreakCount(finalCount) {
+  const el = document.getElementById('supps-streak-count');
+  if (!el) return;
+  const startValue = Math.max(0, finalCount - 1);
+  let current = startValue;
+  el.textContent = current;
+  if (startValue === finalCount) return;
+  setTimeout(() => {
+    const interval = setInterval(() => {
+      current++;
+      el.textContent = current;
+      if (current >= finalCount) clearInterval(interval);
+    }, 180);
+  }, 400);
+}
+
+function renderSuppsChecklistArea() {
+  const area = document.getElementById('supps-checklist-area');
+  if (!area) return;
+  const complete = allSuppsComplete();
+  if (complete && !suppsViewExpanded) {
+    area.innerHTML = buildCompleteCardHTML();
+    const streakData = JSON.parse(localStorage.getItem('liftlab_streak') || '{}');
+    animateStreakCount(streakData.currentStreak || 0);
+    document.getElementById('supps-complete-card').addEventListener('click', () => {
+      suppsViewExpanded = true;
+      renderSuppsChecklistArea();
+    });
+  } else {
+    area.innerHTML = buildChecklistHTML();
+    attachSuppsCheckboxListeners();
+  }
+}
+
+function renderSupps(editMode = false) {
+  const streakData = editMode ? getStreakData() : processStreakMissedDays();
+  const container = document.getElementById('screen-container');
+  const list = getSuppsCustomList();
 
   const _src_color = session && session.paused ? '#7B70FF' : '#22C55E';
   const returnCard = session ? `
@@ -790,68 +877,12 @@ function renderSupps(editMode = false) {
     </div>
   ` : '';
 
-  // Celebration card — shown when all supplements are checked and user hasn't expanded
-  if (complete && !suppsViewExpanded) {
-    container.innerHTML = `
-      <div class="supps-screen">
-        ${returnCard}
-        <div class="supps-screen-header">
-          <span class="supps-screen-title">Supplements</span>
-          <button class="supps-edit-btn" id="supps-edit-toggle">Edit</button>
-        </div>
-        ${buildCompleteCardHTML()}
-      </div>
-    `;
-
-    const returnCardEl = document.getElementById('active-return-card');
-    if (returnCardEl) returnCardEl.addEventListener('click', () => {
-      if (session && session.paused) {
-        togglePauseWorkout();
-      } else {
-        navigateTo('workout');
-        renderActiveExercise();
-      }
-    });
-
-    document.getElementById('supps-edit-toggle').addEventListener('click', () => {
-      renderSupps(true);
-    });
-
-    document.getElementById('supps-complete-card').addEventListener('click', () => {
-      suppsViewExpanded = true;
-      renderSupps();
-    });
-
-    return;
-  }
-
-  // Normal checklist view (incomplete, or user tapped to expand while complete)
-  const noteHTML = (complete && suppsViewExpanded)
-    ? `<div class="supps-expanded-note">All ${total} taken today — uncheck any to edit</div>`
-    : '';
-
-  const rows = list.map(s => {
-    const isDone = checked.includes(s.name);
-    if (editMode) {
-      return `
-        <div class="supp-row supp-row-edit">
-          <span class="supp-name">${s.name}</span>
-          <button class="supp-delete-btn" data-supp="${s.name}" aria-label="Remove ${s.name}">×</button>
-        </div>
-      `;
-    }
-    return `
-      <div class="supp-row ${isDone ? 'checked' : ''}" data-supp="${s.name}">
-        <div class="supp-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-        </div>
-        <span class="supp-name">${s.name}</span>
-        <span class="supp-time">${s.time}</span>
-      </div>
-    `;
-  }).join('');
+  const editRows = editMode ? list.map(s => `
+    <div class="supp-row supp-row-edit">
+      <span class="supp-name">${s.name}</span>
+      <button class="supp-delete-btn" data-supp="${s.name}" aria-label="Remove ${s.name}">×</button>
+    </div>
+  `).join('') : '';
 
   const addRow = editMode ? `
     <div class="supp-add-row">
@@ -875,23 +906,13 @@ function renderSupps(editMode = false) {
 
       ${!editMode ? renderStreakCard(streakData) : ''}
 
-      ${!editMode ? `
-        <div class="supps-header-row">
-          <span class="supps-progress-label">${doneCount} of ${total} taken</span>
+      <div id="supps-checklist-area">${editMode ? `
+        <div class="supps-list-card">
+          ${editRows}
         </div>
-        <div class="supps-progress-bar-track">
-          <div class="supps-progress-bar-fill" style="width: ${pct}%"></div>
-        </div>
-      ` : ''}
-
-      <div class="supps-list-card supps-checklist-card">
-        ${noteHTML}
-        ${rows}
-      </div>
-
-      ${addRow}
-
-      <p class="supps-reset-note">Checklist resets automatically at midnight</p>
+        ${addRow}
+        <p class="supps-reset-note">Checklist resets automatically at midnight</p>
+      ` : ''}</div>
 
     </div>
   `;
@@ -941,18 +962,7 @@ function renderSupps(editMode = false) {
       if (e.key === 'Enter') addBtn.click();
     });
   } else {
-    container.querySelectorAll('.supp-row').forEach(row => {
-      row.addEventListener('click', () => {
-        const name = row.dataset.supp;
-        const current = getCheckedSupps();
-        const updated = current.includes(name)
-          ? current.filter(n => n !== name)
-          : [...current, name];
-        saveCheckedSupps(updated);
-        if (getSuppsCustomList().every(s => updated.includes(s.name))) markTodayDone();
-        renderSupps();
-      });
-    });
+    renderSuppsChecklistArea();
   }
 }
 // ========================
