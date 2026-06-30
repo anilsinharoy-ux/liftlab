@@ -130,7 +130,20 @@ function navigateTo(tabName) {
 }
 
 document.querySelectorAll('.nav-btn').forEach(btn => {
-  btn.addEventListener('click', () => navigateTo(btn.dataset.tab));
+  btn.addEventListener('click', () => {
+    if (btn.dataset.tab === 'workout') {
+      if (session && session.paused) {
+        resumeWorkout();
+      } else if (session && !session.paused) {
+        navigateTo('workout');
+        renderActiveExercise();
+      } else {
+        navigateTo('workout');
+      }
+    } else {
+      navigateTo(btn.dataset.tab);
+    }
+  });
 });
 
 document.getElementById('header-week-badge').addEventListener('click', () => {
@@ -237,17 +250,18 @@ function renderHome() {
     </div>
   `;
 
-  // Return card — shown when a session is in progress and user is on a different tab
+  // Return card — shown when a session is in progress (active or paused)
+  const _rc_color = session && session.paused ? '#7B70FF' : '#22C55E';
   const returnCard = session ? `
     <div class="active-return-card" id="active-return-card">
       <div class="active-return-left">
-        <div class="active-return-dot"></div>
+        <div class="active-return-dot" style="background:${_rc_color};"></div>
         <div>
-          <div class="active-return-name">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
-          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}</div>
+          <div class="active-return-name" style="color:${_rc_color};">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
+          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}${session.paused ? ' · paused' : ''}</div>
         </div>
       </div>
-      <span class="active-return-cta">Return →</span>
+      <span class="active-return-cta" style="color:${_rc_color};">${session.paused ? 'Resume' : 'Return'} →</span>
     </div>
   ` : '';
 
@@ -323,8 +337,12 @@ function renderHome() {
   // Return card click
   const returnCardEl = document.getElementById('active-return-card');
   if (returnCardEl) returnCardEl.addEventListener('click', () => {
-    navigateTo('workout');
-    renderActiveExercise();
+    if (session && session.paused) {
+      resumeWorkout();
+    } else {
+      navigateTo('workout');
+      renderActiveExercise();
+    }
   });
 
   // Event listeners
@@ -752,16 +770,17 @@ function renderSupps(editMode = false) {
     </div>
   ` : '';
 
+  const _src_color = session && session.paused ? '#7B70FF' : '#22C55E';
   const returnCard = session ? `
     <div class="active-return-card" id="active-return-card">
       <div class="active-return-left">
-        <div class="active-return-dot"></div>
+        <div class="active-return-dot" style="background:${_src_color};"></div>
         <div>
-          <div class="active-return-name">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
-          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}</div>
+          <div class="active-return-name" style="color:${_src_color};">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
+          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}${session.paused ? ' · paused' : ''}</div>
         </div>
       </div>
-      <span class="active-return-cta">Return →</span>
+      <span class="active-return-cta" style="color:${_src_color};">${session.paused ? 'Resume' : 'Return'} →</span>
     </div>
   ` : '';
 
@@ -802,8 +821,12 @@ function renderSupps(editMode = false) {
 
   const returnCardEl = document.getElementById('active-return-card');
   if (returnCardEl) returnCardEl.addEventListener('click', () => {
-    navigateTo('workout');
-    renderActiveExercise();
+    if (session && session.paused) {
+      resumeWorkout();
+    } else {
+      navigateTo('workout');
+      renderActiveExercise();
+    }
   });
 
   document.getElementById('supps-edit-toggle').addEventListener('click', () => {
@@ -1664,16 +1687,17 @@ function renderProgress() {
   const container = document.getElementById('screen-container');
   const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
 
+  const _prc_color = session && session.paused ? '#7B70FF' : '#22C55E';
   const returnCard = session ? `
     <div class="active-return-card" id="active-return-card">
       <div class="active-return-left">
-        <div class="active-return-dot"></div>
+        <div class="active-return-dot" style="background:${_prc_color};"></div>
         <div>
-          <div class="active-return-name">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
-          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}</div>
+          <div class="active-return-name" style="color:${_prc_color};">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
+          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}${session.paused ? ' · paused' : ''}</div>
         </div>
       </div>
-      <span class="active-return-cta">Return →</span>
+      <span class="active-return-cta" style="color:${_prc_color};">${session.paused ? 'Resume' : 'Return'} →</span>
     </div>
   ` : '';
 
@@ -1703,8 +1727,12 @@ function renderProgress() {
 
   const returnCardEl = document.getElementById('active-return-card');
   if (returnCardEl) returnCardEl.addEventListener('click', () => {
-    navigateTo('workout');
-    renderActiveExercise();
+    if (session && session.paused) {
+      resumeWorkout();
+    } else {
+      navigateTo('workout');
+      renderActiveExercise();
+    }
   });
 }
 
@@ -2220,6 +2248,9 @@ function clearSession() {
   localStorage.removeItem('liftlab_active_session');
   session = null;
   updateActiveBorder(false);
+  showWorkoutControls(false);
+  // Also clear paused state if it was set
+  document.getElementById('app').classList.remove('session-paused');
 }
 
 function updateActiveBorder(isActive) {
@@ -2270,6 +2301,72 @@ function checkForActiveSession() {
     localStorage.removeItem('liftlab_active_session');
     return false;
   }
+}
+
+function showWorkoutControls(show) {
+  const nav      = document.getElementById('bottom-nav');
+  const controls = document.getElementById('workout-controls');
+  if (!nav || !controls) return;
+  if (show) {
+    nav.classList.add('hidden');
+    controls.classList.remove('hidden');
+  } else {
+    nav.classList.remove('hidden');
+    controls.classList.add('hidden');
+  }
+}
+
+function pauseWorkout() {
+  clearRestTimer();
+  session.paused = true;
+  saveSession();
+  showWorkoutControls(false);
+  document.getElementById('app').classList.remove('session-active');
+  document.getElementById('app').classList.add('session-paused');
+  const banner = document.getElementById('active-session-banner');
+  if (banner) banner.classList.add('paused');
+  const label = document.getElementById('active-banner-label');
+  if (label) label.textContent = 'Workout paused — tap to resume';
+  navigateTo('home');
+}
+
+function resumeWorkout() {
+  if (!session) return;
+  session.paused = false;
+  saveSession();
+  document.getElementById('app').classList.remove('session-paused');
+  document.getElementById('app').classList.add('session-active');
+  const banner = document.getElementById('active-session-banner');
+  if (banner) banner.classList.remove('paused');
+  const label = document.getElementById('active-banner-label');
+  if (label) label.textContent = 'Session in progress';
+  navigateTo('workout');
+  renderActiveExercise();
+}
+
+function endWorkoutPrompt() {
+  const container = document.getElementById('screen-container');
+  const overlay   = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `
+    <div class="confirm-card">
+      <div class="confirm-title">End this workout?</div>
+      <div class="confirm-sub">Your progress will be saved,<br>but the session will close.</div>
+      <div class="confirm-btns">
+        <button class="confirm-yes" id="confirm-end-yes">End workout</button>
+        <button class="confirm-no" id="confirm-end-no">Keep going</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(overlay);
+
+  document.getElementById('confirm-end-yes').addEventListener('click', () => {
+    overlay.remove();
+    renderSessionComplete();
+  });
+  document.getElementById('confirm-end-no').addEventListener('click', () => {
+    overlay.remove();
+  });
 }
 
 function showResumePrompt(saved) {
@@ -2371,6 +2468,7 @@ function formatTime(secs) {
 function renderActiveExercise() {
   clearRestTimer();
   if (!session) return;
+  showWorkoutControls(true);
 
   const ex = session.exercises[session.exIdx];
   const totalSets = session.exercises.reduce((acc, e) => acc + e.sets, 0);
@@ -2478,6 +2576,8 @@ function renderActiveExercise() {
 
   document.getElementById('log-set-btn').addEventListener('click', logCurrentSet);
 
+  document.getElementById('pause-workout-btn').addEventListener('click', pauseWorkout);
+  document.getElementById('end-workout-btn').addEventListener('click', endWorkoutPrompt);
 }
 
 function handleRestBtn() {
@@ -2579,6 +2679,7 @@ function advanceSession() {
 
 function renderSessionComplete() {
   clearRestTimer();
+  showWorkoutControls(false);
   const container = document.getElementById('screen-container');
   const totalSets = session.logs.length;
 
