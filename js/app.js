@@ -362,7 +362,9 @@ function renderHome() {
   });
 
   const homeStartBtn = document.getElementById('home-start-btn');
-  if (homeStartBtn) homeStartBtn.addEventListener('click', () => navigateTo('workout'));
+  if (homeStartBtn) homeStartBtn.addEventListener('click', () => {
+    playStartWorkoutAnimation(() => navigateTo('workout'));
+  });
 
   checkAndShowCheckins();
 }
@@ -1257,6 +1259,73 @@ function resetFullProgram(weekType) {
   localStorage.setItem('liftlab_program_edits', JSON.stringify(edits));
 }
 
+function playStartWorkoutAnimation(onComplete) {
+  const flash = document.createElement('div');
+  flash.className = 'start-flash';
+  document.getElementById('app').appendChild(flash);
+  requestAnimationFrame(() => { flash.classList.add('flash-active'); });
+  setTimeout(() => { flash.remove(); onComplete(); }, 350);
+}
+
+function isDayCompletedToday(dayIndex) {
+  const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+  const now = new Date();
+  return all.some(e => {
+    if (e.dayIndex !== dayIndex) return false;
+    const d = new Date(e.ts);
+    return d.getFullYear() === now.getFullYear() &&
+           d.getMonth() === now.getMonth() &&
+           d.getDate() === now.getDate();
+  });
+}
+
+function renderCompletedDayView(dayIndex) {
+  const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+  const now = new Date();
+  const todayEntries = all.filter(e => {
+    if (e.dayIndex !== dayIndex) return false;
+    const d = new Date(e.ts);
+    return d.getFullYear() === now.getFullYear() &&
+           d.getMonth() === now.getMonth() &&
+           d.getDate() === now.getDate();
+  });
+
+  const byEx = {};
+  for (const e of todayEntries) {
+    if (!byEx[e.exerciseName]) byEx[e.exerciseName] = [];
+    byEx[e.exerciseName].push(e);
+  }
+
+  const exRows = Object.entries(byEx).map(([name, entries], i) => {
+    const maxWeight = Math.max(...entries.map(e => e.weight || 0));
+    const sets = entries.length;
+    return `
+      <div class="completed-ex-row">
+        <span class="completed-ex-num">${i + 1}</span>
+        <div class="completed-ex-info">
+          <div class="completed-ex-name">${name}</div>
+          <div class="completed-ex-meta">${sets} set${sets !== 1 ? 's' : ''}${maxWeight > 0 ? ` · ${maxWeight} lbs` : ''}</div>
+        </div>
+        <span class="completed-ex-check">✓</span>
+      </div>
+    `;
+  }).join('');
+
+  return `
+    <div class="completed-view zoom-in-entrance">
+      <div class="completed-badge">
+        <div class="completed-icon">✓</div>
+        <div class="completed-title">Day complete</div>
+        <div class="completed-sub">Great work — come back tomorrow</div>
+      </div>
+      <div class="completed-ex-list">${exRows}</div>
+      <div class="wt-start-bar">
+        <button class="again-btn" id="wt-again-btn">Do it again →</button>
+      </div>
+    </div>
+  `;
+}
+
 function renderWorkout() {
   const weekState  = getWeekState();
   const weekType   = weekState.weekType;
@@ -1271,10 +1340,12 @@ function renderWorkout() {
   const baseDuration = isCrossFit ? 35 : 30;
   const durationMins = hasBuffer ? baseDuration + 10 : baseDuration;
   const photoUrl     = getWorkoutPhotoUrl(weekType, currentDayIndex);
+  const completedDays = program.map((_, i) => isDayCompletedToday(i));
+  const isCompleted   = completedDays[currentDayIndex];
 
   // Day selector pills
   const dayTabs = program.map((d, i) => `
-    <button class="wt-day-tab ${i === currentDayIndex ? 'active' : ''}" data-day="${i}">Day ${d.day}</button>
+    <button class="wt-day-tab ${i === currentDayIndex ? 'active' : ''} ${completedDays[i] ? 'done' : ''}" data-day="${i}">Day ${d.day}</button>
   `).join('');
 
   // Exercise cards — thumbnail uses day photo (reliable, no external API needed)
@@ -1372,6 +1443,7 @@ function renderWorkout() {
         <div class="wt-day-tabs">${dayTabs}</div>
       </div>
 
+      ${isCompleted ? renderCompletedDayView(currentDayIndex) : `
       <div class="wt-section">
         <div class="wt-section-header">
           <div class="wt-section-left">
@@ -1398,6 +1470,7 @@ function renderWorkout() {
       <div class="wt-start-bar">
         <button class="wt-start-btn" id="wt-start-btn">Start workout →</button>
       </div>
+      `}
 
     </div>
   `;
@@ -1411,8 +1484,16 @@ function renderWorkout() {
   });
 
   document.getElementById('wt-back-btn').addEventListener('click', () => navigateTo('home'));
-  document.getElementById('wt-start-btn').addEventListener('click', () => startActiveSession(currentDayIndex));
-  document.getElementById('wt-edit-btn').addEventListener('click', () => renderWorkoutEditor(currentDayIndex));
+  if (isCompleted) {
+    document.getElementById('wt-again-btn').addEventListener('click', () => {
+      playStartWorkoutAnimation(() => startActiveSession(currentDayIndex));
+    });
+  } else {
+    document.getElementById('wt-start-btn').addEventListener('click', () => {
+      playStartWorkoutAnimation(() => startActiveSession(currentDayIndex));
+    });
+    document.getElementById('wt-edit-btn').addEventListener('click', () => renderWorkoutEditor(currentDayIndex));
+  }
 
 }
 
