@@ -3919,3 +3919,104 @@ input {
   font-size: 12px;
   cursor: pointer;
 }
+
+/* ========================
+   SUPPS COMPLETE CARD
+   ======================== */
+
+.supps-complete-card {
+  background: linear-gradient(145deg, #111111 0%, #15123A 100%);
+  border: 1px solid rgba(91, 78, 255, 0.3);
+  border-radius: 16px;
+  padding: 26px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+  cursor: pointer;
+  animation: supps-complete-in 0.35s ease-out;
+}
+
+@keyframes supps-complete-in {
+  0%   { opacity: 0; transform: scale(0.92); }
+  70%  { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.supps-complete-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(91, 78, 255, 0.15);
+  border: 1px solid rgba(91, 78, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  animation: supps-ring-pop 0.3s ease-out 0.15s backwards;
+}
+
+@keyframes supps-ring-pop {
+  0%   { opacity: 0; transform: scale(0.5); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.supps-complete-icon {
+  color: #7B70FF;
+  font-size: 26px;
+}
+
+.supps-complete-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 4px;
+  letter-spacing: 0.2px;
+}
+
+.supps-complete-sub {
+  font-size: 12px;
+  color: #555566;
+  margin-bottom: 14px;
+}
+
+.supps-complete-streak {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(91, 78, 255, 0.1);
+  border: 1px solid rgba(91, 78, 255, 0.25);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 11px;
+  color: #7B70FF;
+  font-weight: 500;
+}
+
+.supps-complete-hint {
+  font-size: 9px;
+  color: #2A2A3A;
+  margin-top: 14px;
+  letter-spacing: 0.3px;
+}
+
+.supps-checklist-card {
+  animation: supps-checklist-in 0.2s ease-out;
+}
+
+@keyframes supps-checklist-in {
+  0%   { opacity: 0; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.supps-expanded-note {
+  background: #111111;
+  border: 1px solid #1C1C1C;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 11px;
+  color: #555566;
+  text-align: center;
+  margin-bottom: 10px;
+}

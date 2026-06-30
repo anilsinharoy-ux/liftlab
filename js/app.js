@@ -107,6 +107,7 @@ const tabs = {
 };
 
 let currentTab = 'home';
+let suppsViewExpanded = false;
 
 function navigateTo(tabName) {
   clearRestTimer();
@@ -141,6 +142,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         navigateTo('workout');
       }
     } else {
+      if (btn.dataset.tab === 'supps') suppsViewExpanded = false;
       navigateTo(btn.dataset.tab);
     }
   });
@@ -731,6 +733,39 @@ function renderStreakCard(data) {
   `;
 }
 
+function allSuppsComplete() {
+  const list = getSuppsCustomList();
+  const checked = getCheckedSupps();
+  return list.length > 0 && list.every(s => checked.includes(s.name));
+}
+
+function getStreakBadgeHTML() {
+  const streakData = JSON.parse(localStorage.getItem('liftlab_streak') || '{}');
+  const count = streakData.currentStreak || 0;
+  if (count <= 0) return '';
+  return `
+    <div class="supps-complete-streak">
+      <i class="ti ti-flame" aria-hidden="true"></i>
+      ${count} day streak
+    </div>
+  `;
+}
+
+function buildCompleteCardHTML() {
+  const total = getSuppsCustomList().length;
+  return `
+    <div class="supps-complete-card" id="supps-complete-card">
+      <div class="supps-complete-ring">
+        <i class="ti ti-check supps-complete-icon" aria-hidden="true"></i>
+      </div>
+      <div class="supps-complete-title">Stack complete</div>
+      <div class="supps-complete-sub">All ${total} supplements logged for today</div>
+      ${getStreakBadgeHTML()}
+      <div class="supps-complete-hint">TAP TO VIEW CHECKLIST</div>
+    </div>
+  `;
+}
+
 function renderSupps(editMode = false) {
   const streakData = editMode ? getStreakData() : processStreakMissedDays();
   const container = document.getElementById('screen-container');
@@ -739,6 +774,61 @@ function renderSupps(editMode = false) {
   const total = list.length;
   const doneCount = checked.filter(n => list.some(s => s.name === n)).length;
   const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  const complete = !editMode && allSuppsComplete();
+
+  const _src_color = session && session.paused ? '#7B70FF' : '#22C55E';
+  const returnCard = session ? `
+    <div class="active-return-card" id="active-return-card">
+      <div class="active-return-left">
+        <div class="active-return-dot" style="background:${_src_color};"></div>
+        <div>
+          <div class="active-return-name" style="color:${_src_color};">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
+          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}${session.paused ? ' · paused' : ''}</div>
+        </div>
+      </div>
+      <span class="active-return-cta" style="color:${_src_color};">${session.paused ? 'Resume' : 'Return'} →</span>
+    </div>
+  ` : '';
+
+  // Celebration card — shown when all supplements are checked and user hasn't expanded
+  if (complete && !suppsViewExpanded) {
+    container.innerHTML = `
+      <div class="supps-screen">
+        ${returnCard}
+        <div class="supps-screen-header">
+          <span class="supps-screen-title">Supplements</span>
+          <button class="supps-edit-btn" id="supps-edit-toggle">Edit</button>
+        </div>
+        ${buildCompleteCardHTML()}
+      </div>
+    `;
+
+    const returnCardEl = document.getElementById('active-return-card');
+    if (returnCardEl) returnCardEl.addEventListener('click', () => {
+      if (session && session.paused) {
+        togglePauseWorkout();
+      } else {
+        navigateTo('workout');
+        renderActiveExercise();
+      }
+    });
+
+    document.getElementById('supps-edit-toggle').addEventListener('click', () => {
+      renderSupps(true);
+    });
+
+    document.getElementById('supps-complete-card').addEventListener('click', () => {
+      suppsViewExpanded = true;
+      renderSupps();
+    });
+
+    return;
+  }
+
+  // Normal checklist view (incomplete, or user tapped to expand while complete)
+  const noteHTML = (complete && suppsViewExpanded)
+    ? `<div class="supps-expanded-note">All ${total} taken today — uncheck any to edit</div>`
+    : '';
 
   const rows = list.map(s => {
     const isDone = checked.includes(s.name);
@@ -770,20 +860,6 @@ function renderSupps(editMode = false) {
     </div>
   ` : '';
 
-  const _src_color = session && session.paused ? '#7B70FF' : '#22C55E';
-  const returnCard = session ? `
-    <div class="active-return-card" id="active-return-card">
-      <div class="active-return-left">
-        <div class="active-return-dot" style="background:${_src_color};"></div>
-        <div>
-          <div class="active-return-name" style="color:${_src_color};">${session.exercises[session.exIdx]?.name || 'Workout'}</div>
-          <div class="active-return-set">Set ${session.setNum} of ${session.exercises[session.exIdx]?.sets || '?'}${session.paused ? ' · paused' : ''}</div>
-        </div>
-      </div>
-      <span class="active-return-cta" style="color:${_src_color};">${session.paused ? 'Resume' : 'Return'} →</span>
-    </div>
-  ` : '';
-
   container.innerHTML = `
     <div class="supps-screen">
 
@@ -808,7 +884,8 @@ function renderSupps(editMode = false) {
         </div>
       ` : ''}
 
-      <div class="supps-list-card">
+      <div class="supps-list-card supps-checklist-card">
+        ${noteHTML}
         ${rows}
       </div>
 
