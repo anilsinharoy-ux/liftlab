@@ -129,16 +129,34 @@ input {
 }
 
 /* ========================
-   BOTTOM NAVIGATION
+   BOTTOM SLOT + NAVIGATION
    ======================== */
+
+/* Fixed-height slot that clips both nav and workout-controls as they slide */
+#bottom-slot {
+  flex-shrink: 0;
+  height: var(--nav-height);
+  position: relative;
+  overflow: hidden;
+}
+
 #bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: var(--nav-height);
   display: flex;
   align-items: center;
   padding: 8px 16px 12px;
   background: var(--bg-base);
   border-top: none;
-  flex-shrink: 0;
+  transform: translateY(0);
+  transition: transform 0.25s ease-out;
+}
+
+#bottom-nav.hidden {
+  transform: translateY(100%);
 }
 
 #bottom-nav-inner {
@@ -3787,14 +3805,22 @@ input {
    ======================== */
 
 .bottom-controls {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   gap: 8px;
   padding: 10px 13px 14px;
   background: #0A0A0A;
   border-top: 1px solid #1C1C1C;
+  transform: translateY(0);
+  transition: transform 0.2s ease-out;
 }
 
-.bottom-controls.hidden { display: none; }
+.bottom-controls.hidden {
+  transform: translateY(100%);
+}
 
 .pause-btn {
   flex: 1;
@@ -3832,7 +3858,6 @@ input {
   cursor: pointer;
 }
 
-#bottom-nav.hidden { display: none; }
 
 .confirm-overlay {
   position: fixed;

@@ -2338,6 +2338,7 @@ function togglePauseWorkout() {
     if (banner) banner.classList.add('paused');
     const label = document.getElementById('active-banner-label');
     if (label) label.textContent = 'Workout paused — tap to resume';
+    showWorkoutControls(false);
     updatePauseButtonUI();
   }
 }
