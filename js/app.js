@@ -108,6 +108,7 @@ const tabs = {
 
 let currentTab = 'home';
 let suppsViewExpanded = false;
+let circleMode = 'logging'; // 'logging' | 'resting'
 
 function navigateTo(tabName) {
   clearRestTimer();
@@ -2361,8 +2362,11 @@ function startElapsedTimer() {
     const elapsed = Math.floor((Date.now() - session.startedAt) / 1000);
     const m = Math.floor(elapsed / 60);
     const s = elapsed % 60;
-    const timerEl = document.getElementById('active-banner-timer');
-    if (timerEl) timerEl.textContent = `${m}:${String(s).padStart(2, '0')}`;
+    const timeStr = `${m}:${String(s).padStart(2, '0')}`;
+    const bannerEl = document.getElementById('active-banner-timer');
+    if (bannerEl) bannerEl.textContent = timeStr;
+    const topEl = document.getElementById('active-top-timer');
+    if (topEl) topEl.textContent = timeStr;
   }, 1000);
 }
 
@@ -2432,15 +2436,23 @@ function togglePauseWorkout() {
 
 function updatePauseButtonUI() {
   const btn = document.getElementById('pause-workout-btn');
-  if (!btn) return;
-  if (session && session.paused) {
-    btn.textContent = 'Resume';
-    btn.classList.remove('pause-btn');
-    btn.classList.add('resume-btn');
-  } else {
-    btn.textContent = 'Pause';
-    btn.classList.remove('resume-btn');
-    btn.classList.add('pause-btn');
+  if (btn) {
+    if (session && session.paused) {
+      btn.textContent = 'Resume';
+      btn.classList.remove('pause-btn');
+      btn.classList.add('resume-btn');
+    } else {
+      btn.textContent = 'Pause';
+      btn.classList.remove('resume-btn');
+      btn.classList.add('pause-btn');
+    }
+  }
+  // Sync top-bar pause/play icon
+  const topIcon = document.querySelector('#top-pause-btn i');
+  if (topIcon) {
+    topIcon.className = (session && session.paused)
+      ? 'ti ti-player-play'
+      : 'ti ti-player-pause';
   }
 }
 
@@ -2522,6 +2534,7 @@ function startActiveSession(dayIndex) {
 }
 
 function beginStrengthSession(dayIndex) {
+  circleMode = 'logging';
   clearRestTimer();
   clearWarmupTimer();
   const weekState = getWeekState();
@@ -2571,113 +2584,129 @@ function renderActiveExercise() {
   showWorkoutControls(true);
 
   const ex = session.exercises[session.exIdx];
-  const totalSets = session.exercises.reduce((acc, e) => acc + e.sets, 0);
-  const doneSets = session.logs.length;
-  const pct = totalSets > 0 ? Math.round((doneSets / totalSets) * 100) : 0;
+  const photoUrl = ex.image || getWorkoutPhotoUrl(getWeekState().weekType, session.dayIndex);
 
   session.restRemaining = ex.rest;
   session.timerState = 'idle';
   session.difficulty = null;
 
-  const progression = getProgressionSuggestion(ex.name);
-  const progressionHint = progression && progression.reason ? `
-    <div class="progression-hint">
-      <span class="progression-last">Last: ${progression.lastWeight} lbs</span>
-      <span class="progression-reason">${progression.reason}</span>
-    </div>
-  ` : '';
+  const dotHTML = Array.from({length: ex.sets}, (_, i) =>
+    `<div class="active-set-dot ${i < session.setNum ? 'filled' : ''}"></div>`
+  ).join('');
+
+  const elapsed = session.startedAt ? Math.floor((Date.now() - session.startedAt) / 1000) : 0;
+  const em = Math.floor(elapsed / 60);
+  const es = elapsed % 60;
+  const elapsedStr = `${em}:${String(es).padStart(2, '0')}`;
+
+  let circleHTML;
+  let diffRowHTML = '';
+
+  if (circleMode === 'resting') {
+    const restDashOffset = ex.rest > 0 ? 490 * (1 - session.restRemaining / ex.rest) : 0;
+    circleHTML = `
+      <div class="active-circle-wrap" id="rest-circle">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#1A1640" stroke-width="6"/>
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#5B4EFF" stroke-width="6"
+            stroke-linecap="round"
+            stroke-dasharray="490"
+            stroke-dashoffset="${restDashOffset}"
+            transform="rotate(-90 90 90)"
+            id="rest-ring" />
+          <text x="90" y="96" text-anchor="middle" font-size="34" font-weight="500" fill="#ffffff" id="rest-countdown-text">${formatTime(session.restRemaining)}</text>
+        </svg>
+        <div class="active-rest-hint">tap circle to skip rest</div>
+      </div>
+    `;
+  } else {
+    circleHTML = `
+      <div class="active-circle-wrap">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="78" fill="none" stroke="#1A1640" stroke-width="3"/>
+        </svg>
+        <input type="number" id="weight-input" class="active-weight-input" value="${session.weight}" inputmode="decimal" />
+        <span class="active-weight-unit">lbs</span>
+        <div class="active-weight-minus" id="weight-minus">−</div>
+        <div class="active-weight-plus" id="weight-plus">+</div>
+      </div>
+    `;
+    diffRowHTML = `
+      <div class="active-diff-row">
+        <div class="active-diff-pill" data-diff="easy">Easy</div>
+        <div class="active-diff-pill" data-diff="right">Right</div>
+        <div class="active-diff-pill" data-diff="hard">Hard</div>
+      </div>
+    `;
+  }
 
   const container = document.getElementById('screen-container');
   container.innerHTML = `
     <div class="active-screen">
 
-      <div class="exercise-photo-wrap">
-        <div id="exercise-img-wrap" class="exercise-img-wrap">
-          <img class="exercise-gif" referrerpolicy="no-referrer"
-            src="${ex.image || getWorkoutPhotoUrl(getWeekState().weekType, session.dayIndex)}"
-            alt="${ex.name}" />
+      <div class="active-top-bar">
+        <div class="active-top-pause" id="top-pause-btn">
+          <i class="ti ti-player-pause" aria-hidden="true"></i>
         </div>
-        <button class="active-back-btn" id="active-back-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-        </button>
-        <span class="active-set-badge">Set ${session.setNum} of ${ex.sets}</span>
+        <span class="active-top-timer" id="active-top-timer">${elapsedStr}</span>
+        <div class="active-top-spacer"></div>
       </div>
 
-      <div class="session-progress-wrap">
-        <div class="session-progress-label">
-          <span>Session progress</span>
-          <span id="progress-count">${doneSets} / ${totalSets} sets</span>
-        </div>
-        <div class="session-progress-track">
-          <div class="session-progress-fill" id="progress-fill" style="width: ${pct}%"></div>
-        </div>
+      <div class="active-hero">
+        <img class="active-hero-img" src="${photoUrl}" alt="${ex.name}" referrerpolicy="no-referrer" />
+        <div class="active-hero-overlay"></div>
+        <div class="active-set-dots">${dotHTML}</div>
       </div>
 
-      <div class="active-info-panel">
-        <div class="active-exercise-name">${ex.name}</div>
-        <div class="active-exercise-meta">Set ${session.setNum} of ${ex.sets} · ${ex.reps} reps · Exercise ${session.exIdx + 1} of ${session.exercises.length}</div>
+      <div class="active-panel">
+        <div class="active-set-label">SET ${session.setNum} OF ${ex.sets}</div>
+        <div class="active-ex-name">${ex.name}</div>
+        <div class="active-ex-target">Target ${ex.reps} reps</div>
+        ${circleHTML}
+        ${diffRowHTML}
       </div>
-
-      <div class="rest-timer-block">
-        <div>
-          <div class="rest-timer-label">Rest timer</div>
-          <div class="rest-timer-display" id="rest-display">${formatTime(ex.rest)}</div>
-        </div>
-        <button class="rest-timer-btn" id="rest-btn">Start</button>
-      </div>
-
-      <div class="weight-log-block">
-        <span class="weight-log-label">Weight</span>
-        <input type="number" class="weight-log-input" id="weight-input"
-               placeholder="0" value="${session.weight}" inputmode="decimal" min="0" step="2.5">
-        <span class="weight-log-unit">lbs</span>
-      </div>
-      ${progressionHint}
-
-      <div class="difficulty-block">
-        <div class="difficulty-label">How did it feel?</div>
-        <div class="difficulty-row">
-          <button class="diff-btn" data-diff="easy">Easy</button>
-          <button class="diff-btn" data-diff="right">Right</button>
-          <button class="diff-btn" data-diff="hard">Hard</button>
-        </div>
-      </div>
-
-      <button class="log-set-btn" id="log-set-btn" disabled>Log set</button>
 
     </div>
   `;
 
-  document.getElementById('active-back-btn').addEventListener('click', () => {
-    clearRestTimer();
-    clearSession();
-    renderWorkout();
-  });
-
-  document.getElementById('rest-btn').addEventListener('click', handleRestBtn);
-  document.getElementById('rest-display').addEventListener('click', handleRestBtn);
-
-  document.getElementById('weight-input').addEventListener('input', e => {
-    session.weight = e.target.value;
-    saveSession();
-  });
-
-  document.querySelectorAll('.diff-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      session.difficulty = btn.dataset.diff;
-      document.querySelectorAll('.diff-btn').forEach(b => { b.className = 'diff-btn'; });
-      btn.className = `diff-btn selected-${session.difficulty}`;
-      document.getElementById('log-set-btn').disabled = false;
-      saveSession();
-    });
-  });
-
-  document.getElementById('log-set-btn').addEventListener('click', logCurrentSet);
-
+  document.getElementById('top-pause-btn').addEventListener('click', togglePauseWorkout);
   document.getElementById('end-workout-btn').addEventListener('click', endWorkoutPrompt);
   updatePauseButtonUI();
+
+  if (circleMode === 'resting') {
+    document.getElementById('rest-circle').addEventListener('click', () => {
+      clearRestTimer();
+      onRestComplete();
+    });
+    startRestTimer();
+  } else {
+    const weightInput = document.getElementById('weight-input');
+    weightInput.addEventListener('focus', (e) => { e.target.select(); });
+    weightInput.addEventListener('change', (e) => {
+      session.weight = parseFloat(e.target.value) || 0;
+      saveSession();
+    });
+    document.getElementById('weight-minus').addEventListener('click', () => {
+      session.weight = Math.max(0, (parseFloat(session.weight) || 0) - 5);
+      document.getElementById('weight-input').value = session.weight;
+      saveSession();
+    });
+    document.getElementById('weight-plus').addEventListener('click', () => {
+      session.weight = (parseFloat(session.weight) || 0) + 5;
+      document.getElementById('weight-input').value = session.weight;
+      saveSession();
+    });
+
+    document.querySelectorAll('.active-diff-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        session.difficulty = pill.dataset.diff;
+        logCurrentSet();
+        circleMode = 'resting';
+        renderActiveExercise();
+        startRestTimer();
+      });
+    });
+  }
 }
 
 function handleRestBtn() {
@@ -2694,28 +2723,47 @@ function handleRestBtn() {
 function startRestTimer() {
   clearRestTimer();
   const display = document.getElementById('rest-display');
-  const btn = document.getElementById('rest-btn');
-  if (!display || !btn) return;
+  const btn     = document.getElementById('rest-btn');
+  const ctEl    = document.getElementById('rest-countdown-text');
+  const ringEl  = document.getElementById('rest-ring');
+
+  // Exit if no display targets exist in either layout
+  if (!display && !ctEl) return;
+
+  const ex = session.exercises[session.exIdx];
+  const totalRest = ex ? ex.rest : 60;
 
   session.timerState = 'running';
-  display.className = 'rest-timer-display running';
-  btn.textContent = 'Skip';
+
+  // Old layout setup
+  if (display) { display.className = 'rest-timer-display running'; }
+  if (btn)     { btn.textContent = 'Skip'; }
 
   session.timerId = setInterval(() => {
     session.restRemaining = Math.max(0, session.restRemaining - 1);
-    const d = document.getElementById('rest-display');
-    const b = document.getElementById('rest-btn');
-    if (!d) { clearInterval(session.timerId); session.timerId = null; return; }
+    const d  = document.getElementById('rest-display');
+    const b  = document.getElementById('rest-btn');
+    const ct = document.getElementById('rest-countdown-text');
+    const rr = document.getElementById('rest-ring');
 
-    d.textContent = formatTime(session.restRemaining);
+    // Bail if both display targets gone (user navigated away)
+    if (!d && !ct) { clearInterval(session.timerId); session.timerId = null; return; }
+
+    if (d)  d.textContent = formatTime(session.restRemaining);
+    if (ct) ct.textContent = formatTime(session.restRemaining);
+    if (rr) {
+      const offset = totalRest > 0 ? 490 * (1 - session.restRemaining / totalRest) : 490;
+      rr.setAttribute('stroke-dashoffset', String(offset));
+    }
 
     if (session.restRemaining <= 0) {
       clearInterval(session.timerId);
       session.timerId = null;
       session.timerState = 'done';
-      d.className = 'rest-timer-display done';
-      if (b) b.textContent = 'Next';
+      if (d) { d.className = 'rest-timer-display done'; }
+      if (b) { b.textContent = 'Next'; }
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      if (circleMode === 'resting') { onRestComplete(); }
     }
   }, 1000);
 }
@@ -2750,7 +2798,8 @@ function logCurrentSet() {
   if (fill) fill.style.width = `${pct}%`;
   if (cnt) cnt.textContent = `${doneSets} / ${totalSets} sets`;
 
-  document.getElementById('log-set-btn').disabled = true;
+  const logBtn = document.getElementById('log-set-btn');
+  if (logBtn) logBtn.disabled = true;
 
   session.restRemaining = ex.rest;
   startRestTimer();
@@ -2775,6 +2824,12 @@ function advanceSession() {
   } else {
     renderSessionComplete();
   }
+}
+
+function onRestComplete() {
+  circleMode = 'logging';
+  saveSession();
+  advanceSession();
 }
 
 function renderSessionComplete() {
