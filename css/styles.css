@@ -4261,29 +4261,93 @@ input {
   color: #9B90FF;
 }
 
-/* ── Start workout flash transition ─────────────────────── */
-.start-flash {
+/* ── 3-2-1 Countdown animation ───────────────────────────── */
+.countdown-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(91, 78, 255, 0.18);
-  z-index: 999;
-  opacity: 0;
+  background: #0A0A0A;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   pointer-events: none;
-  transition: opacity 0.18s ease-out;
 }
 
-.start-flash.flash-active {
-  opacity: 1;
+.countdown-overlay.countdown-fade-out {
+  animation: countdown-out 0.2s ease-out forwards;
 }
 
-/* ── Zoom-in entrance animation ─────────────────────────── */
-.zoom-in-entrance {
-  animation: zoom-in-settle 0.32s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+@keyframes countdown-out {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
 }
 
-@keyframes zoom-in-settle {
-  from { transform: scale(0.93); opacity: 0; }
-  to   { transform: scale(1);    opacity: 1; }
+.countdown-content {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 200px;
+  height: 200px;
+}
+
+.countdown-ripple {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(91, 78, 255, 0.6);
+  animation: countdown-ripple-out 0.8s ease-out forwards;
+}
+
+.countdown-ripple-delay {
+  animation-delay: 0.15s;
+  border-color: rgba(91, 78, 255, 0.3);
+}
+
+@keyframes countdown-ripple-out {
+  0%   { transform: scale(0.5); opacity: 0.9; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.countdown-number {
+  position: relative;
+  z-index: 1;
+  font-size: 96px;
+  font-weight: 700;
+  color: #7B70FF;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  animation: countdown-number-in 0.2s ease-out;
+}
+
+.countdown-go {
+  font-size: 56px;
+  color: #00F0E0;
+  text-shadow: 0 0 30px rgba(0, 240, 224, 0.6);
+}
+
+@keyframes countdown-number-in {
+  0%   { transform: scale(1.3); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
+}
+
+/* ── Gains logged completed state ───────────────────────── */
+.gains-logged-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(0, 240, 224, 0.4);
+  background: rgba(0, 240, 224, 0.07);
+  color: #00F0E0;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-sizing: border-box;
 }
 
 /* ── Completed day view ─────────────────────────────────── */

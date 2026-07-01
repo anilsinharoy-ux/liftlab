@@ -160,6 +160,12 @@ document.getElementById('header-week-badge').addEventListener('click', () => {
 // HOME SCREEN
 // ========================
 
+function isTodayWorkoutComplete() {
+  const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+  const todayStr = getTodayKey();
+  return all.some(e => dateToDayKey(new Date(e.ts)) === todayStr);
+}
+
 function renderHome() {
   const container = document.getElementById('screen-container');
   const state = getWeekState();
@@ -285,9 +291,20 @@ function renderHome() {
       ${calendarCardHTML}
     `;
   } else if (todayAns === 'yes') {
-    // State 2 — training day: calendar + stats + start button
+    // State 2 — training day: calendar + stats + start button (or gains-logged if done)
     const exCount = todayProgDay ? todayProgDay.exercises.length : 0;
     const hasBuf  = getBufferState().exercises && getBufferState().exercises.length > 0;
+    const workoutComplete = isTodayWorkoutComplete();
+    const todayStr = getTodayKey();
+    const allLogs = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+    const todayLogs = allLogs.filter(e => dateToDayKey(new Date(e.ts)) === todayStr);
+    const totalSets = todayLogs.length;
+    const thirdStat = workoutComplete
+      ? `<div class="home-stat-val">${totalSets}</div><div class="home-stat-lbl">Sets</div>`
+      : `<div class="home-stat-val">${hasBuf ? '+10' : '—'}</div><div class="home-stat-lbl">Buffer</div>`;
+    const actionBtnHTML = workoutComplete
+      ? `<div class="gains-logged-btn"><i class="ti ti-check" aria-hidden="true"></i> Gains logged</div>`
+      : `<button class="home-start-btn" id="home-start-btn">Start workout →</button>`;
     darkPanelContent = `
       ${calendarCardHTML}
       <div class="home-stats-row">
@@ -300,11 +317,10 @@ function renderHome() {
           <div class="home-stat-lbl">Exercises</div>
         </div>
         <div class="home-stat-card">
-          <div class="home-stat-val">${hasBuf ? '+10' : '—'}</div>
-          <div class="home-stat-lbl">Buffer</div>
+          ${thirdStat}
         </div>
       </div>
-      <button class="home-start-btn" id="home-start-btn">Start workout →</button>
+      ${actionBtnHTML}
     `;
   } else if (todayAns === 'skip') {
     darkPanelContent = `
@@ -375,7 +391,7 @@ function renderHome() {
 
   const homeStartBtn = document.getElementById('home-start-btn');
   if (homeStartBtn) homeStartBtn.addEventListener('click', () => {
-    playStartWorkoutAnimation(() => navigateTo('workout'));
+    playCountdownAnimation(() => navigateTo('workout'));
   });
 
   checkAndShowCheckins();
@@ -1271,12 +1287,34 @@ function resetFullProgram(weekType) {
   localStorage.setItem('liftlab_program_edits', JSON.stringify(edits));
 }
 
-function playStartWorkoutAnimation(onComplete) {
-  const flash = document.createElement('div');
-  flash.className = 'start-flash';
-  document.getElementById('app').appendChild(flash);
-  requestAnimationFrame(() => { flash.classList.add('flash-active'); });
-  setTimeout(() => { flash.remove(); onComplete(); }, 350);
+function playCountdownAnimation(onComplete) {
+  const overlay = document.createElement('div');
+  overlay.className = 'countdown-overlay';
+  document.body.appendChild(overlay);
+
+  const counts = ['3', '2', '1', 'GO'];
+  let i = 0;
+
+  function showNext() {
+    overlay.innerHTML = `
+      <div class="countdown-content">
+        <div class="countdown-ripple"></div>
+        <div class="countdown-ripple countdown-ripple-delay"></div>
+        <div class="countdown-number ${counts[i] === 'GO' ? 'countdown-go' : ''}">${counts[i]}</div>
+      </div>
+    `;
+    i++;
+    if (i < counts.length) {
+      setTimeout(showNext, 800);
+    } else {
+      setTimeout(() => {
+        overlay.classList.add('countdown-fade-out');
+        setTimeout(() => { overlay.remove(); onComplete(); }, 200);
+      }, 500);
+    }
+  }
+
+  showNext();
 }
 
 function isDayCompletedToday(dayIndex) {
@@ -1324,7 +1362,7 @@ function renderCompletedDayView(dayIndex) {
   }).join('');
 
   return `
-    <div class="completed-view zoom-in-entrance">
+    <div class="completed-view">
       <div class="completed-badge">
         <div class="completed-icon">✓</div>
         <div class="completed-title">Day complete</div>
@@ -1498,11 +1536,11 @@ function renderWorkout() {
   document.getElementById('wt-back-btn').addEventListener('click', () => navigateTo('home'));
   if (isCompleted) {
     document.getElementById('wt-again-btn').addEventListener('click', () => {
-      playStartWorkoutAnimation(() => startActiveSession(currentDayIndex));
+      playCountdownAnimation(() => startActiveSession(currentDayIndex));
     });
   } else {
     document.getElementById('wt-start-btn').addEventListener('click', () => {
-      playStartWorkoutAnimation(() => startActiveSession(currentDayIndex));
+      playCountdownAnimation(() => startActiveSession(currentDayIndex));
     });
     document.getElementById('wt-edit-btn').addEventListener('click', () => renderWorkoutEditor(currentDayIndex));
   }
