@@ -439,7 +439,6 @@ input {
   padding: 7px 0;
   border-radius: 10px;
   background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
   gap: 4px;
 }
 
@@ -497,7 +496,6 @@ input {
 
 .home-cal-day.missed {
   background: var(--amber-fill);
-  border-color: #3A2010;
 }
 
 .home-cal-day.missed .home-cal-day-lbl {
