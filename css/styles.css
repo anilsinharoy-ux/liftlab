@@ -438,7 +438,6 @@ input {
   align-items: center;
   padding: 7px 0;
   border-radius: 10px;
-  background: var(--bg-surface);
   gap: 4px;
 }
 
@@ -464,8 +463,7 @@ input {
 }
 
 .home-cal-day.today {
-  background: var(--navy-dark);
-  border-color: var(--navy);
+  background: transparent;
 }
 
 .home-cal-day.today .home-cal-day-lbl {
@@ -482,8 +480,7 @@ input {
 }
 
 .home-cal-day.completed {
-  background: var(--bg-base);
-  border-color: var(--border-subtle);
+  background: transparent;
 }
 
 .home-cal-day.completed .home-cal-day-num {
@@ -495,7 +492,7 @@ input {
 }
 
 .home-cal-day.missed {
-  background: var(--amber-fill);
+  background: transparent;
 }
 
 .home-cal-day.missed .home-cal-day-lbl {
