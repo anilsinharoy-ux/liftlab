@@ -1476,110 +1476,16 @@ function renderWorkout() {
     <div class="wt-screen">
 
       <div class="wt-hero">
-        <div class="wt-muscle-hero">
-          <div class="wt-muscle-hero-grad"></div>
-          <div class="wt-muscle-hero-glow"></div>
-          <div class="wt-muscle-hero-glow2"></div>
-          <div class="wt-muscle-hero-inner">
-            <div class="wt-muscle-hero-text">
-              <div class="wt-muscle-hero-tag">Day ${day.day} · Week ${weekType} · ${isCrossFit ? 'CrossFit' : 'Weights'}</div>
-              <div class="wt-muscle-hero-name">${day.label.replace(/Day \d+ — /, '')}</div>
-              <div class="wt-muscle-hero-muscles">${day.muscles}</div>
-              <div class="wt-muscle-hero-pills">
-                <span class="wt-muscle-pill">${dayExercises.length} exercises</span>
-                <span class="wt-muscle-pill">${durationMins} min</span>
-                <span class="wt-muscle-pill-green">${isCrossFit ? 'CrossFit' : 'Weights'}</span>
-              </div>
-              <div class="wt-muscle-legend">
-                <div class="wt-muscle-leg-row"><div class="wt-muscle-leg-dot wt-leg-primary"></div><span class="wt-muscle-leg-txt">Primary</span></div>
-                <div class="wt-muscle-leg-row"><div class="wt-muscle-leg-dot wt-leg-secondary"></div><span class="wt-muscle-leg-txt">Secondary</span></div>
-                <div class="wt-muscle-leg-row"><div class="wt-muscle-leg-dot wt-leg-inactive"></div><span class="wt-muscle-leg-txt">Not targeted</span></div>
-              </div>
-            </div>
-            <svg viewBox="0 0 100 210" width="96" height="196" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <radialGradient id="wchestG" cx="50%" cy="40%" r="55%">
-                  <stop offset="0%" stop-color="#7B6FFF"/>
-                  <stop offset="100%" stop-color="#3A2FC0" stop-opacity="0.9"/>
-                </radialGradient>
-                <radialGradient id="wshoulderGL" cx="60%" cy="35%" r="55%">
-                  <stop offset="0%" stop-color="#8A80FF"/>
-                  <stop offset="100%" stop-color="#4038CC" stop-opacity="0.85"/>
-                </radialGradient>
-                <radialGradient id="wshoulderGR" cx="40%" cy="35%" r="55%">
-                  <stop offset="0%" stop-color="#8A80FF"/>
-                  <stop offset="100%" stop-color="#4038CC" stop-opacity="0.85"/>
-                </radialGradient>
-                <radialGradient id="wtricepGL" cx="55%" cy="45%" r="50%">
-                  <stop offset="0%" stop-color="#5B4EFF" stop-opacity="0.85"/>
-                  <stop offset="100%" stop-color="#2E28A0" stop-opacity="0.7"/>
-                </radialGradient>
-                <radialGradient id="wtricepGR" cx="45%" cy="45%" r="50%">
-                  <stop offset="0%" stop-color="#5B4EFF" stop-opacity="0.85"/>
-                  <stop offset="100%" stop-color="#2E28A0" stop-opacity="0.7"/>
-                </radialGradient>
-                <radialGradient id="wbodyG" cx="50%" cy="40%" r="60%">
-                  <stop offset="0%" stop-color="#1E1E30"/>
-                  <stop offset="100%" stop-color="#131320"/>
-                </radialGradient>
-                <radialGradient id="wlegG" cx="50%" cy="40%" r="60%">
-                  <stop offset="0%" stop-color="#1A1A28"/>
-                  <stop offset="100%" stop-color="#111118"/>
-                </radialGradient>
-                <radialGradient id="wheadG" cx="40%" cy="35%" r="60%">
-                  <stop offset="0%" stop-color="#252535"/>
-                  <stop offset="100%" stop-color="#181825"/>
-                </radialGradient>
-                <linearGradient id="wneckG" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stop-color="#1a1a28"/>
-                  <stop offset="50%" stop-color="#222232"/>
-                  <stop offset="100%" stop-color="#1a1a28"/>
-                </linearGradient>
-                <linearGradient id="wabsG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#181828"/>
-                  <stop offset="100%" stop-color="#111118"/>
-                </linearGradient>
-              </defs>
-              <ellipse cx="50" cy="13" rx="12" ry="13" fill="url(#wheadG)" stroke="#2a2a40" stroke-width="0.5"/>
-              <ellipse cx="47" cy="10" rx="4" ry="5" fill="rgba(255,255,255,0.03)"/>
-              <ellipse cx="50" cy="9" rx="3" ry="2" fill="rgba(255,255,255,0.05)"/>
-              <rect x="44" y="25" width="12" height="5" rx="2.5" fill="url(#wneckG)" stroke="#252538" stroke-width="0.4"/>
-              <path d="M26 50 Q22 43 24 37 Q27 29 33 28 L50 29 L67 28 Q73 29 76 37 Q78 43 74 50 Z" fill="url(#wbodyG)" stroke="#252538" stroke-width="0.5"/>
-              <path d="M35 29 Q33 34 32 45 Q34 53 50 54 Q66 53 68 45 Q67 34 65 29 Z" fill="url(#wchestG)" stroke="rgba(91,78,255,0.6)" stroke-width="0.6"/>
-              <path d="M50 29 L50 54" stroke="rgba(0,0,0,0.5)" stroke-width="0.8"/>
-              <path d="M38 30 Q36 37 37 46" stroke="rgba(255,255,255,0.08)" stroke-width="1" fill="none" stroke-linecap="round"/>
-              <path d="M62 30 Q64 37 63 46" stroke="rgba(255,255,255,0.08)" stroke-width="1" fill="none" stroke-linecap="round"/>
-              <ellipse cx="41" cy="41" rx="7" ry="9" fill="rgba(123,111,255,0.15)"/>
-              <ellipse cx="59" cy="41" rx="7" ry="9" fill="rgba(123,111,255,0.15)"/>
-              <ellipse cx="23" cy="39" rx="10" ry="11" fill="url(#wshoulderGL)" stroke="rgba(91,78,255,0.5)" stroke-width="0.6"/>
-              <ellipse cx="20" cy="36" rx="4" ry="4" fill="rgba(255,255,255,0.1)"/>
-              <ellipse cx="77" cy="39" rx="10" ry="11" fill="url(#wshoulderGR)" stroke="rgba(91,78,255,0.5)" stroke-width="0.6"/>
-              <ellipse cx="80" cy="36" rx="4" ry="4" fill="rgba(255,255,255,0.1)"/>
-              <path d="M34 50 Q30 52 26 53 L14 55 Q12 56 13 59 L13 79 Q13 82 16 82 L18 80 L17 63 L27 62 Q30 61 33 58 Z" fill="url(#wbodyG)" stroke="#252538" stroke-width="0.4"/>
-              <path d="M66 50 Q70 52 74 53 L86 55 Q88 56 87 59 L87 79 Q87 82 84 82 L82 80 L83 63 L73 62 Q70 61 67 58 Z" fill="url(#wbodyG)" stroke="#252538" stroke-width="0.4"/>
-              <path d="M14 55 Q12 57 13 60 L14 79 L17 80 L17 62 L26 61 Q28 56 27 54 Z" fill="url(#wtricepGL)" stroke="rgba(91,78,255,0.4)" stroke-width="0.5"/>
-              <path d="M86 55 Q88 57 87 60 L86 79 L83 80 L83 62 L74 61 Q72 56 73 54 Z" fill="url(#wtricepGR)" stroke="rgba(91,78,255,0.4)" stroke-width="0.5"/>
-              <path d="M14 80 Q13 85 14 92 L17 94 Q18 90 17 82 Z" fill="#151522" stroke="#222230" stroke-width="0.4"/>
-              <path d="M86 80 Q87 85 86 92 L83 94 Q82 90 83 82 Z" fill="#151522" stroke="#222230" stroke-width="0.4"/>
-              <ellipse cx="15" cy="94" rx="3" ry="3" fill="#111118" stroke="#1e1e28" stroke-width="0.5"/>
-              <ellipse cx="85" cy="94" rx="3" ry="3" fill="#111118" stroke="#1e1e28" stroke-width="0.5"/>
-              <path d="M33 53 Q35 58 36 65 L36 85 Q36 88 38 88 L62 88 Q64 88 64 85 L64 65 Q65 58 67 53 Z" fill="url(#wabsG)" stroke="#222230" stroke-width="0.5"/>
-              <line x1="50" y1="55" x2="50" y2="87" stroke="#1a1a28" stroke-width="0.7"/>
-              <line x1="36" y1="63" x2="64" y2="63" stroke="#1a1a28" stroke-width="0.5"/>
-              <line x1="36" y1="72" x2="64" y2="72" stroke="#1a1a28" stroke-width="0.5"/>
-              <line x1="36" y1="80" x2="64" y2="80" stroke="#1a1a28" stroke-width="0.5"/>
-              <path d="M36 87 Q35 90 33 95 L30 110 L32 130 L36 145 Q37 148 38 145 L40 130 L42 110 L45 95 Q44 90 43 87 Z" fill="url(#wlegG)" stroke="#1e1e28" stroke-width="0.5"/>
-              <path d="M64 87 Q65 90 67 95 L70 110 L68 130 L64 145 Q63 148 62 145 L60 130 L58 110 L55 95 Q56 90 57 87 Z" fill="url(#wlegG)" stroke="#1e1e28" stroke-width="0.5"/>
-              <path d="M33 108 Q31 118 32 130" stroke="rgba(255,255,255,0.05)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-              <path d="M67 108 Q69 118 68 130" stroke="rgba(255,255,255,0.05)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-              <path d="M32 130 Q31 138 33 145 L36 148 Q37 152 36 157 L33 170 L36 172 L40 157 Q41 152 40 148 L38 145 Z" fill="url(#wlegG)" stroke="#1a1a25" stroke-width="0.4"/>
-              <path d="M68 130 Q69 138 67 145 L64 148 Q63 152 64 157 L67 170 L64 172 L60 157 Q59 152 60 148 L62 145 Z" fill="url(#wlegG)" stroke="#1a1a25" stroke-width="0.4"/>
-              <ellipse cx="34" cy="171" rx="5" ry="3.5" fill="#0e0e1a" stroke="#1a1a25" stroke-width="0.5"/>
-              <ellipse cx="66" cy="171" rx="5" ry="3.5" fill="#0e0e1a" stroke="#1a1a25" stroke-width="0.5"/>
-              <ellipse cx="33" cy="170" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.04)"/>
-              <ellipse cx="67" cy="170" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.04)"/>
-            </svg>
-          </div>
+        <img class="wt-hero-img" src="${photoUrl}" alt="${day.label}" referrerpolicy="no-referrer" />
+        <div class="wt-hero-overlay"></div>
+        <button class="wt-back-btn" id="wt-back-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <div class="wt-hero-text">
+          <div class="wt-hero-title">${day.label}</div>
+          <div class="wt-hero-sub">Day ${day.day} · ${day.muscles} · Week ${weekType} · ${durationMins} min</div>
         </div>
       </div>
 
@@ -1627,8 +1533,7 @@ function renderWorkout() {
     });
   });
 
-  const backBtn = document.getElementById('wt-back-btn');
-  if (backBtn) backBtn.addEventListener('click', () => navigateTo('home'));
+  document.getElementById('wt-back-btn').addEventListener('click', () => navigateTo('home'));
   if (isCompleted) {
     document.getElementById('wt-again-btn').addEventListener('click', () => {
       playCountdownAnimation(() => startActiveSession(currentDayIndex));
