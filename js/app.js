@@ -228,8 +228,7 @@ function renderHome() {
       else if (todayAns === 'rest') cls = 'today-rest';
       else                          cls = 'today-pending';
     } else if (isPast && ans === 'yes')  cls = 'done';
-    else if (isPast && ans === 'rest')   cls = 'rest';
-    else if (isPast && !ans)             cls = 'missed';
+    else if (isPast && ans === 'skip')   cls = 'missed';
     else                                 cls = 'future';
     const dayNames = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
     return `<div class="home-cal-day ${cls}">
@@ -253,8 +252,7 @@ function renderHome() {
       <div class="home-cal-legend">
         <div class="home-leg-item"><div class="home-leg-dot" style="background:#22C55E;"></div><span>today</span></div>
         <div class="home-leg-item"><div class="home-leg-dot" style="background:#5B4EFF;"></div><span>done</span></div>
-        <div class="home-leg-item"><div class="home-leg-dot" style="background:#F59E0B;"></div><span>missed</span></div>
-        <div class="home-leg-item"><div class="home-leg-dot" style="background:#1C1C1C; border:1px solid #333;"></div><span>rest</span></div>
+        <div class="home-leg-item"><div class="home-leg-dot" style="background:#F59E0B;"></div><span>skipped</span></div>
       </div>
     </div>
   `;
@@ -419,7 +417,7 @@ function buildCalendarStrip(state) {
     let stateClass = '';
     if (isToday) stateClass = 'today';
     else if (isPast && isWorkoutDay && checkin === 'yes') stateClass = 'completed';
-    else if (isPast && isWorkoutDay && checkin === 'no')  stateClass = 'missed';
+    else if (isPast && checkin === 'skip')                 stateClass = 'missed';
     else if (!isWorkoutDay) stateClass = 'rest';
 
     html += `
@@ -438,7 +436,7 @@ function getTodayWorkout(state) {
   const scheduled   = state ? state.scheduledOffsets : [0, 1, 3, 4];
   const checkin     = state ? state.checkins[getTodayKey()] : null;
   const weekType    = state ? state.weekType : 'A';
-  const isRestDay   = !scheduled.includes(todayOffset) || checkin === 'no';
+  const isRestDay   = !scheduled.includes(todayOffset) || checkin === 'rest' || checkin === 'skip';
 
   if (isRestDay) {
     const photoUrl = getWorkoutPhotoUrl('rest', 0, true);
@@ -2294,7 +2292,7 @@ function getUnhandledMissedDays() {
     prev.setDate(monday.getDate() + i - 1);
     const prevAns = localStorage.getItem(`liftlab_checkin_${dateToDayKey(prev)}`);
 
-    if ((!ans || ans !== 'yes') && prevAns === 'yes' && !handled.includes(dk)) {
+    if (ans === 'skip' && !handled.includes(dk)) {
       missed.push({ dayKey: dk, offset: i });
     }
   }
