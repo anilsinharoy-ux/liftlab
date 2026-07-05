@@ -759,7 +759,7 @@ function buildStreakCalendar(data) {
     const isToday = d === todayNum;
     const isFuture = new Date(year, month, d) > new Date(year, month, todayNum);
     if (isFuture) {
-      cells += `<div class="streak-day" style="color:#222233;background:transparent">${d}</div>`;
+      cells += `<div class="streak-day streak-day-future">${d}</div>`;
     } else if (isToday) {
       cells += `<div class="streak-day ${status === 'done' ? 'done ' : ''}today">${d}</div>`;
     } else if (status === 'done') {
@@ -769,7 +769,7 @@ function buildStreakCalendar(data) {
     } else if (status === 'missed') {
       cells += `<div class="streak-day missed">${d}</div>`;
     } else {
-      cells += `<div class="streak-day" style="color:#222233">${d}</div>`;
+      cells += `<div class="streak-day streak-day-future">${d}</div>`;
     }
   }
   return `<div class="streak-cal-grid">${hdrs}${blanks}${cells}</div>`;
