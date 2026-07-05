@@ -291,7 +291,8 @@ function renderHome() {
   } else if (todayAns === 'yes') {
     // State 2 — training day: calendar + stats + start button (or gains-logged if done)
     const exCount = todayProgDay ? todayProgDay.exercises.length : 0;
-    const hasBuf  = getBufferState().exercises && getBufferState().exercises.length > 0;
+    const portion = getPortionForSession(currentDayIndex);
+    const hasBuf  = portion && portion.length > 0;
     const workoutComplete = isTodayWorkoutComplete();
     const todayStr = getTodayKey();
     const allLogs = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
@@ -1174,6 +1175,12 @@ const CROSSFIT_BUFFER_SHORTLISTS = [
   [{ name: 'Thrusters / Push-ups / Burpees',        sets: 1, reps: 'AMRAP 8 min', rest: 0 }],
 ];
 
+const LEG_BUFFER_EXERCISES = [
+  { name: 'Leg Extension Machine', sets: 2, reps: '8–12',  rest: 60 },
+  { name: 'Leg Press',             sets: 2, reps: '8–12',  rest: 60 },
+  { name: 'Seated Calf Raise',     sets: 2, reps: '12–15', rest: 45 },
+];
+
 const EXERCISE_LIBRARY = [
   { group: 'Chest', exercises: [
     { name: 'Incline Barbell Bench Press',     sets: 3, reps: '8–12',  rest: 60 },
@@ -1379,11 +1386,11 @@ function renderWorkout() {
   const program    = getWeekProgram();
   const day        = program[currentDayIndex];
   const container  = document.getElementById('screen-container');
-  const buf        = getBufferState();
+  const portion    = getPortionForSession(currentDayIndex);
 
   const dayExercises = getDayExercises(weekType, currentDayIndex);
   const isCrossFit   = !!day.wod;
-  const hasBuffer    = buf.exercises && buf.exercises.length > 0;
+  const hasBuffer    = portion && portion.length > 0;
   const baseDuration = isCrossFit ? 35 : 30;
   const durationMins = hasBuffer ? baseDuration + 10 : baseDuration;
   const photoUrl     = getWorkoutPhotoUrl(weekType, currentDayIndex);
@@ -1439,17 +1446,19 @@ function renderWorkout() {
   })() : '';
 
   // Buffer section
+  const splitBuf = getSplitBuffer();
+  const bufLabel = splitBuf && splitBuf.skippedDayLabel ? `From ${splitBuf.skippedDayLabel}` : 'Carry-over';
   const bufferSection = hasBuffer ? `
     <div class="wt-section">
       <div class="wt-section-header">
         <div class="wt-section-left">
           <span class="wt-section-title">Catch-up</span>
-          <span class="wt-section-meta">From ${getDayName(buf.fromDayKey)}</span>
+          <span class="wt-section-meta">${bufLabel}</span>
         </div>
         <span class="wt-amber-badge">+10 min</span>
       </div>
       <div class="wt-ex-list">
-        ${buf.exercises.map(e => `
+        ${portion.map(e => `
           <div class="wt-ex-card">
             <div class="wt-ex-thumb wt-ex-thumb-plain">
               <span class="wt-ex-thumb-num">+</span>
@@ -2232,8 +2241,7 @@ function getWeekState() {
 
   if (!stored || stored.mondayKey !== mondayKey) {
     const weekType = stored ? (stored.weekType === 'A' ? 'B' : 'A') : 'A';
-    localStorage.removeItem('liftlab_buffer');
-    localStorage.removeItem('liftlab_missed');
+    localStorage.removeItem('liftlab_split_buffer');
     return { mondayKey, weekType };
   }
   return stored;
@@ -2257,147 +2265,78 @@ function getTodayProgramDayIndex() {
   return Math.min(done, PROGRAM_A.length - 1);
 }
 
-function getBufferState() {
-  const raw = localStorage.getItem('liftlab_buffer');
-  return raw ? JSON.parse(raw) : { exercises: [], fromDayKey: null, fromDayIndex: null };
-}
-
-function saveBufferState(buf) {
-  localStorage.setItem('liftlab_buffer', JSON.stringify(buf));
-}
-
 function getDayName(dayKey) {
   const [y, m, d] = dayKey.split('-').map(Number);
   const date = new Date(y, m - 1, d);
   return date.toLocaleDateString('en-CA', { weekday: 'long', month: 'short', day: 'numeric' });
 }
 
-function getMissedLog() {
-  const raw = localStorage.getItem('liftlab_missed');
-  if (!raw) return [];
-  const stored = JSON.parse(raw);
-  const state = getWeekState();
-  if (stored.mondayKey !== state.mondayKey) return [];
-  return stored.days || [];
-}
-
-function saveMissedLog(days) {
-  const state = getWeekState();
-  localStorage.setItem('liftlab_missed', JSON.stringify({ mondayKey: state.mondayKey, days }));
-}
-
-function getUnhandledMissedDays() {
-  const monday   = getMondayDate();
-  const todayKey = getTodayKey();
-  const handled  = getMissedLog();
-  const missed   = [];
-
-  // Start at i=1 — Monday has no previous day to compare against
-  for (let i = 1; i < 7; i++) {
-    const d  = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    const dk = dateToDayKey(d);
-    if (dk === todayKey) break;
-
-    const ans  = localStorage.getItem(`liftlab_checkin_${dk}`);
-    const prev = new Date(monday);
-    prev.setDate(monday.getDate() + i - 1);
-    const prevAns = localStorage.getItem(`liftlab_checkin_${dateToDayKey(prev)}`);
-
-    if (ans === 'skip' && !handled.includes(dk)) {
-      missed.push({ dayKey: dk, offset: i });
-    }
-  }
-  return missed;
-}
-
-function checkMissedDays(onDone) {
-  const missed = getUnhandledMissedDays();
-  if (!missed.length) { onDone(); return; }
-
-  const first  = missed[0];
-  const state  = getWeekState();
-  const monday = getMondayDate();
-  let yesCount = 0;
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    if (localStorage.getItem(`liftlab_checkin_${dateToDayKey(d)}`) === 'yes') yesCount++;
-  }
-  const dayIndex     = Math.min(yesCount, PROGRAM_A.length - 1);
-  const shortlists   = state.weekType === 'B' ? CROSSFIT_BUFFER_SHORTLISTS : BUFFER_SHORTLISTS;
-  const bufExercises = shortlists[dayIndex] || shortlists[0];
-
-  showMissedDayModal(first, bufExercises, onDone);
-}
-
-function showMissedDayModal(missed, bufExercises, onDone) {
-  const overlay = document.createElement('div');
-  overlay.className = 'checkin-overlay';
-  overlay.innerHTML = `
-    <div class="checkin-card">
-      <div class="checkin-card-title">Missed day</div>
-      <div class="checkin-card-body">
-        You didn't make it on <strong>${getDayName(missed.dayKey)}</strong>.
-        Want to add a quick 10-min catch-up to today's session?
-      </div>
-      <div class="checkin-btn-row">
-        <button class="checkin-btn" data-val="skip">Skip it</button>
-        <button class="checkin-btn checkin-btn-primary" data-val="add">Add catch-up</button>
-      </div>
-    </div>
-  `;
-  document.getElementById('app').appendChild(overlay);
-
-  overlay.querySelectorAll('.checkin-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      overlay.remove();
-      const handled = getMissedLog();
-      saveMissedLog([...handled, missed.dayKey]);
-      if (btn.dataset.val === 'add') {
-        saveBufferState({ exercises: bufExercises, fromDayKey: missed.dayKey, fromDayIndex: missed.offset });
-      }
-      onDone();
-    });
-  });
-}
-
 function getCurrentWeekKey() {
   return getWeekState().mondayKey;
 }
 
-function queueDayBuffer(dayIndex) {
+function countRemainingTrainingDays() {
+  const monday = getMondayDate();
+  const todayOffset = getTodayDayOffset();
+  const scheduledOffsets = [0, 1, 3, 4];
+  let count = 0;
+  for (let i = todayOffset + 1; i <= 6; i++) {
+    if (!scheduledOffsets.includes(i)) continue;
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dk = dateToDayKey(d);
+    const ans = localStorage.getItem(`liftlab_checkin_${dk}`);
+    if (ans !== 'rest' && ans !== 'skip') count++;
+  }
+  return count;
+}
+
+function getSplitBuffer() {
+  const raw = localStorage.getItem('liftlab_split_buffer');
+  return raw ? JSON.parse(raw) : null;
+}
+
+function getPortionForSession(dayIdx) {
+  const buf = getSplitBuffer();
+  if (!buf || buf.weekKey !== getCurrentWeekKey()) return null;
+  return buf.portions[String(dayIdx)] || null;
+}
+
+function clearPortionForSession(dayIdx) {
+  const buf = getSplitBuffer();
+  if (!buf || buf.weekKey !== getCurrentWeekKey()) return;
+  delete buf.portions[String(dayIdx)];
+  if (Object.keys(buf.portions).length === 0) {
+    localStorage.removeItem('liftlab_split_buffer');
+  } else {
+    localStorage.setItem('liftlab_split_buffer', JSON.stringify(buf));
+  }
+}
+
+function buildSplitBuffer(skippedDayIndex) {
+  const weekKey = getCurrentWeekKey();
+  const existing = getSplitBuffer();
+  if (existing && existing.weekKey === weekKey) return;
+
+  const remaining = countRemainingTrainingDays();
+  if (remaining === 0) return;
+
   const weekState = getWeekState();
-  const shortlists = weekState.weekType === 'B' ? CROSSFIT_BUFFER_SHORTLISTS : BUFFER_SHORTLISTS;
-  const bufExercises = shortlists[dayIndex] || shortlists[0];
   const program = getWeekProgram();
-  const queue = JSON.parse(localStorage.getItem('liftlab_buffer_queue') || '[]');
-  const thisWeek = getCurrentWeekKey();
-  const filtered = queue.filter(q => q.weekKey !== thisWeek);
-  filtered.push({
-    dayIndex,
-    dayLabel: program[dayIndex].label,
-    exercises: bufExercises,
-    queuedAt: Date.now(),
-    weekKey: thisWeek,
+  const skippedDayLabel = program[skippedDayIndex] ? program[skippedDayIndex].label : '';
+  const exercises = weekState.weekType === 'B'
+    ? (CROSSFIT_BUFFER_SHORTLISTS[skippedDayIndex] || CROSSFIT_BUFFER_SHORTLISTS[0])
+    : LEG_BUFFER_EXERCISES;
+
+  const portions = {};
+  exercises.forEach((ex, i) => {
+    const sessionOffset = i % remaining;
+    const targetIdx = Math.min(skippedDayIndex + sessionOffset, program.length - 1);
+    if (!portions[String(targetIdx)]) portions[String(targetIdx)] = [];
+    portions[String(targetIdx)].push(ex);
   });
-  localStorage.setItem('liftlab_buffer_queue', JSON.stringify(filtered));
-}
 
-function getPendingBuffer() {
-  const queue = JSON.parse(localStorage.getItem('liftlab_buffer_queue') || '[]');
-  const thisWeek = getCurrentWeekKey();
-  const thisWeekQueue = queue.filter(q => q.weekKey === thisWeek);
-  if (!thisWeekQueue.length) return null;
-  return thisWeekQueue[thisWeekQueue.length - 1];
-}
-
-function clearPendingBuffer() {
-  const queue = JSON.parse(localStorage.getItem('liftlab_buffer_queue') || '[]');
-  const thisWeek = getCurrentWeekKey();
-  localStorage.setItem('liftlab_buffer_queue', JSON.stringify(
-    queue.filter(q => q.weekKey !== thisWeek)
-  ));
+  localStorage.setItem('liftlab_split_buffer', JSON.stringify({ weekKey, skippedDayLabel, portions }));
 }
 
 function showSkipConfirm(dayIndex) {
@@ -2418,7 +2357,7 @@ function showSkipConfirm(dayIndex) {
   document.getElementById('app').appendChild(overlay);
 
   document.getElementById('confirm-skip-yes').addEventListener('click', () => {
-    queueDayBuffer(dayIndex);
+    buildSplitBuffer(dayIndex);
     localStorage.setItem(`liftlab_checkin_${getTodayKey()}`, 'skip');
     overlay.remove();
     renderHome();
@@ -2431,12 +2370,8 @@ function showSkipConfirm(dayIndex) {
 
 function checkAndShowCheckins() {
   if (checkinsShown) return;
-  // Only run the missed-day check once per session, and only after user has answered yes
   const todayAns = localStorage.getItem(`liftlab_checkin_${getTodayKey()}`);
-  if (todayAns === 'yes') {
-    checkinsShown = true;
-    checkMissedDays(() => renderHome());
-  }
+  if (todayAns === 'yes') checkinsShown = true;
 }
 
 
@@ -2748,9 +2683,9 @@ function beginStrengthSession(dayIndex) {
   const weekState = getWeekState();
   const program = getWeekProgram();
   const day = program[dayIndex];
-  const buf = getBufferState();
-  const bufExercises = buf.exercises && buf.exercises.length > 0 ? buf.exercises : [];
   const customExercises = getDayExercises(weekState.weekType, dayIndex);
+  const portion = getPortionForSession(dayIndex);
+  const bufExercises = portion ? portion.map(e => ({ ...e, isBuffer: true })) : [];
   session = {
     dayIndex,
     day,
@@ -2765,16 +2700,9 @@ function beginStrengthSession(dayIndex) {
     timerState: 'idle',
     wod: day.wod || null,
     startedAt: Date.now(),
+    hasBuffer: bufExercises.length > 0,
+    bufferDayIndex: dayIndex,
   };
-  const pending = getPendingBuffer();
-  if (pending) {
-    session.exercises = session.exercises.concat(pending.exercises);
-    session.hasBuffer = true;
-    session.bufferFromDay = pending.dayLabel;
-    clearPendingBuffer();
-  } else {
-    session.hasBuffer = false;
-  }
   session.weight = getSuggestedWeight(0);
   updateActiveBorder(true);
   saveSession();
@@ -3092,7 +3020,7 @@ function renderSessionComplete() {
   `;
 
   document.getElementById('done-btn').addEventListener('click', () => {
-    saveBufferState({ exercises: [], fromDayKey: null, fromDayIndex: null });
+    if (session && session.hasBuffer) clearPortionForSession(session.bufferDayIndex);
     clearSession();
     navigateTo('home');
   });
