@@ -595,18 +595,18 @@ function getMuscleMap(dayIndex, weekType = 'A') {
 }
 
 function buildSuppsSnapshot() {
-  const list = getSuppsCustomList();
-  const checked = getCheckedSupps();
-  const doneCount = checked.filter(n => list.some(s => s.name === n)).length;
+  const allItems = SUPPLEMENT_SECTIONS.flatMap(s => s.items);
+  const state = getSuppsState();
+  const doneCount = allItems.filter(name => state[name]).length;
 
-  const pills = list.map(s => `
-    <span class="supp-pill ${checked.includes(s.name) ? 'done' : ''}">${s.name}</span>
+  const pills = allItems.map(name => `
+    <span class="supp-pill ${state[name] ? 'done' : ''}">${name}</span>
   `).join('');
 
   return `
     <div class="supps-snapshot">
       <div class="supps-snapshot-header">
-        <span class="supps-snapshot-title">${doneCount} of ${list.length} taken</span>
+        <span class="supps-snapshot-title">${doneCount} of ${allItems.length} taken</span>
         <button class="supps-snapshot-link" id="supps-see-all">See all →</button>
       </div>
       <div class="supp-pill-row">${pills}</div>
@@ -618,33 +618,72 @@ function buildSuppsSnapshot() {
 // SUPPS SCREEN
 // ========================
 
-const DEFAULT_SUPPS_LIST = [
-  { name: 'Multi-Vitamin',  time: 'With breakfast' },
-  { name: 'Fish Oil',       time: 'With breakfast' },
-  { name: 'Creatine',       time: 'Any time' },
-  { name: 'Protein Shake',  time: 'Post-workout' },
-  { name: 'Test Booster',   time: 'As directed' },
+const SUPPLEMENT_SECTIONS = [
+  {
+    id: 'morning',
+    label: 'Morning',
+    sublabel: 'With breakfast',
+    icon: '🌅',
+    color: '#FBB724',
+    colorBg: 'rgba(251,183,36,0.08)',
+    colorBorder: 'rgba(251,183,36,0.25)',
+    checkColor: '#5B4EFF',
+    items: [
+      'Centrum Men Multivitamin',
+      'Fish Oil',
+      'Vitamin D3',
+      'Zinc',
+      'Boron',
+      'Longjack Tongkat Ali',
+    ]
+  },
+  {
+    id: 'afternoon',
+    label: 'Afternoon',
+    sublabel: 'Gym / Training',
+    icon: '⚡',
+    color: '#7B70FF',
+    colorBg: 'rgba(91,78,255,0.08)',
+    colorBorder: 'rgba(91,78,255,0.25)',
+    checkColor: '#5B4EFF',
+    items: [
+      'Protein Shake',
+      'Creatine',
+    ]
+  },
+  {
+    id: 'night',
+    label: 'Night',
+    sublabel: 'Before bed',
+    icon: '🌙',
+    color: '#A78BFA',
+    colorBg: 'rgba(139,92,246,0.08)',
+    colorBorder: 'rgba(139,92,246,0.25)',
+    checkColor: '#8B5CF6',
+    items: [
+      'Magnesium Bisglycinate',
+      'Ashwagandha KSM-66',
+      'Melatonin',
+    ]
+  }
 ];
 
-function getSuppsCustomList() {
-  const raw = localStorage.getItem('liftlab_edits');
-  return raw ? JSON.parse(raw) : DEFAULT_SUPPS_LIST;
-}
-
-function saveSuppsCustomList(list) {
-  localStorage.setItem('liftlab_edits', JSON.stringify(list));
-}
-
-function getCheckedSupps() {
+function getSuppsState() {
   const raw = localStorage.getItem('liftlab_supps');
-  if (!raw) return [];
+  if (!raw) return {};
   const stored = JSON.parse(raw);
-  if (stored.date !== getTodayKey()) return [];
-  return stored.checked || [];
+  if (stored.date !== getTodayKey()) return {};
+  return stored.state || {};
 }
 
-function saveCheckedSupps(checked) {
-  localStorage.setItem('liftlab_supps', JSON.stringify({ date: getTodayKey(), checked }));
+function setSuppsState(state) {
+  localStorage.setItem('liftlab_supps', JSON.stringify({ date: getTodayKey(), state }));
+}
+
+function toggleSupp(name) {
+  const state = getSuppsState();
+  state[name] = !state[name];
+  setSuppsState(state);
 }
 
 // ========================
@@ -763,9 +802,9 @@ function renderStreakCard(data) {
 }
 
 function allSuppsComplete() {
-  const list = getSuppsCustomList();
-  const checked = getCheckedSupps();
-  return list.length > 0 && list.every(s => checked.includes(s.name));
+  const state = getSuppsState();
+  const allItems = SUPPLEMENT_SECTIONS.flatMap(s => s.items);
+  return allItems.length > 0 && allItems.every(name => state[name] === true);
 }
 
 function getStreakBadgeHTML() {
@@ -781,7 +820,7 @@ function getStreakBadgeHTML() {
 }
 
 function buildCompleteCardHTML() {
-  const total = getSuppsCustomList().length;
+  const total = SUPPLEMENT_SECTIONS.flatMap(s => s.items).length;
   return `
     <div class="supps-complete-card" id="supps-complete-card">
       <div class="supps-complete-ring-wrap">
@@ -800,54 +839,55 @@ function buildCompleteCardHTML() {
 }
 
 function buildChecklistHTML() {
-  const list = getSuppsCustomList();
-  const checked = getCheckedSupps();
-  const total = list.length;
-  const doneCount = checked.filter(n => list.some(s => s.name === n)).length;
-  const pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+  const state = getSuppsState();
   const complete = allSuppsComplete();
   const noteHTML = (complete && suppsViewExpanded)
-    ? `<div class="supps-expanded-note">All ${total} taken today — uncheck any to edit</div>`
+    ? `<div class="supps-expanded-note">All taken today — uncheck any to edit</div>`
     : '';
-  const rows = list.map(s => {
-    const isDone = checked.includes(s.name);
-    return `
-      <div class="supp-row ${isDone ? 'checked' : ''}" data-supp="${s.name}">
-        <div class="supp-check">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
+
+  const sectionsHTML = SUPPLEMENT_SECTIONS.map(section => {
+    const sectionDone = section.items.filter(name => state[name]).length;
+    const sectionTotal = section.items.length;
+    const allSectionDone = sectionDone === sectionTotal;
+
+    const rowsHTML = section.items.map(name => {
+      const checked = !!state[name];
+      return `
+        <div class="supp-row-a" data-name="${name}">
+          <span class="supp-name-a">${name}</span>
+          <div class="supp-check ${checked ? 'supp-check-on' : 'supp-check-off'}"
+               style="${checked ? `background:${section.checkColor};` : ''}"
+               data-name="${name}">
+            ${checked ? '✓' : ''}
+          </div>
         </div>
-        <span class="supp-name">${s.name}</span>
-        <span class="supp-time">${s.time}</span>
+      `;
+    }).join('');
+
+    return `
+      <div class="section-a supps-checklist-card">
+        <div class="section-a-hdr" style="background:${section.colorBg}; border-left:3px solid ${section.color};">
+          <span class="section-a-icon">${section.icon}</span>
+          <span class="section-a-title" style="color:${section.color};">${section.label} — ${section.sublabel}</span>
+          <span class="section-a-count">${sectionDone} of ${sectionTotal}${allSectionDone ? ' ✓' : ''}</span>
+        </div>
+        ${rowsHTML}
       </div>
     `;
   }).join('');
-  return `
-    <div class="supps-header-row">
-      <span class="supps-progress-label">${doneCount} of ${total} taken</span>
-    </div>
-    <div class="supps-progress-bar-track">
-      <div class="supps-progress-bar-fill" style="width: ${pct}%"></div>
-    </div>
-    <div class="supps-list-card supps-checklist-card">
-      ${noteHTML}
-      ${rows}
-    </div>
-    <p class="supps-reset-note">Checklist resets automatically at midnight</p>
-  `;
+
+  return noteHTML + sectionsHTML;
 }
 
 function attachSuppsCheckboxListeners() {
-  document.querySelectorAll('.supp-row').forEach(row => {
-    row.addEventListener('click', () => {
-      const name = row.dataset.supp;
-      const current = getCheckedSupps();
-      const updated = current.includes(name)
-        ? current.filter(n => n !== name)
-        : [...current, name];
-      saveCheckedSupps(updated);
-      if (getSuppsCustomList().every(s => updated.includes(s.name))) markTodayDone();
+  document.querySelectorAll('.supp-check').forEach(el => {
+    el.addEventListener('click', () => {
+      const name = el.dataset.name;
+      toggleSupp(name);
+      if (allSuppsComplete()) {
+        markTodayDone();
+        suppsViewExpanded = false;
+      }
       renderSuppsChecklistArea();
     });
   });
@@ -887,10 +927,9 @@ function renderSuppsChecklistArea() {
   }
 }
 
-function renderSupps(editMode = false) {
-  const streakData = editMode ? getStreakData() : processStreakMissedDays();
+function renderSupps() {
+  const streakData = processStreakMissedDays();
   const container = document.getElementById('screen-container');
-  const list = getSuppsCustomList();
 
   const _src_color = session && session.paused ? '#7B70FF' : '#22C55E';
   const returnCard = session ? `
@@ -906,20 +945,6 @@ function renderSupps(editMode = false) {
     </div>
   ` : '';
 
-  const editRows = editMode ? list.map(s => `
-    <div class="supp-row supp-row-edit">
-      <span class="supp-name">${s.name}</span>
-      <button class="supp-delete-btn" data-supp="${s.name}" aria-label="Remove ${s.name}">×</button>
-    </div>
-  `).join('') : '';
-
-  const addRow = editMode ? `
-    <div class="supp-add-row">
-      <input class="supp-add-input" id="supp-add-input" type="text" placeholder="Add supplement…" maxlength="40" />
-      <button class="supp-add-btn" id="supp-add-btn">Add</button>
-    </div>
-  ` : '';
-
   container.innerHTML = `
     <div class="supps-screen">
 
@@ -927,21 +952,11 @@ function renderSupps(editMode = false) {
 
       <div class="supps-screen-header">
         <span class="supps-screen-title">Supplements</span>
-        ${editMode
-          ? `<button class="supps-edit-btn supps-edit-btn-done" id="supps-edit-toggle">Done</button>`
-          : `<button class="supps-edit-btn" id="supps-edit-toggle">Edit</button>`
-        }
       </div>
 
-      ${!editMode ? renderStreakCard(streakData) : ''}
+      ${renderStreakCard(streakData)}
 
-      <div id="supps-checklist-area">${editMode ? `
-        <div class="supps-list-card">
-          ${editRows}
-        </div>
-        ${addRow}
-        <p class="supps-reset-note">Checklist resets automatically at midnight</p>
-      ` : ''}</div>
+      <div id="supps-checklist-area"></div>
 
     </div>
   `;
@@ -956,43 +971,7 @@ function renderSupps(editMode = false) {
     }
   });
 
-  document.getElementById('supps-edit-toggle').addEventListener('click', () => {
-    renderSupps(!editMode);
-  });
-
-  if (editMode) {
-    container.querySelectorAll('.supp-delete-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const name = btn.dataset.supp;
-        const updated = getSuppsCustomList().filter(s => s.name !== name);
-        saveSuppsCustomList(updated);
-        const updatedChecked = getCheckedSupps().filter(n => n !== name);
-        saveCheckedSupps(updatedChecked);
-        renderSupps(true);
-      });
-    });
-
-    const addBtn = document.getElementById('supp-add-btn');
-    const addInput = document.getElementById('supp-add-input');
-
-    addBtn.addEventListener('click', () => {
-      const name = addInput.value.trim();
-      if (!name) return;
-      const current = getSuppsCustomList();
-      if (current.some(s => s.name.toLowerCase() === name.toLowerCase())) {
-        addInput.value = '';
-        return;
-      }
-      saveSuppsCustomList([...current, { name, time: '' }]);
-      renderSupps(true);
-    });
-
-    addInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') addBtn.click();
-    });
-  } else {
-    renderSuppsChecklistArea();
-  }
+  renderSuppsChecklistArea();
 }
 // ========================
 // WORKOUT SCREEN (stub)
