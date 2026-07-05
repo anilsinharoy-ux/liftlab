@@ -725,7 +725,7 @@ function buildStreakCalendar(data) {
     } else if (status === 'done') {
       cells += `<div class="streak-day done">${d}</div>`;
     } else if (status === 'freeze') {
-      cells += `<div class="streak-day freeze">${d}</div>`;
+      cells += `<div class="streak-day streak-day-freeze"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00C8FF" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/><line x1="12" y1="5" x2="10" y2="3"/><line x1="12" y1="5" x2="14" y2="3"/><line x1="12" y1="19" x2="10" y2="21"/><line x1="12" y1="19" x2="14" y2="21"/><line x1="5" y1="12" x2="3" y2="10"/><line x1="5" y1="12" x2="3" y2="14"/><line x1="19" y1="12" x2="21" y2="10"/><line x1="19" y1="12" x2="21" y2="14"/></svg></div>`;
     } else if (status === 'missed') {
       cells += `<div class="streak-day missed">${d}</div>`;
     } else {
@@ -744,15 +744,14 @@ function renderStreakCard(data) {
           <div class="streak-number">${data.currentStreak}</div>
           <div class="streak-label">day streak</div>
         </div>
-        <div class="freeze-badge">${freezeLabel}</div>
+        <div class="supps-freeze-badge"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#00C8FF" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/><line x1="12" y1="5" x2="10" y2="3"/><line x1="12" y1="5" x2="14" y2="3"/><line x1="12" y1="19" x2="10" y2="21"/><line x1="12" y1="19" x2="14" y2="21"/><line x1="5" y1="12" x2="3" y2="10"/><line x1="5" y1="12" x2="3" y2="14"/><line x1="19" y1="12" x2="21" y2="10"/><line x1="19" y1="12" x2="21" y2="14"/></svg><span class="supps-freeze-text">${freezeLabel}</span></div>
       </div>
       ${buildStreakCalendar(data)}
       <div class="streak-legend">
         <div class="streak-leg-item">
           <div class="streak-leg-dot" style="background:#5B4EFF"></div>taken
         </div>
-        <div class="streak-leg-item">
-          <div class="streak-leg-dot" style="background:rgba(245,158,11,0.5);border:1px solid rgba(245,158,11,0.3)"></div>freeze day
+        <div class="streak-leg-item"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00C8FF" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/><line x1="12" y1="5" x2="10" y2="3"/><line x1="12" y1="5" x2="14" y2="3"/><line x1="12" y1="19" x2="10" y2="21"/><line x1="12" y1="19" x2="14" y2="21"/><line x1="5" y1="12" x2="3" y2="10"/><line x1="5" y1="12" x2="3" y2="14"/><line x1="19" y1="12" x2="21" y2="10"/><line x1="19" y1="12" x2="21" y2="14"/></svg>freeze day
         </div>
         <div class="streak-leg-item">
           <div class="streak-leg-dot" style="background:#1C1C1C"></div>missed

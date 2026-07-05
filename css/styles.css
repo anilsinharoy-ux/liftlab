@@ -3152,13 +3152,20 @@ input {
   margin-top: 2px;
 }
 
-.freeze-badge {
-  background: rgba(245,158,11,0.12);
-  border: 1px solid rgba(245,158,11,0.25);
-  border-radius: 8px;
-  padding: 4px 10px;
+.supps-freeze-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 200, 255, 0.08);
+  border: 1px solid rgba(0, 200, 255, 0.3);
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+.supps-freeze-text {
   font-size: 11px;
-  color: #F59E0B;
+  color: #00C8FF;
+  font-weight: 500;
 }
 
 .streak-cal-grid {
@@ -3197,10 +3204,15 @@ input {
   border: 2px solid #7B70FF;
 }
 
-.streak-day.freeze {
-  background: rgba(245,158,11,0.15);
-  color: #F59E0B;
-  border: 1px solid rgba(245,158,11,0.3);
+.streak-day-freeze {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 200, 255, 0.08);
+  border: 1px solid rgba(0, 200, 255, 0.4);
+  box-shadow: 0 0 8px rgba(0, 200, 255, 0.2);
 }
 
 .streak-day.missed {
