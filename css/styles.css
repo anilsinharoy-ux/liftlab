@@ -3261,8 +3261,9 @@ input {
 }
 
 .streak-day-future {
-  background: #7878A0;
-  color: #ffffff;
+  background: transparent;
+  color: #9090B8;
+  border: none;
 }
 
 .streak-day {
@@ -3385,7 +3386,7 @@ input {
 }
 
 .heat-cell.h-empty    { background: transparent; color: transparent; }
-.heat-cell.h-future   { background: #7878A0; color: #ffffff; }
+.heat-cell.h-future   { background: transparent; color: #9090B8; border: none; }
 .heat-cell.h-rest     { background: #484860; color: #AAAABC; }
 .heat-cell.h-trained  { background: #5B4EFF; color: #ffffff; }
 .heat-cell.h-today    { background: #22C55E; color: #ffffff; border: 1px solid #22C55E; }
