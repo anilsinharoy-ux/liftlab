@@ -178,7 +178,7 @@ input {
   align-items: center;
   justify-content: center;
   gap: 3px;
-  color: #555555;
+  color: #AAAABC;
   font-size: 10px;
   font-weight: 500;
   padding: 7px 0;
@@ -3255,7 +3255,7 @@ input {
 
 .streak-cal-hdr {
   font-size: 9px;
-  color: #333344;
+  color: #AAAABC;
   text-align: center;
   padding: 2px 0;
 }
@@ -3268,7 +3268,8 @@ input {
   justify-content: center;
   font-size: 10px;
   font-weight: 500;
-  color: #222233;
+  color: #AAAABC;
+  background: #484860;
 }
 
 .streak-day.done {
@@ -3310,7 +3311,7 @@ input {
   align-items: center;
   gap: 5px;
   font-size: 10px;
-  color: #555566;
+  color: #AAAABC;
 }
 
 .streak-leg-dot {
@@ -3342,7 +3343,7 @@ input {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.8px;
-  color: #555566;
+  color: #AAAABC;
   margin-bottom: 12px;
 }
 
@@ -3358,7 +3359,7 @@ input {
 .heat-dow span {
   text-align: center;
   font-size: 10px;
-  color: #404055;
+  color: #AAAABC;
   font-weight: 500;
 }
 
@@ -3378,9 +3379,9 @@ input {
   font-weight: 500;
 }
 
-.heat-cell.h-empty    { background: transparent; }
-.heat-cell.h-future   { background: transparent; color: #2a2a3a; }
-.heat-cell.h-rest     { background: #1A1A1A; color: #303040; }
+.heat-cell.h-empty    { background: transparent; color: transparent; }
+.heat-cell.h-future   { background: transparent; color: #2E2E40; }
+.heat-cell.h-rest     { background: #484860; color: #AAAABC; }
 .heat-cell.h-trained  { background: #5B4EFF; color: #ffffff; }
 .heat-cell.h-today    { background: #22C55E; color: #ffffff; border: 1px solid #22C55E; }
 .heat-cell.h-skipped  { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
@@ -3401,7 +3402,7 @@ input {
 
 .heat-legend-label {
   font-size: 10px;
-  color: #404055;
+  color: #AAAABC;
   margin-right: 8px;
 }
 
