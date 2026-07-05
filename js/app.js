@@ -1744,7 +1744,9 @@ function buildTrainingHeatmap() {
   const trainedDays = new Set();
   for (const e of all) {
     const d = new Date(e.ts);
-    if (d.getFullYear() === year && d.getMonth() === month) trainedDays.add(d.getDate());
+    if (d.getFullYear() === year && d.getMonth() === month) {
+      trainedDays.add(d.getDate());
+    }
   }
 
   const dowHdrs = ['M','T','W','T','F','S','S'].map(l => `<span>${l}</span>`).join('');
@@ -1755,11 +1757,18 @@ function buildTrainingHeatmap() {
     const isToday  = d === todayNum;
     const isFuture = d > todayNum;
     const trained  = trainedDays.has(d);
+
+    const dateStr = dateToDayKey(new Date(year, month, d));
+    const checkin  = localStorage.getItem(`liftlab_checkin_${dateStr}`);
+    const isSkipped = checkin === 'skip';
+
     let cls = 'heat-cell';
-    if (isFuture)       cls += ' h-future';
-    else if (isToday)   cls += trained ? ' h-trained h-today' : ' h-today';
-    else if (trained)   cls += ' h-trained';
-    else                cls += ' h-rest';
+    if (isFuture)        cls += ' h-future';
+    else if (isToday)    cls += trained ? ' h-trained h-today' : ' h-today';
+    else if (trained)    cls += ' h-trained';
+    else if (isSkipped)  cls += ' h-skipped';
+    else                 cls += ' h-rest';
+
     cells += `<div class="${cls}">${d}</div>`;
   }
 
@@ -1769,10 +1778,14 @@ function buildTrainingHeatmap() {
       <div class="heat-dow">${dowHdrs}</div>
       <div class="heat-grid">${empties}${cells}</div>
       <div class="heat-legend">
-        <div class="heat-legend-sq" style="background:#1A1A1A"></div>
         <span class="heat-legend-label">rest</span>
-        <div class="heat-legend-sq" style="background:#5B4EFF"></div>
+        <div class="heat-legend-sq" style="background:#1A1A1A;"></div>
+        <div class="heat-legend-sq" style="background:#5B4EFF;"></div>
         <span class="heat-legend-label">trained</span>
+        <div class="heat-legend-sq" style="background:#22C55E;"></div>
+        <span class="heat-legend-label">today</span>
+        <div class="heat-legend-sq" style="background:#F59E0B;"></div>
+        <span class="heat-legend-label">skipped</span>
       </div>
     </div>
   `;

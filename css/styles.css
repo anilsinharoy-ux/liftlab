@@ -3292,7 +3292,8 @@ input {
 .heat-cell.h-future   { background: transparent; color: #2a2a3a; }
 .heat-cell.h-rest     { background: #1A1A1A; color: #303040; }
 .heat-cell.h-trained  { background: #5B4EFF; color: #ffffff; }
-.heat-cell.h-today    { background: #1C1C1C; color: #7B70FF; border: 1px solid #3a3480; }
+.heat-cell.h-today    { background: #22C55E; color: #ffffff; border: 1px solid #22C55E; }
+.heat-cell.h-skipped  { background: rgba(245, 158, 11, 0.15); color: #F59E0B; border: 1px solid rgba(245, 158, 11, 0.3); }
 
 .heat-legend {
   display: flex;
