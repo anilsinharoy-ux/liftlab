@@ -3260,11 +3260,7 @@ input {
   padding: 2px 0;
 }
 
-.streak-day-future {
-  background: transparent;
-  color: #9090B8;
-  border: none;
-}
+/* streak-day-future moved below */
 
 .streak-day {
   aspect-ratio: 1;
@@ -3303,6 +3299,12 @@ input {
 .streak-day.missed {
   background: #1C1C1C;
   color: #2a2a3a;
+}
+
+.streak-day.streak-day-future {
+  background: transparent !important;
+  color: #9090B8 !important;
+  border: none !important;
 }
 
 .streak-legend {
