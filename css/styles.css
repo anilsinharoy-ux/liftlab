@@ -1149,7 +1149,7 @@ input {
 }
 
 .supp-check-off {
-  border: 1.5px solid #333333;
+  border: 2px solid #8888AA;
   background: transparent;
 }
 
@@ -3260,6 +3260,11 @@ input {
   padding: 2px 0;
 }
 
+.streak-day-future {
+  background: #7878A0;
+  color: #ffffff;
+}
+
 .streak-day {
   aspect-ratio: 1;
   border-radius: 50%;
@@ -3380,7 +3385,7 @@ input {
 }
 
 .heat-cell.h-empty    { background: transparent; color: transparent; }
-.heat-cell.h-future   { background: transparent; color: #2E2E40; }
+.heat-cell.h-future   { background: #7878A0; color: #ffffff; }
 .heat-cell.h-rest     { background: #484860; color: #AAAABC; }
 .heat-cell.h-trained  { background: #5B4EFF; color: #ffffff; }
 .heat-cell.h-today    { background: #22C55E; color: #ffffff; border: 1px solid #22C55E; }
