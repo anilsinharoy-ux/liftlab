@@ -1157,6 +1157,71 @@ input {
   border: none;
 }
 
+.supp-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.supp-capsule-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 1px 6px;
+  width: fit-content;
+}
+
+.supp-capsule-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #AAAABC;
+}
+
+.supp-capsule-text {
+  font-size: 9px;
+  color: #AAAABC;
+  font-weight: 500;
+}
+
+.section-collapsed-hdr {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 13px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.section-done-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 20px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.section-chevron {
+  font-size: 11px;
+  margin-left: 2px;
+}
+
+.section-collapsing {
+  animation: section-swipe-up 0.35s ease-in forwards;
+  overflow: hidden;
+}
+
+@keyframes section-swipe-up {
+  0%   { opacity: 1; transform: translateY(0) scaleY(1); max-height: 400px; }
+  100% { opacity: 0; transform: translateY(-12px) scaleY(0.85); max-height: 0; }
+}
+
 /* ========================
    WORKOUT / DAY PREVIEW SCREEN
    ======================== */
@@ -4068,10 +4133,10 @@ input {
 
 .supps-ripple {
   position: absolute;
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  border: 1px solid rgba(91, 78, 255, 0.5);
+  border: 1.5px solid rgba(0, 240, 224, 0.5);
   animation: supps-ripple-out 1.4s ease-out infinite;
 }
 
@@ -4087,11 +4152,12 @@ input {
 .supps-complete-ring {
   position: relative;
   z-index: 1;
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: rgba(91, 78, 255, 0.15);
-  border: 1px solid rgba(91, 78, 255, 0.4);
+  background: rgba(91, 78, 255, 0.25);
+  border: 2px solid #00F0E0;
+  box-shadow: 0 0 12px rgba(0, 240, 224, 0.3), inset 0 0 20px rgba(91, 78, 255, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4105,7 +4171,7 @@ input {
 
 .supps-complete-icon {
   color: #7B70FF;
-  font-size: 26px;
+  font-size: 28px;
 }
 
 .supps-complete-title {
