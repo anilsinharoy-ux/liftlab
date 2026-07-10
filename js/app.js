@@ -108,6 +108,7 @@ const tabs = {
 
 let currentTab = 'home';
 let suppsViewExpanded = false;
+const suppsSectionExpanded = { morning: false, afternoon: false, night: false };
 let circleMode = 'logging'; // 'logging' | 'resting'
 
 function navigateTo(tabName) {
@@ -143,7 +144,10 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
         navigateTo('workout');
       }
     } else {
-      if (btn.dataset.tab === 'supps') suppsViewExpanded = false;
+      if (btn.dataset.tab === 'supps') {
+        suppsViewExpanded = false;
+        Object.keys(suppsSectionExpanded).forEach(k => suppsSectionExpanded[k] = false);
+      }
       navigateTo(btn.dataset.tab);
     }
   });
@@ -597,10 +601,10 @@ function getMuscleMap(dayIndex, weekType = 'A') {
 function buildSuppsSnapshot() {
   const allItems = SUPPLEMENT_SECTIONS.flatMap(s => s.items);
   const state = getSuppsState();
-  const doneCount = allItems.filter(name => state[name]).length;
+  const doneCount = allItems.filter(item => state[item.name]).length;
 
-  const pills = allItems.map(name => `
-    <span class="supp-pill ${state[name] ? 'done' : ''}">${name}</span>
+  const pills = allItems.map(item => `
+    <span class="supp-pill ${state[item.name] ? 'done' : ''}">${item.name}</span>
   `).join('');
 
   return `
@@ -629,12 +633,12 @@ const SUPPLEMENT_SECTIONS = [
     colorBorder: 'rgba(251,183,36,0.25)',
     checkColor: '#5B4EFF',
     items: [
-      'Centrum Men Multivitamin',
-      'Fish Oil',
-      'Vitamin D3',
-      'Zinc',
-      'Boron',
-      'Longjack Tongkat Ali',
+      { name: 'Centrum Men Multivitamin', capsules: 1 },
+      { name: 'Fish Oil', capsules: 1 },
+      { name: 'Vitamin D3', capsules: 1 },
+      { name: 'Zinc', capsules: 1 },
+      { name: 'Boron', capsules: 2 },
+      { name: 'Longjack Tongkat Ali', capsules: 1 },
     ]
   },
   {
@@ -647,8 +651,8 @@ const SUPPLEMENT_SECTIONS = [
     colorBorder: 'rgba(91,78,255,0.25)',
     checkColor: '#5B4EFF',
     items: [
-      'Protein Shake',
-      'Creatine',
+      { name: 'Protein Shake', capsules: 1 },
+      { name: 'Creatine', capsules: 1 },
     ]
   },
   {
@@ -661,9 +665,9 @@ const SUPPLEMENT_SECTIONS = [
     colorBorder: 'rgba(139,92,246,0.25)',
     checkColor: '#8B5CF6',
     items: [
-      'Magnesium Bisglycinate',
-      'Ashwagandha KSM-66',
-      'Melatonin',
+      { name: 'Magnesium Bisglycinate', capsules: 2 },
+      { name: 'Ashwagandha KSM-66', capsules: 2 },
+      { name: 'Melatonin', capsules: 1 },
     ]
   }
 ];
@@ -804,7 +808,7 @@ function renderStreakCard(data) {
 function allSuppsComplete() {
   const state = getSuppsState();
   const allItems = SUPPLEMENT_SECTIONS.flatMap(s => s.items);
-  return allItems.length > 0 && allItems.every(name => state[name] === true);
+  return allItems.length > 0 && allItems.every(item => state[item.name] === true);
 }
 
 function getStreakBadgeHTML() {
@@ -838,6 +842,23 @@ function buildCompleteCardHTML() {
   `;
 }
 
+function isSectionComplete(sectionId) {
+  const state = getSuppsState();
+  const section = SUPPLEMENT_SECTIONS.find(s => s.id === sectionId);
+  if (!section) return false;
+  return section.items.every(item => state[item.name] === true);
+}
+
+function collapseSectionWithAnimation(sectionId) {
+  const sectionEl = document.querySelector(`[data-section-id="${sectionId}"]`);
+  if (!sectionEl) return;
+  sectionEl.classList.add('section-collapsing');
+  setTimeout(() => {
+    suppsSectionExpanded[sectionId] = false;
+    renderSuppsChecklistArea();
+  }, 350);
+}
+
 function buildChecklistHTML() {
   const state = getSuppsState();
   const complete = allSuppsComplete();
@@ -846,18 +867,46 @@ function buildChecklistHTML() {
     : '';
 
   const sectionsHTML = SUPPLEMENT_SECTIONS.map(section => {
-    const sectionDone = section.items.filter(name => state[name]).length;
+    const isComplete = isSectionComplete(section.id);
+    const isExpanded = suppsSectionExpanded[section.id];
+
+    if (isComplete && !isExpanded) {
+      return `
+        <div class="section-a section-a-collapsed" data-section-id="${section.id}">
+          <div class="section-collapsed-hdr" style="background:${section.colorBg}; border:1.5px solid #00F0E0; box-shadow:0 0 8px rgba(0,240,224,0.1);">
+            <span class="section-a-icon">${section.icon}</span>
+            <span class="section-a-title" style="color:${section.color};">${section.label} — ${section.sublabel}</span>
+            <div class="section-done-badge" style="background:rgba(0,240,224,0.08); color:${section.color}; border:1px solid rgba(0,240,224,0.3);">
+              ✓ ${section.items.length} of ${section.items.length}
+            </div>
+            <span class="section-chevron" style="color:#00F0E0;">›</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const sectionDone = section.items.filter(item => state[item.name]).length;
     const sectionTotal = section.items.length;
     const allSectionDone = sectionDone === sectionTotal;
 
-    const rowsHTML = section.items.map(name => {
-      const checked = !!state[name];
+    const rowsHTML = section.items.map(item => {
+      const checked = !!state[item.name];
+      const capsuleTag = item.capsules === 2 ? `
+        <div class="supp-capsule-tag">
+          <div class="supp-capsule-dot"></div>
+          <div class="supp-capsule-dot"></div>
+          <span class="supp-capsule-text">2 capsules</span>
+        </div>
+      ` : '';
       return `
-        <div class="supp-row-a" data-name="${name}">
-          <span class="supp-name-a">${name}</span>
+        <div class="supp-row-a" data-name="${item.name}">
+          <div class="supp-info">
+            <span class="supp-name-a">${item.name}</span>
+            ${capsuleTag}
+          </div>
           <div class="supp-check ${checked ? 'supp-check-on' : 'supp-check-off'}"
                style="${checked ? `background:${section.checkColor};` : ''}"
-               data-name="${name}">
+               data-name="${item.name}">
             ${checked ? '✓' : ''}
           </div>
         </div>
@@ -865,7 +914,7 @@ function buildChecklistHTML() {
     }).join('');
 
     return `
-      <div class="section-a supps-checklist-card">
+      <div class="section-a supps-checklist-card" data-section-id="${section.id}">
         <div class="section-a-hdr" style="background:${section.colorBg}; border-left:3px solid ${section.color};">
           <span class="section-a-icon">${section.icon}</span>
           <span class="section-a-title" style="color:${section.color};">${section.label} — ${section.sublabel}</span>
@@ -887,7 +936,23 @@ function attachSuppsCheckboxListeners() {
       if (allSuppsComplete()) {
         markTodayDone();
         suppsViewExpanded = false;
+        renderSuppsChecklistArea();
+        return;
       }
+      const sectionEl = el.closest('[data-section-id]');
+      const sectionId = sectionEl?.dataset.sectionId;
+      if (sectionId && isSectionComplete(sectionId)) {
+        setTimeout(() => collapseSectionWithAnimation(sectionId), 300);
+      } else {
+        renderSuppsChecklistArea();
+      }
+    });
+  });
+
+  document.querySelectorAll('.section-a-collapsed').forEach(el => {
+    el.addEventListener('click', () => {
+      const sectionId = el.dataset.sectionId;
+      suppsSectionExpanded[sectionId] = true;
       renderSuppsChecklistArea();
     });
   });
@@ -1300,15 +1365,23 @@ function playCountdownAnimation(onComplete) {
   showNext();
 }
 
-function isDayCompletedToday(dayIndex) {
+function isDayCompletedThisWeek(dayIndex) {
   const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
+
   const now = new Date();
-  return all.some(e => {
-    if (e.dayIndex !== dayIndex) return false;
-    const d = new Date(e.ts);
-    return d.getFullYear() === now.getFullYear() &&
-           d.getMonth() === now.getMonth() &&
-           d.getDate() === now.getDate();
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 7);
+  sunday.setHours(23, 59, 59, 999);
+
+  return all.some(l => {
+    const logDate = new Date(l.ts);
+    return logDate >= monday &&
+           logDate <= sunday &&
+           l.dayIndex === dayIndex;
   });
 }
 
@@ -1373,7 +1446,7 @@ function renderWorkout() {
   const baseDuration = isCrossFit ? 35 : 30;
   const durationMins = hasBuffer ? baseDuration + 10 : baseDuration;
   const photoUrl     = getWorkoutPhotoUrl(weekType, currentDayIndex);
-  const completedDays = program.map((_, i) => isDayCompletedToday(i));
+  const completedDays = program.map((_, i) => isDayCompletedThisWeek(i));
   const isCompleted   = completedDays[currentDayIndex];
 
   // Day selector pills
