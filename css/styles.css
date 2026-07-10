@@ -4123,8 +4123,9 @@ input {
 
 .supps-complete-ring-wrap {
   position: relative;
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
+  aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4154,6 +4155,7 @@ input {
   z-index: 1;
   width: 64px;
   height: 64px;
+  aspect-ratio: 1;
   border-radius: 50%;
   background: rgba(91, 78, 255, 0.25);
   border: 2px solid #00F0E0;
@@ -4170,8 +4172,8 @@ input {
 }
 
 .supps-complete-icon {
-  color: #7B70FF;
-  font-size: 28px;
+  color: #00F0E0;
+  font-size: 26px;
 }
 
 .supps-complete-title {
