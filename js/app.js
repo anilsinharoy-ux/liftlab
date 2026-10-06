@@ -23,10 +23,6 @@ function getWorkoutPhotoUrl(weekType, dayIndex, isRest = false) {
     'A-1': 'images/back_day.jpg',
     'A-2': 'images/Leg day.jpg',
     'A-3': 'images/arms day.jpg',
-    'B-0': 'images/Back Squat .webp',
-    'B-1': 'images/kettlebell.jpg',
-    'B-2': 'images/Power clean.webp',
-    'B-3': 'images/thrusters.webp',
     'rest': 'images/rest_day.webp',
   };
   const key = isRest ? 'rest' : `${weekType}-${dayIndex}`;
@@ -40,10 +36,6 @@ function getWorkoutHeroTitle(weekType, dayIndex, isRest = false) {
     'A-1': { title: 'Back &\nBiceps',        sub: 'Day 2 · Upper Pull · Week A' },
     'A-2': { title: 'Leg\nDay',              sub: 'Day 3 · Legs · Week A' },
     'A-3': { title: 'Arms\nDay',             sub: 'Day 4 · Full Body · Week A' },
-    'B-0': { title: 'Strength\n& Power',     sub: 'Day 1 · CrossFit · Week B' },
-    'B-1': { title: 'Endurance\n& Gymnastics', sub: 'Day 2 · CrossFit · Week B' },
-    'B-2': { title: 'Olympic\nLifting',      sub: 'Day 3 · CrossFit · Week B' },
-    'B-3': { title: 'Full Body\n& Intensity', sub: 'Day 4 · CrossFit · Week B' },
   };
   return TITLES[`${weekType}-${dayIndex}`] || { title: 'Train', sub: '' };
 }
@@ -74,18 +66,7 @@ const EXERCISE_NAME_MAP = {
   'EZ Bar Bicep Curls':                        'ez bar curl',
   'EZ Bar Skullcrusher':                       'ez bar lying triceps extension',
   'Dumbbell Rear Delt Lateral Raise':          'dumbbell rear lateral raise',
-  // Program B — CrossFit
-  'Back Squat':                                'barbell squat',
-  'Strict Pull-ups':                           'pull up',
-  'Romanian Deadlift':                         'barbell romanian deadlift',
-  'Seated Dumbbell Shoulder Press':            'dumbbell shoulder press',
-  'Power Clean':                               'barbell power clean',
   'Weighted Dips':                             'weighted dip',
-  'Front Squat':                               'barbell front squat',
-  'Hang Power Cleans':                         'barbell power clean',
-  'Thrusters':                                 'barbell thruster',
-  'Wall Balls':                                'medicine ball',
-  'Kettlebell Swings':                         'kettlebell swing',
 };
 
 // ========================
@@ -490,45 +471,6 @@ function getMuscleMap(dayIndex, weekType = 'A') {
   const S = '#1A3A6A'; // secondary — darker navy
   const I = '#0D1828'; // inactive — very dark
 
-  const crossfitDays = [
-    {
-      // Day 1: Back Squat + Pull-ups
-      chest: I, shoulder: S, tricep: I, lats: P, bicep: S, quad: P, calf: I,
-      tags: [
-        { name: 'Quads',  primary: true  },
-        { name: 'Lats',   primary: true  },
-        { name: 'Biceps', primary: false },
-      ]
-    },
-    {
-      // Day 2: Romanian Deadlift + Shoulder Press
-      chest: I, shoulder: P, tricep: S, lats: S, bicep: I, quad: S, calf: I,
-      tags: [
-        { name: 'Hamstrings', primary: true  },
-        { name: 'Shoulders',  primary: true  },
-        { name: 'Triceps',    primary: false },
-      ]
-    },
-    {
-      // Day 3: Power Clean + Weighted Dips
-      chest: S, shoulder: S, tricep: S, lats: P, bicep: S, quad: S, calf: I,
-      tags: [
-        { name: 'Full Body', primary: true  },
-        { name: 'Power',     primary: true  },
-        { name: 'Chest',     primary: false },
-      ]
-    },
-    {
-      // Day 4: Front Squat + Pull-ups
-      chest: I, shoulder: S, tricep: I, lats: P, bicep: S, quad: P, calf: I,
-      tags: [
-        { name: 'Quads',     primary: true  },
-        { name: 'Lats',      primary: true  },
-        { name: 'Shoulders', primary: false },
-      ]
-    },
-  ];
-
   const days = [
     {
       chest: P, shoulder: P, tricep: S, lats: I, bicep: I, quad: I, calf: I,
@@ -566,8 +508,7 @@ function getMuscleMap(dayIndex, weekType = 'A') {
     },
   ];
 
-  const daySet = weekType === 'B' ? crossfitDays : days;
-  const m = daySet[dayIndex] || daySet[0];
+  const m = days[dayIndex] || days[0];
 
   const svg = `<svg viewBox="0 0 80 180" xmlns="http://www.w3.org/2000/svg">
     <ellipse cx="40" cy="12" rx="10" ry="11" fill="${I}"/>
@@ -1094,124 +1035,6 @@ const PROGRAM_A = [
   }
 ];
 
-const PROGRAM_B = [
-  {
-    day: 1,
-    label: 'Day 1 — Strength & Power',
-    muscles: 'Legs · Back',
-    hasWarmup: true,
-    warmupDuration: 300,
-    exercises: [
-      { name: 'Back Squat',     sets: 4, reps: '5',  rest: 120, image: 'images/Back Squat.jpeg' },
-      { name: 'Strict Pull-ups', sets: 3, reps: '8', rest: 90,  image: 'images/Strict Pull-ups .jpeg' },
-    ],
-    wod: {
-      format: 'AMRAP',
-      duration: 720,
-      label: 'AMRAP 12 min',
-      movements: [
-        { name: 'Front Squats',      reps: '10 reps', image: 'images/Front Squats .jpeg' },
-        { name: 'Burpees',           reps: '10 reps', image: 'images/Burpees .jpeg' },
-        { name: 'Kettlebell Swings', reps: '10 reps', image: 'images/Kettlebell swings.jpeg' },
-      ],
-    },
-  },
-  {
-    day: 2,
-    label: 'Day 2 — Endurance & Gymnastics',
-    muscles: 'Hamstrings · Shoulders',
-    hasWarmup: true,
-    warmupDuration: 300,
-    exercises: [
-      { name: 'Romanian Deadlift',              sets: 4, reps: '6',  rest: 120, image: 'images/Romanian Deadlift .jpeg' },
-      { name: 'Seated Dumbbell Shoulder Press', sets: 3, reps: '10', rest: 90,  image: 'images/Dumbbell Shoulder Press.jpeg' },
-    ],
-    wod: {
-      format: 'EMOM',
-      duration: 720,
-      label: 'EMOM 12 min',
-      movements: [
-        { name: 'Wall Balls',        reps: '15 reps', minute: 1, image: 'images/Wall Balls.jpeg' },
-        { name: 'Kettlebell Swings', reps: '12 reps', minute: 2, image: 'images/Kettlebell swings.jpeg' },
-        { name: 'V-Ups',             reps: '10 reps', minute: 3, image: 'images/V-Ups.jpeg' },
-      ],
-    },
-  },
-  {
-    day: 3,
-    label: 'Day 3 — Olympic Lifting',
-    muscles: 'Full Body · Power',
-    hasWarmup: true,
-    warmupDuration: 300,
-    exercises: [
-      { name: 'Power Clean',   sets: 4, reps: '3', rest: 120, image: 'images/Power clean.webp' },
-      { name: 'Weighted Dips', sets: 3, reps: '8', rest: 90,  image: 'images/Weighted Dips .jpeg' },
-    ],
-    wod: {
-      format: 'Rounds for Time',
-      rounds: 4,
-      label: '4 Rounds for Time',
-      movements: [
-        { name: 'Hang Power Cleans',       reps: '10 reps', image: 'images/Hang Power Clean.jpeg' },
-        { name: 'Lateral Barbell Burpees', reps: '12 reps', image: 'images/Burpees .jpeg' },
-        { name: 'Push-ups',                reps: '10 reps', image: 'images/Push-ups.jpeg' },
-      ],
-    },
-  },
-  {
-    day: 4,
-    label: 'Day 4 — Full Body & High Intensity',
-    muscles: 'Full Body · Conditioning',
-    hasWarmup: true,
-    warmupDuration: 300,
-    exercises: [
-      { name: 'Front Squat',    sets: 4, reps: '5', rest: 120, image: 'images/Front Squats .jpeg' },
-      { name: 'Strict Pull-ups', sets: 3, reps: '8', rest: 90, image: 'images/Strict Pull-ups .jpeg' },
-    ],
-    wod: {
-      format: 'Rounds for Time',
-      rounds: 3,
-      label: '3 Rounds for Time',
-      movements: [
-        { name: 'Thrusters',        reps: '15 reps', image: 'images/Thrusters.jpeg' },
-        { name: 'Push-ups',         reps: '12 reps', image: 'images/Push-ups.jpeg' },
-        { name: 'Burpees Over Bar', reps: '10 reps', image: 'images/Burpees .jpeg' },
-      ],
-    },
-  },
-];
-
-// 3 exercises per day (~10 min catch-up shortlist)
-const BUFFER_SHORTLISTS = [
-  [
-    { name: 'Flat Machine Chest Press',             sets: 2, reps: '8–12', rest: 60 },
-    { name: 'Dumbbell Shoulder Press',              sets: 2, reps: '8–12', rest: 60 },
-    { name: 'Single Arm Cable Press Down',          sets: 2, reps: '8–12', rest: 45 },
-  ],
-  [
-    { name: 'Chest Supported Machine Row',          sets: 2, reps: '8–12', rest: 60 },
-    { name: 'EZ Bar Preacher Curl',                 sets: 2, reps: '8–12', rest: 45 },
-    { name: 'Rope Face Pull',                       sets: 2, reps: '8–12', rest: 45 },
-  ],
-  [
-    { name: 'Leg Extension Machine',                sets: 2, reps: '8–12', rest: 60 },
-    { name: 'Leg Press',                            sets: 2, reps: '8–12', rest: 60 },
-    { name: 'Seated Calf Raise',                    sets: 2, reps: '12–15', rest: 45 },
-  ],
-  [
-    { name: 'Narrow Grip Bench Press',              sets: 2, reps: '8–12', rest: 60 },
-    { name: 'EZ Bar Bicep Curls',                   sets: 2, reps: '8–12', rest: 45 },
-    { name: 'EZ Bar Skullcrusher',                  sets: 2, reps: '8–12', rest: 45 },
-  ],
-];
-
-const CROSSFIT_BUFFER_SHORTLISTS = [
-  [{ name: 'Front Squats / Burpees / KB Swings',   sets: 1, reps: 'AMRAP 8 min', rest: 0 }],
-  [{ name: 'Wall Balls / V-Ups / KB Swings',        sets: 1, reps: 'AMRAP 8 min', rest: 0 }],
-  [{ name: 'Power Cleans / Push-ups / Dips',        sets: 1, reps: 'AMRAP 8 min', rest: 0 }],
-  [{ name: 'Thrusters / Push-ups / Burpees',        sets: 1, reps: 'AMRAP 8 min', rest: 0 }],
-];
-
 const LEG_BUFFER_EXERCISES = [
   { name: 'Leg Extension Machine', sets: 2, reps: '8–12',  rest: 60 },
   { name: 'Leg Press',             sets: 2, reps: '8–12',  rest: 60 },
@@ -1278,16 +1101,6 @@ const EXERCISE_LIBRARY = [
     { name: 'Seated Calf Raise',     sets: 3, reps: '12–15',   rest: 45 },
     { name: 'Standing Calf Raise',   sets: 3, reps: '12–15',   rest: 45 },
   ]},
-  { group: 'CrossFit / Olympic', exercises: [
-    { name: 'Power Clean',       sets: 4, reps: '3',   rest: 120 },
-    { name: 'Hang Power Cleans', sets: 4, reps: '5',   rest: 120 },
-    { name: 'Barbell Deadlift',  sets: 3, reps: '5',   rest: 120 },
-    { name: 'Strict Pull-ups',   sets: 3, reps: '8',   rest: 90  },
-    { name: 'Thrusters',         sets: 3, reps: '10',  rest: 90  },
-    { name: 'Kettlebell Swings', sets: 3, reps: '15–20', rest: 60 },
-    { name: 'Wall Balls',        sets: 3, reps: '15–20', rest: 60 },
-    { name: 'Box Jumps',         sets: 3, reps: '10',  rest: 60  },
-  ]},
 ];
 
 let currentDayIndex = 0;
@@ -1306,7 +1119,7 @@ function getDayExercises(weekType, dayIndex) {
   const edits = getProgramEdits();
   const key = `${weekType}_${dayIndex}`;
   if (edits[key]) return edits[key];
-  const program = weekType === 'B' ? PROGRAM_B : PROGRAM_A;
+  const program = PROGRAM_A;
   return [...program[dayIndex].exercises];
 }
 
@@ -1434,9 +1247,8 @@ function renderWorkout() {
   const portion    = getPortionForSession(currentDayIndex);
 
   const dayExercises = getDayExercises(weekType, currentDayIndex);
-  const isCrossFit   = !!day.wod;
   const hasBuffer    = portion && portion.length > 0;
-  const baseDuration = isCrossFit ? 35 : 30;
+  const baseDuration = 30;
   const durationMins = hasBuffer ? baseDuration + 10 : baseDuration;
   const photoUrl     = getWorkoutPhotoUrl(weekType, currentDayIndex);
   const completedDays = program.map((_, i) => isDayCompletedThisWeek(i));
@@ -1461,34 +1273,6 @@ function renderWorkout() {
       <div class="wt-ex-rest">${e.rest}s</div>
     </div>
   `).join('');
-
-  // WOD section (CrossFit only)
-  const wodSection = isCrossFit ? (() => {
-    const wod = day.wod;
-    const movementRows = wod.movements.map(m => `
-      <div class="wod-preview-row">
-        ${m.image ? `<img class="wod-preview-thumb" src="${m.image}" alt="${m.name}" />` : ''}
-        <span class="wod-preview-name">${m.name}</span>
-        ${m.minute ? `<span class="wod-preview-meta">Min ${m.minute}</span>` : ''}
-        <span class="wod-preview-reps">${m.reps}</span>
-      </div>
-    `).join('');
-    return `
-      <div class="wt-section">
-        <div class="wt-section-header">
-          <div class="wt-section-left">
-            <span class="wt-section-title">WOD</span>
-            <span class="wt-section-meta">${wod.label}</span>
-          </div>
-          <span class="wt-format-badge">${wod.format}</span>
-        </div>
-        <div class="wod-preview-card"><div class="wod-preview-header">
-          <span class="wod-preview-label">${wod.label}</span>
-          <span class="wod-preview-format">${wod.format}</span>
-        </div>${movementRows}</div>
-      </div>
-    `;
-  })() : '';
 
   // Buffer section
   const splitBuf = getSplitBuffer();
@@ -1518,10 +1302,6 @@ function renderWorkout() {
       </div>
     </div>
   ` : '';
-
-  const warmupLine = isCrossFit
-    ? `<div class="wt-warmup-line">🚴 5 min warm-up included</div>`
-    : '';
 
   container.innerHTML = `
     <div class="wt-screen">
@@ -1560,11 +1340,9 @@ function renderWorkout() {
             </button>
           </div>
         </div>
-        ${warmupLine}
         <div class="wt-ex-list">${exerciseCards}</div>
       </div>
 
-      ${wodSection}
       ${bufferSection}
 
       <div class="wt-start-bar">
@@ -1771,7 +1549,6 @@ const WORKOUT_ANCHORS = [
   { label: 'Upper Push', keys: ['Incline Barbell Bench Press','Flat Machine Chest Press','Single Arm Cable Press Down'] },
   { label: 'Upper Pull', keys: ['Wide Grip Pull Down','Chest Supported Machine Row','Narrow Grip Low Pulley Cable Row'] },
   { label: 'Legs',       keys: ['Leg Curl Machine','Leg Extension Machine','Leg Press','Hack Squat','Seated Calf Raise'] },
-  { label: 'CrossFit',   keys: ['Back Squat','Front Squat','Romanian Deadlift','Power Clean','Strict Pull-ups','Weighted Dips'] },
 ];
 
 function inferWorkoutLabel(exNames) {
@@ -2101,11 +1878,6 @@ function renderWorkoutEditor(dayIdx) {
     </div>
   `).join('');
 
-  const isCrossFit = !!day.wod;
-  const wodNote = isCrossFit ? `
-    <div class="editor-wod-note">WOD (${day.wod.label}) is fixed and not editable.</div>
-  ` : '';
-
   container.innerHTML = `
     <div class="editor-screen">
 
@@ -2122,8 +1894,6 @@ function renderWorkoutEditor(dayIdx) {
       <div class="editor-list-card">
         ${exerciseRows.length ? exerciseRows : '<p class="editor-empty">No exercises. Add one below.</p>'}
       </div>
-
-      ${wodNote}
 
       <button class="editor-add-btn" id="editor-add">+ Add exercise</button>
 
@@ -2371,9 +2141,7 @@ function buildSplitBuffer(skippedDayIndex) {
   const weekState = getWeekState();
   const program = getWeekProgram();
   const skippedDayLabel = program[skippedDayIndex] ? program[skippedDayIndex].label : '';
-  const exercises = weekState.weekType === 'B'
-    ? (CROSSFIT_BUFFER_SHORTLISTS[skippedDayIndex] || CROSSFIT_BUFFER_SHORTLISTS[0])
-    : LEG_BUFFER_EXERCISES;
+  const exercises = LEG_BUFFER_EXERCISES;
 
   const portions = {};
   exercises.forEach((ex, i) => {
@@ -2517,7 +2285,6 @@ function saveSession() {
     timerState: 'idle',
     startedAt: session.startedAt,
     exercises: session.exercises,
-    wod: session.wod,
   };
   localStorage.setItem('liftlab_active_session', JSON.stringify(toSave));
 }
@@ -2741,7 +2508,6 @@ function beginStrengthSession(dayIndex) {
     timerId: null,
     restRemaining: 0,
     timerState: 'idle',
-    wod: day.wod || null,
     startedAt: Date.now(),
     hasBuffer: bufExercises.length > 0,
     bufferDayIndex: dayIndex,
@@ -3007,8 +2773,6 @@ function advanceSession() {
     session.weight = getSuggestedWeight(session.exIdx);
     saveSession();
     renderActiveExercise();
-  } else if (session.wod) {
-    renderWodScreen();
   } else {
     renderSessionComplete();
   }
@@ -3067,227 +2831,6 @@ function renderSessionComplete() {
     clearSession();
     navigateTo('home');
   });
-}
-
-// ========================
-// BIKE WARM-UP SCREEN
-// ========================
-
-function renderBikeWarmup(dayIndex) {
-  clearWarmupTimer();
-  const day = PROGRAM_B[dayIndex];
-  let remaining = day.warmupDuration;
-  const total = day.warmupDuration;
-
-  function drawWarmup() {
-    const pct = ((total - remaining) / total) * 100;
-    const isDone = remaining === 0;
-    const container = document.getElementById('screen-container');
-    if (!container) return;
-
-    container.innerHTML = `
-      <div class="warmup-screen">
-        <div class="warmup-header">
-          <div class="warmup-title">Warm-up</div>
-          <div class="warmup-meta">Stationary Bike · ${day.label}</div>
-        </div>
-
-        <div class="warmup-timer-wrap">
-          <div class="warmup-bike-icon">🚴</div>
-          <div class="warmup-timer-display ${isDone ? 'done' : ''}" id="warmup-display">
-            ${formatTime(remaining)}
-          </div>
-          <div class="warmup-progress-track">
-            <div class="warmup-progress-fill" style="width: ${pct}%"></div>
-          </div>
-        </div>
-
-        <div class="warmup-message">
-          ${isDone ? 'Warm-up complete! Time to lift.' : 'Get on the bike and spin it out.'}
-        </div>
-
-        ${isDone
-          ? `<button class="log-set-btn" id="warmup-done-btn">Start strength work →</button>`
-          : `<button class="warmup-skip-btn" id="warmup-skip-btn">Skip warm-up</button>`
-        }
-      </div>
-    `;
-
-    if (isDone) {
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-      document.getElementById('warmup-done-btn').addEventListener('click', () => {
-        clearWarmupTimer();
-        beginStrengthSession(dayIndex);
-      });
-    } else {
-      document.getElementById('warmup-skip-btn').addEventListener('click', () => {
-        clearWarmupTimer();
-        beginStrengthSession(dayIndex);
-      });
-    }
-  }
-
-  drawWarmup();
-
-  warmupTimerId = setInterval(() => {
-    remaining = Math.max(0, remaining - 1);
-    const display = document.getElementById('warmup-display');
-    const fill   = document.querySelector('.warmup-progress-fill');
-    const pct    = ((total - remaining) / total) * 100;
-
-    if (display) display.textContent = formatTime(remaining);
-    if (fill)    fill.style.width = `${pct}%`;
-
-    if (remaining === 0) {
-      clearWarmupTimer();
-      drawWarmup();
-    }
-  }, 1000);
-}
-
-// ========================
-// WOD SCREEN
-// ========================
-
-function renderWodScreen() {
-  const wod = session.wod;
-  const container = document.getElementById('screen-container');
-  const countUp = wod.format === 'Rounds for Time';
-  const totalTime = wod.duration || 0;
-  let remaining = totalTime;
-  let elapsed = 0;
-  let roundCount = 0;
-  let timerRunning = false;
-  let wodTimerId = null;
-
-  function stopWodTimer() {
-    if (wodTimerId) { clearInterval(wodTimerId); wodTimerId = null; }
-  }
-
-  function getTimeDisplay() {
-    return countUp ? formatTime(elapsed) : formatTime(remaining);
-  }
-
-  const movementRows = wod.movements.map((m, i) => `
-    <div class="wod-movement-row">
-      ${m.image ? `<img class="wod-movement-thumb" src="${m.image}" alt="${m.name}" />` : `<div class="wod-movement-number">${i + 1}</div>`}
-      <div class="wod-movement-info">
-        <div class="wod-movement-name">${m.name}</div>
-        ${m.minute ? `<div class="wod-movement-meta">Minute ${m.minute}</div>` : ''}
-      </div>
-      <div class="wod-movement-reps">${m.reps}</div>
-    </div>
-  `).join('');
-
-  function drawWod() {
-    const timeDone = !countUp && remaining <= 0;
-    const roundLabel = countUp
-      ? `${roundCount} / ${wod.rounds}`
-      : String(roundCount);
-
-    container.innerHTML = `
-      <div class="wod-screen">
-
-        <div class="wod-header">
-          <div class="wod-label">${wod.label}</div>
-          <div class="wod-day-meta">${session.day.label}</div>
-        </div>
-
-        <div class="wod-timer-block">
-          <div class="wod-timer-label">${countUp ? 'Elapsed' : 'Time remaining'}</div>
-          <div class="wod-timer-display ${timerRunning ? 'running' : timeDone ? 'done' : ''}" id="wod-timer-display">
-            ${getTimeDisplay()}
-          </div>
-          ${!countUp ? `
-            <div class="wod-timer-track">
-              <div class="wod-timer-fill" id="wod-timer-fill"
-                   style="width: ${totalTime ? ((totalTime - remaining) / totalTime * 100) : 0}%"></div>
-            </div>
-          ` : ''}
-          <button class="rest-timer-btn" id="wod-timer-btn" ${timeDone ? 'disabled' : ''}>
-            ${timerRunning ? 'Pause' : elapsed > 0 || remaining < totalTime ? 'Resume' : 'Start WOD'}
-          </button>
-        </div>
-
-        <div class="wod-section-label">Movements</div>
-        <div class="wod-movements-card">${movementRows}</div>
-
-        <div class="wod-rounds-block">
-          <span class="wod-rounds-label">${countUp ? 'Round' : 'Rounds completed'}</span>
-          <div class="wod-rounds-controls">
-            <button class="wod-rounds-btn" id="wod-rounds-minus">−</button>
-            <span class="wod-rounds-count" id="wod-rounds-count">${roundLabel}</span>
-            <button class="wod-rounds-btn wod-rounds-btn-add" id="wod-rounds-plus">+</button>
-          </div>
-        </div>
-
-        <button class="log-set-btn" id="wod-finish-btn">Finish WOD</button>
-
-      </div>
-    `;
-
-    document.getElementById('wod-timer-btn').addEventListener('click', () => {
-      if (timerRunning) {
-        stopWodTimer();
-        timerRunning = false;
-        const btn = document.getElementById('wod-timer-btn');
-        const display = document.getElementById('wod-timer-display');
-        if (btn) btn.textContent = 'Resume';
-        if (display) display.className = 'wod-timer-display';
-      } else {
-        if (!countUp && remaining <= 0) return;
-        timerRunning = true;
-        const btn = document.getElementById('wod-timer-btn');
-        const display = document.getElementById('wod-timer-display');
-        if (btn) btn.textContent = 'Pause';
-        if (display) display.className = 'wod-timer-display running';
-
-        wodTimerId = setInterval(() => {
-          if (countUp) {
-            elapsed++;
-          } else {
-            remaining = Math.max(0, remaining - 1);
-            elapsed = totalTime - remaining;
-          }
-
-          const d = document.getElementById('wod-timer-display');
-          const f = document.getElementById('wod-timer-fill');
-          if (!d) { stopWodTimer(); return; }
-
-          d.textContent = getTimeDisplay();
-          if (f && totalTime) f.style.width = `${(elapsed / totalTime) * 100}%`;
-
-          if (!countUp && remaining <= 0) {
-            stopWodTimer();
-            timerRunning = false;
-            d.className = 'wod-timer-display done';
-            const b = document.getElementById('wod-timer-btn');
-            if (b) { b.textContent = "Time's up!"; b.disabled = true; }
-            if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
-          }
-        }, 1000);
-      }
-    });
-
-    document.getElementById('wod-rounds-plus').addEventListener('click', () => {
-      roundCount++;
-      const el = document.getElementById('wod-rounds-count');
-      if (el) el.textContent = countUp ? `${roundCount} / ${wod.rounds}` : String(roundCount);
-    });
-
-    document.getElementById('wod-rounds-minus').addEventListener('click', () => {
-      if (roundCount > 0) roundCount--;
-      const el = document.getElementById('wod-rounds-count');
-      if (el) el.textContent = countUp ? `${roundCount} / ${wod.rounds}` : String(roundCount);
-    });
-
-    document.getElementById('wod-finish-btn').addEventListener('click', () => {
-      stopWodTimer();
-      renderSessionComplete();
-    });
-  }
-
-  drawWod();
 }
 
 // ========================
