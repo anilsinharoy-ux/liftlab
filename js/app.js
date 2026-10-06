@@ -19,10 +19,11 @@ const EXERCISEDB_KEY = '89873a376emshb4aac58b1f59da0p158863jsne076af2868db';
 
 function getWorkoutPhotoUrl(weekType, dayIndex, isRest = false) {
   const PHOTOS = {
-    'A-0': 'images/Chest day.jpg',
-    'A-1': 'images/back_day.jpg',
-    'A-2': 'images/Leg day.jpg',
+    'A-0': 'images/back_day.jpg',
+    'A-1': 'images/Leg day.jpg',
+    'A-2': 'images/back_day.jpg',
     'A-3': 'images/arms day.jpg',
+    'A-4': 'images/Leg day.jpg',
     'rest': 'images/rest_day.webp',
   };
   const key = isRest ? 'rest' : `${weekType}-${dayIndex}`;
@@ -32,10 +33,11 @@ function getWorkoutPhotoUrl(weekType, dayIndex, isRest = false) {
 function getWorkoutHeroTitle(weekType, dayIndex, isRest = false) {
   if (isRest) return { title: 'Rest day', sub: 'Recovery is part of the program' };
   const TITLES = {
-    'A-0': { title: 'Chest &\nShoulders',   sub: 'Day 1 · Upper Push · Week A' },
-    'A-1': { title: 'Back &\nBiceps',        sub: 'Day 2 · Upper Pull · Week A' },
-    'A-2': { title: 'Leg\nDay',              sub: 'Day 3 · Legs · Week A' },
-    'A-3': { title: 'Arms\nDay',             sub: 'Day 4 · Full Body · Week A' },
+    'A-0': { title: 'Upper\nStrength',   sub: 'Day 1 · Back · Shoulders · Chest' },
+    'A-1': { title: 'Lower\nStrength',   sub: 'Day 2 · Quads · Hamstrings' },
+    'A-2': { title: 'Back &\nShoulders', sub: 'Day 3 · Back · Shoulders' },
+    'A-3': { title: 'Chest &\nArms',     sub: 'Day 4 · Chest · Biceps · Triceps' },
+    'A-4': { title: 'Legs\nSize',        sub: 'Day 5 · Quads · Hamstrings · Calves' },
   };
   return TITLES[`${weekType}-${dayIndex}`] || { title: 'Train', sub: '' };
 }
@@ -67,6 +69,22 @@ const EXERCISE_NAME_MAP = {
   'EZ Bar Skullcrusher':                       'ez bar lying triceps extension',
   'Dumbbell Rear Delt Lateral Raise':          'dumbbell rear lateral raise',
   'Weighted Dips':                             'weighted dip',
+  'Weighted Wide Grip Pull Ups':               'pull up',
+  'Bent Over Barbell Row':                     'barbell bent over row',
+  'Narrow Grip T-Bar Row':                     't bar row',
+  'Standing Overhead Barbell Press':           'barbell shoulder press',
+  'Deadlifts':                                 'barbell deadlift',
+  'Lying Leg Curl':                            'lever lying leg curl',
+  'Straight Arm Rope Pull Down':               'cable straight arm pulldown',
+  'Lower Back Hyperextensions':                'hyperextensions',
+  'Standing EZ Bar Front Raise':               'ez bar front raise',
+  'Cable EZ Bar Upright Row':                  'cable upright row',
+  'Incline Dumbbell Fly':                      'dumbbell incline fly',
+  'Cable Crossover':                           'cable chest fly',
+  'High Pulley Single Arm Bicep Curl':         'cable bicep curl',
+  'Glute Kick Backs':                          'cable kickback',
+  'Donkey Calf Raise':                         'donkey calf raise',
+  'Single Leg Calf Press':                     'leg press calf raise',
 };
 
 // ========================
@@ -473,37 +491,51 @@ function getMuscleMap(dayIndex, weekType = 'A') {
 
   const days = [
     {
-      chest: P, shoulder: P, tricep: S, lats: I, bicep: I, quad: I, calf: I,
+      // Day 1: Upper Strength — Back · Shoulders · Chest · Arms
+      chest: S, shoulder: P, tricep: S, lats: P, bicep: S, quad: I, calf: I,
       tags: [
-        { name: 'Chest',     primary: true  },
+        { name: 'Back',      primary: true  },
         { name: 'Shoulders', primary: true  },
-        { name: 'Triceps',   primary: false },
+        { name: 'Chest',     primary: false },
+        { name: 'Arms',      primary: false },
       ]
     },
     {
-      chest: I, shoulder: I, tricep: I, lats: P, bicep: P, quad: I, calf: I,
-      tags: [
-        { name: 'Back',       primary: true  },
-        { name: 'Lats',       primary: true  },
-        { name: 'Biceps',     primary: false },
-        { name: 'Rear Delts', primary: false },
-      ]
-    },
-    {
+      // Day 2: Lower Strength — Quads · Hamstrings · Glutes · Calves
       chest: I, shoulder: I, tricep: I, lats: I, bicep: I, quad: P, calf: S,
       tags: [
         { name: 'Quads',      primary: true  },
         { name: 'Hamstrings', primary: true  },
+        { name: 'Glutes',     primary: false },
         { name: 'Calves',     primary: false },
       ]
     },
     {
-      chest: P, shoulder: I, tricep: S, lats: P, bicep: S, quad: I, calf: I,
+      // Day 3: Back & Shoulders
+      chest: I, shoulder: P, tricep: I, lats: P, bicep: I, quad: I, calf: I,
+      tags: [
+        { name: 'Back',      primary: true  },
+        { name: 'Shoulders', primary: true  },
+        { name: 'Lats',      primary: false },
+      ]
+    },
+    {
+      // Day 4: Chest & Arms
+      chest: P, shoulder: I, tricep: P, lats: I, bicep: P, quad: I, calf: I,
       tags: [
         { name: 'Chest',   primary: true  },
-        { name: 'Back',    primary: true  },
-        { name: 'Biceps',  primary: false },
+        { name: 'Biceps',  primary: true  },
         { name: 'Triceps', primary: false },
+      ]
+    },
+    {
+      // Day 5: Legs Size — Quads · Hamstrings · Glutes · Calves
+      chest: I, shoulder: I, tricep: I, lats: I, bicep: I, quad: P, calf: P,
+      tags: [
+        { name: 'Quads',      primary: true  },
+        { name: 'Hamstrings', primary: true  },
+        { name: 'Glutes',     primary: false },
+        { name: 'Calves',     primary: false },
       ]
     },
   ];
@@ -983,54 +1015,82 @@ function renderSupps() {
 const PROGRAM_A = [
   {
     day: 1,
-    label: 'Day 1 — Upper Push',
-    muscles: 'Chest · Shoulders · Triceps',
+    label: 'Day 1 — Upper Strength',
+    muscles: 'Back · Shoulders · Chest · Arms',
     exercises: [
-      { name: 'Incline Barbell Bench Press',          sets: 3, reps: '8–12', rest: 60, image: 'images/Incline Barbell Bench Press.jpeg' },
-      { name: 'Flat Machine Chest Press',             sets: 3, reps: '8–12', rest: 60, image: 'images/Flat Machine Chest Press.jpeg' },
-      { name: 'Dumbbell Shoulder Press',              sets: 3, reps: '8–12', rest: 60, image: 'images/Dumbbell Shoulder Press.jpeg' },
-      { name: 'Standing Dumbbell Side Lateral Raise', sets: 2, reps: '8–12', rest: 45, image: 'images/Standing Dumbbell Side Lateral Raise .jpeg' },
-      { name: 'Seated Overhead EZ Bar Tricep Ext',   sets: 2, reps: '8–12', rest: 45, image: 'images/Seated Overhead EZ Bar Tricep Extension .jpeg' },
-      { name: 'Single Arm Cable Press Down',          sets: 2, reps: '8–12', rest: 45, image: 'images/Single Arm Cable Press Down .jpeg' },
+      { name: 'Weighted Wide Grip Pull Ups',              sets: 2, reps: '4–6',  rest: 60 },
+      { name: 'Bent Over Barbell Row',                    sets: 4, reps: '4–6',  rest: 60 },
+      { name: 'Narrow Grip T-Bar Row',                    sets: 2, reps: '4–6',  rest: 60 },
+      { name: 'Standing Overhead Barbell Press',          sets: 4, reps: '4–6',  rest: 60 },
+      { name: 'Incline Dumbbell Bench Press',             sets: 4, reps: '4–6',  rest: 60, image: 'images/Incline Dumbbell Bench Press .jpeg' },
+      { name: 'Weighted Dips',                            sets: 2, reps: '4–6',  rest: 60 },
+      { name: 'EZ Bar Skullcrusher',                      sets: 2, reps: '4–6',  rest: 60, image: 'images/EZ Bar Skullcrusher .jpeg' },
+      { name: 'EZ Bar Bicep Curls',                       sets: 2, reps: '4–6',  rest: 60, image: 'images/EZ Bar Preacher Curl.jpg' },
     ]
   },
   {
     day: 2,
-    label: 'Day 2 — Upper Pull',
-    muscles: 'Back · Biceps',
+    label: 'Day 2 — Lower Strength',
+    muscles: 'Quads · Hamstrings · Glutes · Calves',
     exercises: [
-      { name: 'Wide Grip Pull Down',                        sets: 3, reps: '8–12', rest: 60, image: 'images/Wide Grip Pull Down .jpeg' },
-      { name: 'Chest Supported Machine Row',                sets: 3, reps: '8–12', rest: 60, image: 'images/Chest Supported Machine Row .jpeg' },
-      { name: 'Narrow Grip Low Pulley Cable Row',           sets: 3, reps: '8–12', rest: 60, image: 'images/Narrow Grip Low Pulley Cable Row .jpeg' },
-      { name: 'EZ Bar Preacher Curl',                       sets: 2, reps: '8–12', rest: 45, image: 'images/EZ Bar Preacher Curl.jpg' },
-      { name: 'Standing Alternating Dumbbell Hammer Curl',  sets: 2, reps: '8–12', rest: 45, image: 'images/Standing Alternating Dumbbell Hammer Curl.jpeg' },
-      { name: 'Rope Face Pull',                             sets: 2, reps: '8–12', rest: 45, image: 'images/Rope Face Pull .jpeg' },
+      { name: 'Leg Press',              sets: 4, reps: '4–6',  rest: 60, image: 'images/Leg Press .jpeg' },
+      { name: 'Hack Squat',             sets: 2, reps: '4–6',  rest: 60, image: 'images/Hack Squat .jpeg' },
+      { name: 'Deadlifts',              sets: 4, reps: '4–6',  rest: 60 },
+      { name: 'Lying Leg Curl',         sets: 2, reps: '4–6',  rest: 60 },
+      { name: 'Standing Calf Raise',    sets: 4, reps: '4–6',  rest: 60 },
+      { name: 'Seated Calf Raise',      sets: 2, reps: '4–6',  rest: 60, image: 'images/Seated Calf Raise .jpeg' },
     ]
   },
   {
     day: 3,
-    label: 'Day 3 — Legs',
-    muscles: 'Quads · Hamstrings · Calves',
+    label: 'Day 3 — Back & Shoulders',
+    muscles: 'Back · Shoulders',
     exercises: [
-      { name: 'Leg Curl Machine',       sets: 3, reps: '8–12',     rest: 60, image: 'images/Leg Curl Machine .jpeg' },
-      { name: 'Leg Extension Machine',  sets: 3, reps: '8–12',     rest: 60, image: 'images/Leg Extension Machine.jpeg' },
-      { name: 'Leg Press',              sets: 3, reps: '8–12',     rest: 60, image: 'images/Leg Press .jpeg' },
-      { name: 'Hack Squat',             sets: 3, reps: '8–12',     rest: 60, image: 'images/Hack Squat .jpeg' },
-      { name: 'Barbell Walking Lunge',  sets: 2, reps: '10 each',  rest: 45, image: 'images/Walking Lunge .jpeg' },
-      { name: 'Seated Calf Raise',      sets: 3, reps: '12–15',    rest: 45, image: 'images/Seated Calf Raise .jpeg' },
+      { name: 'Wide Grip Pull Down',                       sets: 4, reps: '8–12', rest: 60, image: 'images/Wide Grip Pull Down .jpeg' },
+      { name: 'Narrow Grip Pull Down',                     sets: 4, reps: '8–12', rest: 60, image: 'images/Wide Grip Pull Down .jpeg' },
+      { name: 'Chest Supported Machine Row',               sets: 4, reps: '8–12', rest: 60, image: 'images/Chest Supported Machine Row .jpeg' },
+      { name: 'Narrow Grip Low Pulley Cable Row',          sets: 2, reps: '8–12', rest: 60, image: 'images/Narrow Grip Low Pulley Cable Row .jpeg' },
+      { name: 'Straight Arm Rope Pull Down',               sets: 2, reps: '8–12', rest: 60 },
+      { name: 'Lower Back Hyperextensions',                sets: 2, reps: '8–12', rest: 60 },
+      { name: 'Dumbbell Shoulder Press',                   sets: 4, reps: '8–12', rest: 60, image: 'images/Dumbbell Shoulder Press.jpeg' },
+      { name: 'Standing Dumbbell Side Lateral Raise',      sets: 2, reps: '8–12', rest: 60, image: 'images/Standing Dumbbell Side Lateral Raise .jpeg' },
+      { name: 'Standing EZ Bar Front Raise',               sets: 2, reps: '8–12', rest: 60 },
+      { name: 'Dumbbell Rear Delt Lateral Raise',          sets: 2, reps: '8–12', rest: 60, image: 'images/Dumbbell Rear Delt Lateral Raise .jpeg' },
+      { name: 'Cable EZ Bar Upright Row',                  sets: 2, reps: '8–12', rest: 60 },
+      { name: 'Rope Face Pull',                            sets: 2, reps: '8–12', rest: 60, image: 'images/Rope Face Pull .jpeg' },
     ]
   },
   {
     day: 4,
-    label: 'Day 4 — Full Body / Arms',
-    muscles: 'Chest · Back · Arms',
+    label: 'Day 4 — Chest & Arms',
+    muscles: 'Chest · Biceps · Triceps',
     exercises: [
-      { name: 'Incline Dumbbell Bench Press',             sets: 3, reps: '8–12', rest: 60, image: 'images/Incline Dumbbell Bench Press .jpeg' },
-      { name: 'Narrow Grip Pull Down',                    sets: 3, reps: '8–12', rest: 60, image: 'images/Wide Grip Pull Down .jpeg' },
-      { name: 'Narrow Grip Bench Press',                  sets: 2, reps: '8–12', rest: 60, image: 'images/Narrow Grip Bench Press .jpeg' },
-      { name: 'EZ Bar Bicep Curls',                       sets: 3, reps: '8–12', rest: 45, image: 'images/EZ Bar Preacher Curl.jpg' },
-      { name: 'EZ Bar Skullcrusher',                      sets: 2, reps: '8–12', rest: 45, image: 'images/EZ Bar Skullcrusher .jpeg' },
-      { name: 'Dumbbell Rear Delt Lateral Raise',         sets: 2, reps: '8–12', rest: 45, image: 'images/Dumbbell Rear Delt Lateral Raise .jpeg' },
+      { name: 'Incline Barbell Bench Press',               sets: 4, reps: '8–12', rest: 60, image: 'images/Incline Barbell Bench Press.jpeg' },
+      { name: 'Flat Machine Chest Press',                  sets: 2, reps: '8–12', rest: 60, image: 'images/Flat Machine Chest Press.jpeg' },
+      { name: 'Incline Dumbbell Fly',                      sets: 2, reps: '8–12', rest: 60 },
+      { name: 'Cable Crossover',                           sets: 2, reps: '8–12', rest: 60 },
+      { name: 'Narrow Grip Bench Press',                   sets: 2, reps: '8–12', rest: 60, image: 'images/Narrow Grip Bench Press .jpeg' },
+      { name: 'Seated Overhead EZ Bar Tricep Ext',         sets: 2, reps: '8–12', rest: 60, image: 'images/Seated Overhead EZ Bar Tricep Extension .jpeg' },
+      { name: 'Single Arm Cable Press Down',               sets: 2, reps: '8–12', rest: 60, image: 'images/Single Arm Cable Press Down .jpeg' },
+      { name: 'EZ Bar Preacher Curl',                      sets: 2, reps: '8–12', rest: 60, image: 'images/EZ Bar Preacher Curl.jpg' },
+      { name: 'Standing Alternating Dumbbell Hammer Curl', sets: 2, reps: '8–12', rest: 60, image: 'images/Standing Alternating Dumbbell Hammer Curl.jpeg' },
+      { name: 'High Pulley Single Arm Bicep Curl',         sets: 2, reps: '8–12', rest: 60 },
+    ]
+  },
+  {
+    day: 5,
+    label: 'Day 5 — Legs Size',
+    muscles: 'Quads · Hamstrings · Glutes · Calves',
+    exercises: [
+      { name: 'Leg Curl Machine',       sets: 4, reps: '8–12',      rest: 60, image: 'images/Leg Curl Machine .jpeg' },
+      { name: 'Leg Extension Machine',  sets: 4, reps: '8–12',      rest: 60, image: 'images/Leg Extension Machine.jpeg' },
+      { name: 'Hack Squat',             sets: 4, reps: '8–12',      rest: 60, image: 'images/Hack Squat .jpeg' },
+      { name: 'Leg Press',              sets: 4, reps: '8–12',      rest: 60, image: 'images/Leg Press .jpeg' },
+      { name: 'Barbell Walking Lunge',  sets: 4, reps: '8–12 each', rest: 60, image: 'images/Walking Lunge .jpeg' },
+      { name: 'Glute Kick Backs',       sets: 2, reps: '8–12 each', rest: 60 },
+      { name: 'Donkey Calf Raise',      sets: 4, reps: '8–12',      rest: 60 },
+      { name: 'Seated Calf Raise',      sets: 4, reps: '8–12',      rest: 60, image: 'images/Seated Calf Raise .jpeg' },
+      { name: 'Single Leg Calf Press',  sets: 4, reps: '8–12 each', rest: 60 },
     ]
   }
 ];
@@ -1047,6 +1107,8 @@ const EXERCISE_LIBRARY = [
     { name: 'Flat Barbell Bench Press',        sets: 3, reps: '8–12',  rest: 60 },
     { name: 'Flat Machine Chest Press',        sets: 3, reps: '8–12',  rest: 60 },
     { name: 'Incline Dumbbell Bench Press',    sets: 3, reps: '8–12',  rest: 60 },
+    { name: 'Incline Dumbbell Fly',            sets: 2, reps: '8–12',  rest: 60 },
+    { name: 'Cable Crossover',                 sets: 2, reps: '8–12',  rest: 60 },
     { name: 'Narrow Grip Bench Press',         sets: 3, reps: '8–12',  rest: 60 },
     { name: 'Cable Chest Fly',                 sets: 3, reps: '12–15', rest: 45 },
     { name: 'Dumbbell Chest Fly',              sets: 3, reps: '12–15', rest: 45 },
@@ -1055,29 +1117,39 @@ const EXERCISE_LIBRARY = [
   { group: 'Shoulders', exercises: [
     { name: 'Dumbbell Shoulder Press',              sets: 3, reps: '8–12',  rest: 60 },
     { name: 'Barbell Overhead Press',               sets: 3, reps: '8–12',  rest: 90 },
+    { name: 'Standing Overhead Barbell Press',      sets: 4, reps: '4–6',   rest: 60 },
     { name: 'Arnold Press',                         sets: 3, reps: '8–12',  rest: 60 },
     { name: 'Standing Dumbbell Side Lateral Raise', sets: 2, reps: '12–15', rest: 45 },
+    { name: 'Standing EZ Bar Front Raise',          sets: 2, reps: '8–12',  rest: 60 },
+    { name: 'Cable EZ Bar Upright Row',             sets: 2, reps: '8–12',  rest: 60 },
     { name: 'Cable Lateral Raise',                  sets: 2, reps: '12–15', rest: 45 },
     { name: 'Rope Face Pull',                       sets: 2, reps: '12–15', rest: 45 },
     { name: 'Dumbbell Rear Delt Lateral Raise',     sets: 2, reps: '12–15', rest: 45 },
   ]},
   { group: 'Back', exercises: [
-    { name: 'Wide Grip Pull Down',              sets: 3, reps: '8–12', rest: 60 },
-    { name: 'Narrow Grip Pull Down',            sets: 3, reps: '8–12', rest: 60 },
-    { name: 'Chest Supported Machine Row',      sets: 3, reps: '8–12', rest: 60 },
-    { name: 'Narrow Grip Low Pulley Cable Row', sets: 3, reps: '8–12', rest: 60 },
-    { name: 'Barbell Row',                      sets: 3, reps: '8–12', rest: 90 },
+    { name: 'Wide Grip Pull Down',              sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Narrow Grip Pull Down',            sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Chest Supported Machine Row',      sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Narrow Grip Low Pulley Cable Row', sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Weighted Wide Grip Pull Ups',      sets: 2, reps: '4–6',       rest: 60 },
+    { name: 'Bent Over Barbell Row',            sets: 4, reps: '4–6',       rest: 60 },
+    { name: 'Narrow Grip T-Bar Row',            sets: 2, reps: '4–6',       rest: 60 },
+    { name: 'Straight Arm Rope Pull Down',      sets: 2, reps: '8–12',      rest: 60 },
+    { name: 'Lower Back Hyperextensions',       sets: 2, reps: '8–12',      rest: 60 },
+    { name: 'Barbell Row',                      sets: 3, reps: '8–12',      rest: 90 },
     { name: 'Single Arm Dumbbell Row',          sets: 3, reps: '8–12 each', rest: 60 },
-    { name: 'Seated Cable Row',                 sets: 3, reps: '8–12', rest: 60 },
-    { name: 'Straight Arm Pulldown',            sets: 2, reps: '12–15', rest: 45 },
+    { name: 'Seated Cable Row',                 sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Straight Arm Pulldown',            sets: 2, reps: '12–15',     rest: 45 },
+    { name: 'Deadlifts',                        sets: 4, reps: '4–6',       rest: 60 },
   ]},
   { group: 'Biceps', exercises: [
-    { name: 'EZ Bar Bicep Curls',                       sets: 3, reps: '8–12',  rest: 45 },
-    { name: 'EZ Bar Preacher Curl',                     sets: 2, reps: '8–12',  rest: 45 },
-    { name: 'Standing Alternating Dumbbell Hammer Curl', sets: 2, reps: '8–12', rest: 45 },
-    { name: 'Cable Bicep Curl',                         sets: 3, reps: '10–15', rest: 45 },
-    { name: 'Incline Dumbbell Curl',                    sets: 2, reps: '10–12', rest: 45 },
-    { name: 'Concentration Curl',                       sets: 2, reps: '10–12', rest: 45 },
+    { name: 'EZ Bar Bicep Curls',                        sets: 3, reps: '8–12',  rest: 45 },
+    { name: 'EZ Bar Preacher Curl',                      sets: 2, reps: '8–12',  rest: 45 },
+    { name: 'Standing Alternating Dumbbell Hammer Curl', sets: 2, reps: '8–12',  rest: 45 },
+    { name: 'High Pulley Single Arm Bicep Curl',         sets: 2, reps: '8–12',  rest: 60 },
+    { name: 'Cable Bicep Curl',                          sets: 3, reps: '10–15', rest: 45 },
+    { name: 'Incline Dumbbell Curl',                     sets: 2, reps: '10–12', rest: 45 },
+    { name: 'Concentration Curl',                        sets: 2, reps: '10–12', rest: 45 },
   ]},
   { group: 'Triceps', exercises: [
     { name: 'Single Arm Cable Press Down',           sets: 2, reps: '10–15', rest: 45 },
@@ -1088,18 +1160,22 @@ const EXERCISE_LIBRARY = [
     { name: 'Weighted Dips',                         sets: 3, reps: '8–12',  rest: 60 },
   ]},
   { group: 'Legs', exercises: [
-    { name: 'Leg Press',             sets: 3, reps: '8–12',    rest: 60 },
-    { name: 'Hack Squat',            sets: 3, reps: '8–12',    rest: 60 },
-    { name: 'Back Squat',            sets: 4, reps: '5–8',     rest: 90 },
-    { name: 'Front Squat',           sets: 4, reps: '5–8',     rest: 90 },
-    { name: 'Barbell Walking Lunge', sets: 2, reps: '10 each', rest: 45 },
-    { name: 'Split Squat',           sets: 3, reps: '10 each', rest: 60 },
-    { name: 'Romanian Deadlift',     sets: 3, reps: '8–12',    rest: 60 },
-    { name: 'Leg Curl Machine',      sets: 3, reps: '8–12',    rest: 60 },
-    { name: 'Leg Extension Machine', sets: 3, reps: '8–12',    rest: 60 },
-    { name: 'Hip Thrust',            sets: 3, reps: '10–12',   rest: 60 },
-    { name: 'Seated Calf Raise',     sets: 3, reps: '12–15',   rest: 45 },
-    { name: 'Standing Calf Raise',   sets: 3, reps: '12–15',   rest: 45 },
+    { name: 'Leg Press',             sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Hack Squat',            sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Back Squat',            sets: 4, reps: '5–8',       rest: 90 },
+    { name: 'Front Squat',           sets: 4, reps: '5–8',       rest: 90 },
+    { name: 'Barbell Walking Lunge', sets: 2, reps: '10 each',   rest: 45 },
+    { name: 'Split Squat',           sets: 3, reps: '10 each',   rest: 60 },
+    { name: 'Romanian Deadlift',     sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Leg Curl Machine',      sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Leg Extension Machine', sets: 3, reps: '8–12',      rest: 60 },
+    { name: 'Lying Leg Curl',        sets: 2, reps: '4–6',       rest: 60 },
+    { name: 'Hip Thrust',            sets: 3, reps: '10–12',     rest: 60 },
+    { name: 'Glute Kick Backs',      sets: 2, reps: '8–12 each', rest: 60 },
+    { name: 'Seated Calf Raise',     sets: 3, reps: '12–15',     rest: 45 },
+    { name: 'Standing Calf Raise',   sets: 3, reps: '12–15',     rest: 45 },
+    { name: 'Donkey Calf Raise',     sets: 4, reps: '8–12',      rest: 60 },
+    { name: 'Single Leg Calf Press', sets: 4, reps: '8–12 each', rest: 60 },
   ]},
 ];
 
@@ -1137,7 +1213,7 @@ function resetDayExercises(weekType, dayIndex) {
 
 function resetFullProgram(weekType) {
   const edits = getProgramEdits();
-  [0, 1, 2, 3].forEach(i => delete edits[`${weekType}_${i}`]);
+  PROGRAM_A.forEach((_, i) => delete edits[`${weekType}_${i}`]);
   localStorage.setItem('liftlab_program_edits', JSON.stringify(edits));
 }
 
@@ -1543,12 +1619,31 @@ const MUSCLE_MAP = {
   'Strict Pull-ups': 'Back',
   'Weighted Dips': 'Triceps',
   'Power Clean': 'Back',
+  'Weighted Wide Grip Pull Ups': 'Back',
+  'Bent Over Barbell Row': 'Back',
+  'Narrow Grip T-Bar Row': 'Back',
+  'Standing Overhead Barbell Press': 'Shoulders',
+  'Deadlifts': 'Back',
+  'Lying Leg Curl': 'Legs',
+  'Standing Calf Raise': 'Legs',
+  'Straight Arm Rope Pull Down': 'Back',
+  'Lower Back Hyperextensions': 'Back',
+  'Standing EZ Bar Front Raise': 'Shoulders',
+  'Cable EZ Bar Upright Row': 'Shoulders',
+  'Incline Dumbbell Fly': 'Chest',
+  'Cable Crossover': 'Chest',
+  'High Pulley Single Arm Bicep Curl': 'Biceps',
+  'Glute Kick Backs': 'Legs',
+  'Donkey Calf Raise': 'Legs',
+  'Single Leg Calf Press': 'Legs',
 };
 
 const WORKOUT_ANCHORS = [
-  { label: 'Upper Push', keys: ['Incline Barbell Bench Press','Flat Machine Chest Press','Single Arm Cable Press Down'] },
-  { label: 'Upper Pull', keys: ['Wide Grip Pull Down','Chest Supported Machine Row','Narrow Grip Low Pulley Cable Row'] },
-  { label: 'Legs',       keys: ['Leg Curl Machine','Leg Extension Machine','Leg Press','Hack Squat','Seated Calf Raise'] },
+  { label: 'Upper Strength', keys: ['Bent Over Barbell Row','Incline Dumbbell Bench Press','Weighted Dips','EZ Bar Skullcrusher'] },
+  { label: 'Lower Strength', keys: ['Leg Press','Hack Squat','Deadlifts','Seated Calf Raise','Standing Calf Raise'] },
+  { label: 'Back & Shoulders', keys: ['Wide Grip Pull Down','Chest Supported Machine Row','Dumbbell Shoulder Press','Rope Face Pull'] },
+  { label: 'Chest & Arms',   keys: ['Incline Barbell Bench Press','Flat Machine Chest Press','EZ Bar Preacher Curl','EZ Bar Bicep Curls'] },
+  { label: 'Legs Size',      keys: ['Leg Curl Machine','Leg Extension Machine','Barbell Walking Lunge','Donkey Calf Raise','Single Leg Calf Press'] },
 ];
 
 function inferWorkoutLabel(exNames) {
@@ -2920,7 +3015,27 @@ function migrateWeightsToLbs() {
   localStorage.setItem('liftlab_unit_migration_v1', 'done');
 }
 
+function migrateProgramV2() {
+  if (localStorage.getItem('liftlab_program_v2') === 'done') return;
+  // Clear old 4-day editor customizations
+  localStorage.removeItem('liftlab_program_edits');
+  // Reset "next workout" to Day 1 by clearing this week's pre-today training checkins
+  const monday = getMondayDate();
+  const todayKey = getTodayKey();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const dk = dateToDayKey(d);
+    if (dk === todayKey) break;
+    if (localStorage.getItem(`liftlab_checkin_${dk}`) === 'yes') {
+      localStorage.removeItem(`liftlab_checkin_${dk}`);
+    }
+  }
+  localStorage.setItem('liftlab_program_v2', 'done');
+}
+
 migrateWeightsToLbs();
+migrateProgramV2();
 document.getElementById('pause-workout-btn').addEventListener('click', togglePauseWorkout);
 
 if (!checkForActiveSession()) {
