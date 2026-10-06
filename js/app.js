@@ -93,7 +93,7 @@ const EXERCISE_NAME_MAP = {
 // ========================
 
 function getWeekProgram() {
-  return getWeekState().weekType === 'B' ? PROGRAM_B : PROGRAM_A;
+  return PROGRAM_A;
 }
 
 // ========================
@@ -153,12 +153,7 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
   });
 });
 
-document.getElementById('header-week-badge').addEventListener('click', () => {
-  const state = getWeekState();
-  state.weekType = state.weekType === 'A' ? 'B' : 'A';
-  localStorage.setItem('liftlab_week', JSON.stringify(state));
-  navigateTo(currentTab);
-});
+// Week badge toggle removed — app is locked to Program A.
 
 // ========================
 // HOME SCREEN
@@ -175,7 +170,7 @@ function renderHome() {
   const state = getWeekState();
 
   const weekBadge = document.getElementById('header-week-badge');
-  if (weekBadge) weekBadge.textContent = `Week ${state.weekType}`;
+  if (weekBadge) weekBadge.style.display = 'none';
 
   currentDayIndex = getTodayProgramDayIndex();
   const weekType = state.weekType;
@@ -452,7 +447,6 @@ function getTodayWorkout(state) {
             <div class="today-card-title">Rest day</div>
             <div class="today-card-meta">Recovery is part of the program</div>
           </div>
-          <span class="today-card-tag">Week ${weekType}</span>
         </div>
         <div class="home-muscle-img-wrap">
           <img class="home-exercise-img" src="${photoUrl}" alt="Rest day" referrerpolicy="no-referrer" />
@@ -479,7 +473,6 @@ function getTodayWorkout(state) {
           <div class="today-card-title">${day.label}</div>
           <div class="today-card-meta">${day.muscles} · 30 min</div>
         </div>
-        <span class="today-card-tag">Week ${weekType}</span>
       </div>
       <div class="home-muscle-img-wrap">
         <img class="home-exercise-img" src="${photoUrl}" alt="${day.label}" referrerpolicy="no-referrer" />
@@ -1543,7 +1536,7 @@ function renderWorkout() {
         </button>
         <div class="wt-hero-text">
           <div class="wt-hero-title">${day.label}</div>
-          <div class="wt-hero-sub">Day ${day.day} · ${day.muscles} · Week ${weekType} · ${durationMins} min</div>
+          <div class="wt-hero-sub">Day ${day.day} · ${day.muscles} · ${durationMins} min</div>
         </div>
       </div>
 
@@ -1559,7 +1552,6 @@ function renderWorkout() {
             <span class="wt-section-meta">${dayExercises.length} exercises · ${durationMins} min</span>
           </div>
           <div class="wt-section-right">
-            <span class="wt-week-badge">Week ${weekType}</span>
             <button class="wt-edit-btn" id="wt-edit-btn" aria-label="Edit">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
@@ -2120,7 +2112,7 @@ function renderWorkoutEditor(dayIdx) {
       <div class="editor-header">
         <button class="editor-back-btn" id="editor-back">← Back</button>
         <span class="editor-title">Edit Workout</span>
-        <span class="editor-week-badge">Week ${weekType}</span>
+        <span class="editor-week-badge" style="display:none"></span>
       </div>
 
       <div class="editor-tabs-wrap">${dayTabs}</div>
@@ -2292,9 +2284,12 @@ function getWeekState() {
   const stored = raw ? JSON.parse(raw) : null;
 
   if (!stored || stored.mondayKey !== mondayKey) {
-    const weekType = stored ? (stored.weekType === 'A' ? 'B' : 'A') : 'A';
     localStorage.removeItem('liftlab_split_buffer');
-    return { mondayKey, weekType };
+    return { mondayKey, weekType: 'A' };
+  }
+  if (stored.weekType !== 'A') {
+    stored.weekType = 'A';
+    localStorage.setItem('liftlab_week', JSON.stringify(stored));
   }
   return stored;
 }
@@ -2721,11 +2716,7 @@ function startActiveSession(dayIndex) {
   const program = getWeekProgram();
   const day = program[dayIndex];
 
-  if (weekState.weekType === 'B' && day.hasWarmup) {
-    renderBikeWarmup(dayIndex);
-  } else {
-    beginStrengthSession(dayIndex);
-  }
+  beginStrengthSession(dayIndex);
 }
 
 function beginStrengthSession(dayIndex) {
