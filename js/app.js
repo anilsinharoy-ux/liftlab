@@ -2378,8 +2378,11 @@ function saveSession() {
     logs: session.logs,
     restRemaining: 0,
     timerState: 'idle',
-    startedAt: session.startedAt,
-    exercises: session.exercises,
+    startedAt:  session.startedAt,
+    exercises:  session.exercises,
+    queue:      session.queue,
+    completed:  session.completed,
+    setsDone:   session.setsDone,
   };
   localStorage.setItem('liftlab_active_session', JSON.stringify(toSave));
 }
@@ -2558,6 +2561,22 @@ function showResumePrompt(saved) {
     session.timerId = null;
     session.restRemaining = 0;
     session.timerState = 'idle';
+    // Rebuild queue/completed/setsDone for sessions saved before the reorder feature
+    if (!session.queue) {
+      const n = session.exercises.length;
+      session.setsDone  = {};
+      session.completed = [];
+      for (let i = 0; i < n; i++) {
+        session.setsDone[i] = session.logs.filter(l => l.exIdx === i).length;
+        if (session.setsDone[i] >= session.exercises[i].sets) session.completed.push(i);
+      }
+      session.queue = [];
+      for (let i = 0; i < n; i++) {
+        if (!session.completed.includes(i)) session.queue.push(i);
+      }
+      const curPos = session.queue.indexOf(session.exIdx);
+      if (curPos > 0) { session.queue.splice(curPos, 1); session.queue.unshift(session.exIdx); }
+    }
     if (!session.day) session.day = getWeekProgram()[session.dayIndex];
     updateActiveBorder(true);
     navigateTo('workout');
@@ -2607,6 +2626,9 @@ function beginStrengthSession(dayIndex) {
     hasBuffer: bufExercises.length > 0,
     bufferDayIndex: dayIndex,
   };
+  session.queue     = [...Array(session.exercises.length).keys()];
+  session.completed = [];
+  session.setsDone  = {};
   session.weight = getSuggestedWeight(0);
   updateActiveBorder(true);
   saveSession();
@@ -2834,18 +2856,19 @@ function logCurrentSet() {
   };
 
   session.logs.push(entry);
+  session.setsDone[session.exIdx] = (session.setsDone[session.exIdx] || 0) + 1;
   saveSession();
   const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
   all.push(entry);
   localStorage.setItem('liftlab_weights', JSON.stringify(all));
 
-  const totalSets = session.exercises.reduce((acc, e) => acc + e.sets, 0);
-  const doneSets = session.logs.length;
-  const pct = Math.round((doneSets / totalSets) * 100);
+  const doneEx  = session.exercises.filter((ex, i) => (session.setsDone[i] || 0) >= ex.sets).length;
+  const totalEx = session.exercises.length;
+  const pct = Math.round((doneEx / totalEx) * 100);
   const fill = document.getElementById('progress-fill');
-  const cnt = document.getElementById('progress-count');
+  const cnt  = document.getElementById('progress-count');
   if (fill) fill.style.width = `${pct}%`;
-  if (cnt) cnt.textContent = `${doneSets} / ${totalSets} sets`;
+  if (cnt)  cnt.textContent = `${doneEx} / ${totalEx} exercises`;
 
   const logBtn = document.getElementById('log-set-btn');
   if (logBtn) logBtn.disabled = true;
@@ -2862,14 +2885,25 @@ function advanceSession() {
     session.setNum++;
     saveSession();
     renderActiveExercise();
-  } else if (session.exIdx < session.exercises.length - 1) {
-    session.exIdx++;
-    session.setNum = 1;
-    session.weight = getSuggestedWeight(session.exIdx);
-    saveSession();
-    renderActiveExercise();
   } else {
-    renderSessionComplete();
+    // Exercise done — move it to completed and shift the queue forward
+    session.completed.push(session.queue.shift());
+    if (session.queue.length > 0) {
+      session.exIdx = session.queue[0];
+      session.setNum = 1;
+      // Weight: use last logged for this exercise if already started this session
+      const setsDoneForNext = session.setsDone[session.exIdx] || 0;
+      if (setsDoneForNext > 0) {
+        const lastLog = [...session.logs].reverse().find(l => l.exIdx === session.exIdx);
+        session.weight = lastLog ? String(lastLog.weight || '') : '';
+      } else {
+        session.weight = getSuggestedWeight(session.exIdx);
+      }
+      saveSession();
+      renderActiveExercise();
+    } else {
+      renderSessionComplete();
+    }
   }
 }
 
@@ -2877,6 +2911,18 @@ function onRestComplete() {
   circleMode = 'logging';
   saveSession();
   advanceSession();
+}
+
+// ── Reorder API ───────────────────────────────────────────────────────────────
+// Called by the reorder UI (Part 2) to apply a new exercise order mid-session.
+// newQueue is an array of exIdx values in the desired play order; must not
+// include any exIdx already in session.completed.
+function applySessionQueue(newQueue) {
+  if (!session) return;
+  session.queue = newQueue;
+  session.exIdx = newQueue[0];
+  saveSession();
+  renderActiveExercise();
 }
 
 function renderSessionComplete() {
