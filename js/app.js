@@ -2862,13 +2862,13 @@ function logCurrentSet() {
   all.push(entry);
   localStorage.setItem('liftlab_weights', JSON.stringify(all));
 
-  const doneEx  = session.exercises.filter((ex, i) => (session.setsDone[i] || 0) >= ex.sets).length;
-  const totalEx = session.exercises.length;
-  const pct = Math.round((doneEx / totalEx) * 100);
+  const doneSets  = Object.values(session.setsDone).reduce((a, b) => a + b, 0);
+  const totalSets = session.exercises.reduce((acc, e) => acc + e.sets, 0);
+  const pct = Math.round((doneSets / totalSets) * 100);
   const fill = document.getElementById('progress-fill');
   const cnt  = document.getElementById('progress-count');
   if (fill) fill.style.width = `${pct}%`;
-  if (cnt)  cnt.textContent = `${doneEx} / ${totalEx} exercises`;
+  if (cnt)  cnt.textContent = `${doneSets} / ${totalSets} sets`;
 
   const logBtn = document.getElementById('log-set-btn');
   if (logBtn) logBtn.disabled = true;
@@ -2880,30 +2880,39 @@ function logCurrentSet() {
 function advanceSession() {
   clearRestTimer();
   const ex = session.exercises[session.exIdx];
+  const setsComplete    = session.setsDone[session.exIdx] || 0;
+  const isExerciseDone  = setsComplete >= ex.sets;
+  const isStillAtFront  = session.queue[0] === session.exIdx;
 
-  if (session.setNum < ex.sets) {
-    session.setNum++;
+  if (!isExerciseDone && isStillAtFront) {
+    // More sets remaining in the same exercise and it hasn't been reordered away
+    session.setNum = setsComplete + 1;
+    saveSession();
+    renderActiveExercise();
+    return;
+  }
+
+  // Exercise finished, OR it was reordered away — finalise it if truly done
+  if (isExerciseDone && !session.completed.includes(session.exIdx)) {
+    const pos = session.queue.indexOf(session.exIdx);
+    if (pos !== -1) session.queue.splice(pos, 1);   // remove by value, not shift()
+    session.completed.push(session.exIdx);
+  }
+
+  if (session.queue.length > 0) {
+    session.exIdx = session.queue[0];
+    const setsDoneForNext = session.setsDone[session.exIdx] || 0;
+    session.setNum = setsDoneForNext + 1;
+    if (setsDoneForNext > 0) {
+      const lastLog = [...session.logs].reverse().find(l => l.exIdx === session.exIdx);
+      session.weight = lastLog ? String(lastLog.weight || '') : '';
+    } else {
+      session.weight = getSuggestedWeight(session.exIdx);
+    }
     saveSession();
     renderActiveExercise();
   } else {
-    // Exercise done — move it to completed and shift the queue forward
-    session.completed.push(session.queue.shift());
-    if (session.queue.length > 0) {
-      session.exIdx = session.queue[0];
-      session.setNum = 1;
-      // Weight: use last logged for this exercise if already started this session
-      const setsDoneForNext = session.setsDone[session.exIdx] || 0;
-      if (setsDoneForNext > 0) {
-        const lastLog = [...session.logs].reverse().find(l => l.exIdx === session.exIdx);
-        session.weight = lastLog ? String(lastLog.weight || '') : '';
-      } else {
-        session.weight = getSuggestedWeight(session.exIdx);
-      }
-      saveSession();
-      renderActiveExercise();
-    } else {
-      renderSessionComplete();
-    }
+    renderSessionComplete();
   }
 }
 
@@ -2915,14 +2924,34 @@ function onRestComplete() {
 
 // ── Reorder API ───────────────────────────────────────────────────────────────
 // Called by the reorder UI (Part 2) to apply a new exercise order mid-session.
-// newQueue is an array of exIdx values in the desired play order; must not
-// include any exIdx already in session.completed.
+// newQueue must contain only exIdx values NOT already in session.completed.
+// Returns the previous queue so the caller can implement Undo via
+//   applySessionQueue(applySessionQueue(newQueue))  — or save the return value.
 function applySessionQueue(newQueue) {
-  if (!session) return;
+  if (!session) return null;
+  const previousQueue = [...session.queue];
+
   session.queue = newQueue;
-  session.exIdx = newQueue[0];
   saveSession();
-  renderActiveExercise();
+
+  if (circleMode === 'logging' && newQueue[0] !== session.exIdx) {
+    // Not resting — safe to switch to the new front exercise immediately.
+    // Mirror the same weight-prefill logic as advanceSession().
+    session.exIdx = newQueue[0];
+    const setsDoneForNext = session.setsDone[session.exIdx] || 0;
+    session.setNum = setsDoneForNext + 1;
+    if (setsDoneForNext > 0) {
+      const lastLog = [...session.logs].reverse().find(l => l.exIdx === session.exIdx);
+      session.weight = lastLog ? String(lastLog.weight || '') : '';
+    } else {
+      session.weight = getSuggestedWeight(session.exIdx);
+    }
+    renderActiveExercise();   // re-render only when not resting
+  }
+  // If circleMode === 'resting': the rest timer continues untouched.
+  // advanceSession() picks up newQueue[0] when the countdown ends.
+
+  return previousQueue;
 }
 
 function renderSessionComplete() {
