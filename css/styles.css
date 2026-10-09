@@ -4635,3 +4635,118 @@ input {
   cursor: pointer;
   letter-spacing: -0.2px;
 }
+
+/* === Active workout: top bar + Up next (Reorder Part 2) === */
+
+/* ── Session-order list button (top-bar LEFT) ─────────────────────────── */
+.active-top-order {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(91, 78, 255, 0.12);
+  border: 1px solid #5B4EFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9B90FF;
+  cursor: pointer;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Invisible 44 × 44 px touch target */
+.active-top-order::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
+}
+
+/* ── Pause button (top-bar RIGHT) — restyle teal → indigo, fix tap area ── */
+.active-top-pause {
+  background: rgba(91, 78, 255, 0.12);
+  border-color: #5B4EFF;
+  color: #9B90FF;
+  position: relative;
+}
+
+.active-top-pause::before {
+  content: '';
+  position: absolute;
+  inset: -7px;
+}
+
+/* ── Up next card ─────────────────────────────────────────────────────── */
+.up-next-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 190px;
+  margin-left: auto;
+  margin-top: 10px;
+  background: #111111;
+  border: 1px solid #2A2A2A;
+  border-radius: 14px;
+  padding: 8px 10px;
+}
+
+.up-next-card.up-next-hidden {
+  display: none;
+}
+
+/* Thumbnail box (32 × 32 px, rounded) */
+.up-next-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #0A0A12;
+  position: relative;
+}
+
+.up-next-thumb-img {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  display: block;
+}
+
+/* onerror adds this class to hide the broken <img> */
+.up-next-img-broken {
+  display: none;
+}
+
+/* Barbell placeholder — shown when no image or image fails to load */
+.up-next-thumb-no-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234B4B6A' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='8' y1='12' x2='16' y2='12'/%3E%3Cline x1='5.5' y1='9.5' x2='5.5' y2='14.5'/%3E%3Cline x1='18.5' y1='9.5' x2='18.5' y2='14.5'/%3E%3Cline x1='3.5' y1='10.5' x2='3.5' y2='13.5'/%3E%3Cline x1='20.5' y1='10.5' x2='20.5' y2='13.5'/%3E%3Cline x1='5.5' y1='9.5' x2='8' y2='9.5'/%3E%3Cline x1='5.5' y1='14.5' x2='8' y2='14.5'/%3E%3Cline x1='16' y1='9.5' x2='18.5' y2='9.5'/%3E%3Cline x1='16' y1='14.5' x2='18.5' y2='14.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 18px 18px;
+}
+
+/* Text side */
+.up-next-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.up-next-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #555566;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.up-next-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #EFEFEF;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

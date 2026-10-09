@@ -2353,6 +2353,19 @@ function getSuggestedWeight(exIdx) {
 let session = null;
 let elapsedInterval = null;
 
+// ── Icon helper ────────────────────────────────────────────────────────────────
+// Inline SVGs, stroke="currentColor" — same approach as the rest of the app.
+// All icons for the active workout screen (Parts 2 & 3) live here.
+const ICONS = {
+  pause:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`,
+  play:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>`,
+  list:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/></svg>`,
+  close:   `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  grip:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="9" cy="18" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15" cy="18" r="1" fill="currentColor" stroke="none"/></svg>`,
+  lock:    `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  barbell: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="12" x2="16" y2="12"/><line x1="5.5" y1="9.5" x2="5.5" y2="14.5"/><line x1="18.5" y1="9.5" x2="18.5" y2="14.5"/><line x1="3.5" y1="10.5" x2="3.5" y2="13.5"/><line x1="20.5" y1="10.5" x2="20.5" y2="13.5"/><line x1="5.5" y1="9.5" x2="8" y2="9.5"/><line x1="5.5" y1="14.5" x2="8" y2="14.5"/><line x1="16" y1="9.5" x2="18.5" y2="9.5"/><line x1="16" y1="14.5" x2="18.5" y2="14.5"/></svg>`,
+};
+
 let warmupTimerId = null;
 
 function clearWarmupTimer() {
@@ -2502,12 +2515,10 @@ function updatePauseButtonUI() {
       btn.classList.add('pause-btn');
     }
   }
-  // Sync top-bar pause/play icon
-  const topIcon = document.querySelector('#top-pause-btn i');
-  if (topIcon) {
-    topIcon.className = (session && session.paused)
-      ? 'ti ti-player-play'
-      : 'ti ti-player-pause';
+  // Sync top-bar pause/play icon (inline SVG swap — Tabler CSS is not loaded)
+  const topPauseBtn = document.getElementById('top-pause-btn');
+  if (topPauseBtn) {
+    topPauseBtn.innerHTML = (session && session.paused) ? ICONS.play : ICONS.pause;
   }
 }
 
@@ -2581,6 +2592,7 @@ function showResumePrompt(saved) {
     updateActiveBorder(true);
     navigateTo('workout');
     renderActiveExercise();
+    updateUpNextCard();
   });
 
   document.getElementById('resume-end').addEventListener('click', () => {
@@ -2647,6 +2659,78 @@ function formatTime(secs) {
   const m = Math.floor(secs / 60);
   const s = secs % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// Returns the HTML string for the "Up next" card, or '' if there is nothing next.
+function buildUpNextCardHTML() {
+  if (!session) return '';
+  const nextExIdx = session.queue.find(i => i !== session.exIdx);
+  if (nextExIdx === undefined) return '';
+
+  const nextEx = session.exercises[nextExIdx];
+  const setsDoneForNext = session.setsDone[nextExIdx] || 0;
+  const labelText = setsDoneForNext > 0
+    ? `Up next · ${setsDoneForNext}/${nextEx.sets} done`
+    : 'Up next';
+  const thumbClass = nextEx.image ? 'up-next-thumb' : 'up-next-thumb up-next-thumb-no-img';
+  const imgHTML = nextEx.image
+    ? `<img class="up-next-thumb-img" src="${nextEx.image}" alt=""
+          onerror="this.classList.add('up-next-img-broken');this.parentElement.classList.add('up-next-thumb-no-img')" />`
+    : '';
+
+  return `
+    <div class="up-next-card" id="up-next-card">
+      <div class="${thumbClass}" id="up-next-thumb">${imgHTML}</div>
+      <div class="up-next-info">
+        <div class="up-next-label">${labelText}</div>
+        <div class="up-next-name">${nextEx.name}</div>
+      </div>
+    </div>`;
+}
+
+// Patches the Up next card in-place without re-rendering the whole screen.
+// Safe to call at any time, including during rest.
+function updateUpNextCard() {
+  const card = document.getElementById('up-next-card');
+  if (!card || !session) return;
+
+  const nextExIdx = session.queue.find(i => i !== session.exIdx);
+  if (nextExIdx === undefined) {
+    card.classList.add('up-next-hidden');
+    return;
+  }
+  card.classList.remove('up-next-hidden');
+
+  const nextEx = session.exercises[nextExIdx];
+  const setsDoneForNext = session.setsDone[nextExIdx] || 0;
+
+  card.querySelector('.up-next-label').textContent = setsDoneForNext > 0
+    ? `Up next · ${setsDoneForNext}/${nextEx.sets} done`
+    : 'Up next';
+  card.querySelector('.up-next-name').textContent = nextEx.name;
+
+  const thumbEl = document.getElementById('up-next-thumb');
+  let imgEl = thumbEl ? thumbEl.querySelector('.up-next-thumb-img') : null;
+  if (!thumbEl) return;
+
+  if (nextEx.image) {
+    thumbEl.classList.remove('up-next-thumb-no-img');
+    if (!imgEl) {
+      imgEl = document.createElement('img');
+      imgEl.className = 'up-next-thumb-img';
+      imgEl.addEventListener('error', () => {
+        imgEl.classList.add('up-next-img-broken');
+        thumbEl.classList.add('up-next-thumb-no-img');
+      });
+      thumbEl.appendChild(imgEl);
+    }
+    imgEl.classList.remove('up-next-img-broken');
+    imgEl.src  = nextEx.image;
+    imgEl.alt  = '';
+  } else {
+    thumbEl.classList.add('up-next-thumb-no-img');
+    if (imgEl) imgEl.remove();
+  }
 }
 
 function renderActiveExercise() {
@@ -2716,11 +2800,13 @@ function renderActiveExercise() {
     <div class="active-screen">
 
       <div class="active-top-bar">
-        <div class="active-top-pause" id="top-pause-btn">
-          <i class="ti ti-player-pause" aria-hidden="true"></i>
+        <div class="active-top-order" id="session-order-btn" aria-label="Exercise order">
+          ${ICONS.list}
         </div>
         <span class="active-top-timer" id="active-top-timer">${elapsedStr}</span>
-        <div class="active-top-spacer"></div>
+        <div class="active-top-pause" id="top-pause-btn" aria-label="Pause workout">
+          ${(session && session.paused) ? ICONS.play : ICONS.pause}
+        </div>
       </div>
 
       <div class="active-hero">
@@ -2735,12 +2821,14 @@ function renderActiveExercise() {
         <div class="active-ex-target">Target ${ex.reps} reps</div>
         ${circleHTML}
         ${diffRowHTML}
+        ${buildUpNextCardHTML()}
       </div>
 
     </div>
   `;
 
   document.getElementById('top-pause-btn').addEventListener('click', togglePauseWorkout);
+  document.getElementById('session-order-btn').addEventListener('click', () => { /* Part 3 will connect this */ });
   document.getElementById('end-workout-btn').addEventListener('click', endWorkoutPrompt);
   updatePauseButtonUI();
 
@@ -2858,6 +2946,7 @@ function logCurrentSet() {
   session.logs.push(entry);
   session.setsDone[session.exIdx] = (session.setsDone[session.exIdx] || 0) + 1;
   saveSession();
+  updateUpNextCard();
   const all = JSON.parse(localStorage.getItem('liftlab_weights') || '[]');
   all.push(entry);
   localStorage.setItem('liftlab_weights', JSON.stringify(all));
@@ -2951,6 +3040,7 @@ function applySessionQueue(newQueue) {
   // If circleMode === 'resting': the rest timer continues untouched.
   // advanceSession() picks up newQueue[0] when the countdown ends.
 
+  updateUpNextCard();   // safe in both paths: DOM-patches card during rest, no-op after re-render
   return previousQueue;
 }
 
