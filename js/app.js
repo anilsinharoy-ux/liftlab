@@ -2353,6 +2353,14 @@ function getSuggestedWeight(exIdx) {
 let session = null;
 let elapsedInterval = null;
 
+// ── Session Order Page state (Part 3) ─────────────────────────────────────────
+let orderPageEl          = null;   // the fixed overlay element
+let orderAtOpen          = null;   // queue snapshot taken when the page opened
+let reorderToastEl       = null;   // active undo toast element
+let dragState            = null;   // active drag descriptor object
+let orderPageDragActive  = false;  // true while a card is being dragged
+let orderPageRestPending = false;  // rest ended during a drag; advance after drop
+
 // ── Icon helper ────────────────────────────────────────────────────────────────
 // Inline SVGs, stroke="currentColor" — same approach as the rest of the app.
 // All icons for the active workout screen (Parts 2 & 3) live here.
@@ -2613,6 +2621,7 @@ function startActiveSession(dayIndex) {
 }
 
 function beginStrengthSession(dayIndex) {
+  closeSessionOrderPage({ noToast: true });
   circleMode = 'logging';
   clearRestTimer();
   clearWarmupTimer();
@@ -2828,7 +2837,7 @@ function renderActiveExercise() {
   `;
 
   document.getElementById('top-pause-btn').addEventListener('click', togglePauseWorkout);
-  document.getElementById('session-order-btn').addEventListener('click', () => { /* Part 3 will connect this */ });
+  document.getElementById('session-order-btn').addEventListener('click', openSessionOrderPage);
   document.getElementById('end-workout-btn').addEventListener('click', endWorkoutPrompt);
   updatePauseButtonUI();
 
@@ -2865,6 +2874,11 @@ function renderActiveExercise() {
         startRestTimer();
       });
     });
+  }
+
+  // Refresh order page content whenever the active exercise screen is rebuilt
+  if (orderPageEl && !orderPageEl.classList.contains('so-page-hidden')) {
+    refreshOrderPageContent();
   }
 }
 
@@ -2914,6 +2928,9 @@ function startRestTimer() {
       const offset = totalRest > 0 ? 490 * (1 - session.restRemaining / totalRest) : 490;
       rr.setAttribute('stroke-dashoffset', String(offset));
     }
+    // ── Order page: keep rest pill in sync (reads existing restRemaining)
+    const soPill = document.getElementById('so-rest-pill');
+    if (soPill) soPill.textContent = `Rest ${formatTime(session.restRemaining)}`;
 
     if (session.restRemaining <= 0) {
       clearInterval(session.timerId);
@@ -2922,6 +2939,8 @@ function startRestTimer() {
       if (d) { d.className = 'rest-timer-display done'; }
       if (b) { b.textContent = 'Next'; }
       if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      // ── Order page: hide rest pill when rest ends
+      if (soPill) soPill.classList.add('so-rest-pill-hidden');
       if (circleMode === 'resting') { onRestComplete(); }
     }
   }, 1000);
@@ -3006,6 +3025,8 @@ function advanceSession() {
 }
 
 function onRestComplete() {
+  // If a card drag is in progress, defer advance until the drop is released
+  if (orderPageDragActive) { orderPageRestPending = true; return; }
   circleMode = 'logging';
   saveSession();
   advanceSession();
@@ -3041,10 +3062,321 @@ function applySessionQueue(newQueue) {
   // advanceSession() picks up newQueue[0] when the countdown ends.
 
   updateUpNextCard();   // safe in both paths: DOM-patches card during rest, no-op after re-render
+  // Refresh order page during rest (logging path is covered by renderActiveExercise above)
+  if (circleMode === 'resting' &&
+      orderPageEl && !orderPageEl.classList.contains('so-page-hidden')) {
+    refreshOrderPageContent();
+  }
   return previousQueue;
 }
 
+// ════════════════════════════════════════════════════════════════════════════
+// SESSION ORDER PAGE  (Reorder Part 3)
+// ════════════════════════════════════════════════════════════════════════════
+
+function openSessionOrderPage() {
+  if (!session) return;
+  orderAtOpen = [...session.queue];
+
+  if (!orderPageEl) {
+    orderPageEl = document.createElement('div');
+    orderPageEl.id = 'session-order-page';
+    orderPageEl.className = 'so-page so-page-hidden';
+    document.getElementById('app').appendChild(orderPageEl);
+  }
+
+  orderPageEl.innerHTML = buildOrderPageHTML();
+  document.getElementById('so-close-btn').addEventListener('click', () => closeSessionOrderPage({}));
+  initOrderPageDrag();
+
+  // Double-rAF ensures the CSS transition fires (initial hidden state must be painted first)
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    orderPageEl.classList.remove('so-page-hidden');
+  }));
+}
+
+function closeSessionOrderPage({ noToast = false } = {}) {
+  if (!orderPageEl) return;
+
+  // Abort any active drag cleanly
+  if (dragState) { cleanupDrag(); dragState = null; orderPageDragActive = false; }
+
+  // Slide out
+  orderPageEl.classList.add('so-page-hidden');
+
+  // Toast + undo (only when something actually changed)
+  if (!noToast && orderAtOpen && session) {
+    const queueAtOpen = [...orderAtOpen];
+    orderAtOpen = null;
+    if (JSON.stringify(session.queue) !== JSON.stringify(queueAtOpen)) {
+      showReorderToast(() => { applySessionQueue(queueAtOpen); });
+    }
+  } else {
+    orderAtOpen = null;
+  }
+}
+
+function buildOrderPageHTML() {
+  const resting = circleMode === 'resting';
+  const pillText = `Rest ${formatTime(session.restRemaining)}`;
+  return `
+    <div class="so-header">
+      <button class="so-icon-btn" id="so-close-btn" aria-label="Close">${ICONS.close}</button>
+      <span class="so-title">Session order</span>
+      <div class="so-rest-pill${resting ? '' : ' so-rest-pill-hidden'}" id="so-rest-pill">${pillText}</div>
+    </div>
+    <div class="so-scroll" id="so-scroll">
+      ${buildOrderPageSections()}
+    </div>`;
+}
+
+function buildOrderPageSections() {
+  let html = '';
+
+  // ── Done / locked ──
+  if (session.completed.length > 0) {
+    html += `<div class="so-section-label">Done · locked</div>`;
+    html += session.completed.map(i => buildOrderCard(i, true)).join('');
+  }
+
+  // ── To do ──
+  html += `
+    <div class="so-section-label">
+      To do · hold <span class="so-grip-inline">${ICONS.grip}</span> and slide to move
+    </div>
+    <div id="so-todo-section">
+      ${session.queue.map(i => buildOrderCard(i, false)).join('')}
+    </div>`;
+
+  return html;
+}
+
+function buildOrderCard(exIdx, isDone) {
+  const ex       = session.exercises[exIdx];
+  const setsDone = session.setsDone[exIdx] || 0;
+  const lastLog  = [...session.logs].reverse().find(l => l.exIdx === exIdx);
+  const weightStr = (lastLog && lastLog.weight) ? `${lastLog.weight} lbs` : null;
+
+  const thumbClass = ex.image ? 'so-thumb' : 'so-thumb so-thumb-no-img';
+  const imgHTML = ex.image
+    ? `<img class="so-thumb-img" src="${ex.image}" alt=""
+          onerror="this.classList.add('so-thumb-img-broken');this.parentElement.classList.add('so-thumb-no-img')" />`
+    : '';
+
+  if (isDone) {
+    const sets   = `${setsDone} set${setsDone !== 1 ? 's' : ''}`;
+    const meta   = [sets, weightStr].filter(Boolean).join(' · ');
+    return `
+      <div class="so-card so-card-done" data-exidx="${exIdx}">
+        <div class="${thumbClass}">${imgHTML}</div>
+        <div class="so-info">
+          <div class="so-name">${ex.name}</div>
+          <div class="so-meta">${meta}</div>
+        </div>
+        <div class="so-lock-icon">${ICONS.lock}</div>
+      </div>`;
+  }
+
+  // To-do card
+  const isQueueFront = session.queue[0] === exIdx;
+  const partlyDone   = setsDone > 0 && setsDone < ex.sets;
+
+  let statusHTML = '';
+  if (isQueueFront) {
+    const isNow = circleMode === 'logging' ||
+      (circleMode === 'resting' && exIdx === session.exIdx);
+    statusHTML = isNow
+      ? `<span class="so-meta-now">Now</span>`
+      : 'Next after rest';
+  }
+
+  const metaParts = [
+    statusHTML,
+    partlyDone ? `${setsDone} of ${ex.sets} sets done` : '',
+  ].filter(Boolean).join(' · ');
+
+  return `
+    <div class="so-card so-card-todo" data-exidx="${exIdx}">
+      <div class="${thumbClass}">${imgHTML}</div>
+      <div class="so-info">
+        <div class="so-name">${ex.name}</div>
+        ${metaParts ? `<div class="so-meta">${metaParts}</div>` : ''}
+      </div>
+      <div class="so-grip" data-exidx="${exIdx}">${ICONS.grip}</div>
+    </div>`;
+}
+
+function refreshOrderPageContent() {
+  if (!orderPageEl || orderPageEl.classList.contains('so-page-hidden')) return;
+  const scroll = document.getElementById('so-scroll');
+  if (!scroll) return;
+  scroll.innerHTML = buildOrderPageSections();
+  initOrderPageDrag();
+  // Sync rest pill
+  const pill = document.getElementById('so-rest-pill');
+  if (pill) {
+    if (circleMode === 'resting') {
+      pill.textContent = `Rest ${formatTime(session.restRemaining)}`;
+      pill.classList.remove('so-rest-pill-hidden');
+    } else {
+      pill.classList.add('so-rest-pill-hidden');
+    }
+  }
+}
+
+// ── Drag ─────────────────────────────────────────────────────────────────────
+
+function initOrderPageDrag() {
+  const todoSection = document.getElementById('so-todo-section');
+  if (!todoSection) return;
+  todoSection.querySelectorAll('.so-grip').forEach(grip => {
+    grip.addEventListener('pointerdown', onGripPointerDown, { passive: false });
+  });
+}
+
+function onGripPointerDown(e) {
+  if (e.button !== 0 && e.pointerType === 'mouse') return;  // left-click only for mouse
+  e.preventDefault();
+  const grip   = e.currentTarget;
+  const cardEl = grip.closest('.so-card-todo');
+  if (!cardEl) return;
+
+  const todoSection = document.getElementById('so-todo-section');
+  const todoCards   = Array.from(todoSection.querySelectorAll('.so-card-todo'));
+  const cardIdx     = todoCards.indexOf(cardEl);
+  if (cardIdx < 0) return;
+
+  grip.setPointerCapture(e.pointerId);
+
+  // Measure slot height (card + gap) from adjacent card's top
+  const rect     = cardEl.getBoundingClientRect();
+  const nextRect = todoCards[cardIdx + 1]?.getBoundingClientRect();
+  const slotH    = nextRect ? nextRect.top - rect.top : rect.height + 8;
+
+  dragState = { grip, cardEl, cardIdx, dropIdx: cardIdx,
+                startY: e.clientY, slotH, todoCards, pointerId: e.pointerId };
+
+  orderPageDragActive = true;
+  cardEl.classList.add('so-card-lifted');
+  todoCards.forEach((c, i) => { if (i !== cardIdx) c.classList.add('so-card-shifting'); });
+  document.getElementById('app').classList.add('so-drag-in-progress');
+
+  grip.addEventListener('pointermove', onGripPointerMove);
+  grip.addEventListener('pointerup',   onGripPointerUp);
+  grip.addEventListener('pointercancel', onGripPointerCancel);
+}
+
+function onGripPointerMove(e) {
+  if (!dragState || e.pointerId !== dragState.pointerId) return;
+  const { cardEl, cardIdx, slotH, todoCards, startY } = dragState;
+
+  const deltaY  = e.clientY - startY;
+  cardEl.style.transform = `translateY(${deltaY}px)`;   // spec-allowed inline transform
+
+  const rawIdx     = cardIdx + Math.round(deltaY / slotH);
+  const newDropIdx = Math.max(0, Math.min(todoCards.length - 1, rawIdx));
+
+  if (newDropIdx !== dragState.dropIdx) {
+    dragState.dropIdx = newDropIdx;
+    todoCards.forEach((card, i) => {
+      if (card === cardEl) return;
+      let shift = 0;
+      if (cardIdx < newDropIdx && i > cardIdx && i <= newDropIdx) shift = -1;
+      else if (cardIdx > newDropIdx && i >= newDropIdx && i < cardIdx) shift = 1;
+      // Use CSS variable so the transition class (.so-card-shifting) handles the animation
+      card.style.setProperty('--so-drag-shift', `${shift * slotH}px`);
+    });
+  }
+
+  // Auto-scroll the list when near its edges
+  const scrollEl = document.getElementById('so-scroll');
+  if (scrollEl) {
+    const sr = scrollEl.getBoundingClientRect();
+    if (e.clientY - sr.top < 40)   scrollEl.scrollTop -= 6;
+    else if (sr.bottom - e.clientY < 40) scrollEl.scrollTop += 6;
+  }
+}
+
+function cleanupDrag() {
+  if (!dragState) return;
+  const { cardEl, todoCards, grip } = dragState;
+  cardEl.style.transform = '';
+  cardEl.classList.remove('so-card-lifted');
+  todoCards.forEach(c => {
+    c.classList.remove('so-card-shifting');
+    c.style.removeProperty('--so-drag-shift');
+  });
+  document.getElementById('app').classList.remove('so-drag-in-progress');
+  grip.removeEventListener('pointermove', onGripPointerMove);
+  grip.removeEventListener('pointerup',   onGripPointerUp);
+  grip.removeEventListener('pointercancel', onGripPointerCancel);
+}
+
+function onGripPointerUp(e) {
+  if (!dragState || e.pointerId !== dragState.pointerId) return;
+  const { cardIdx, dropIdx } = dragState;
+  cleanupDrag();
+  dragState = null;
+  orderPageDragActive = false;
+
+  if (dropIdx !== cardIdx) {
+    const newQueue = [...session.queue];
+    const [moved] = newQueue.splice(cardIdx, 1);
+    newQueue.splice(dropIdx, 0, moved);
+    applySessionQueue(newQueue);
+    refreshOrderPageContent();
+  }
+
+  if (orderPageRestPending) { orderPageRestPending = false; onRestComplete(); }
+}
+
+function onGripPointerCancel(e) {
+  if (!dragState || e.pointerId !== dragState.pointerId) return;
+  cleanupDrag();
+  dragState = null;
+  orderPageDragActive = false;
+  // Rebuild to restore visual order — no queue change applied on cancel
+  refreshOrderPageContent();
+  // Always run deferred rest-end and clear flag, even on cancel (no queue change applied above)
+  if (orderPageRestPending) { orderPageRestPending = false; onRestComplete(); }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+
+function showReorderToast(undoFn) {
+  hideReorderToast();
+  reorderToastEl = document.createElement('div');
+  reorderToastEl.className = 'so-toast';
+  reorderToastEl.innerHTML = `
+    <span class="so-toast-msg">Order saved for this session</span>
+    <button class="so-toast-undo" id="so-toast-undo-btn">Undo</button>`;
+  document.getElementById('app').appendChild(reorderToastEl);
+
+  document.getElementById('so-toast-undo-btn').addEventListener('click', () => {
+    undoFn();
+    hideReorderToast();
+  });
+
+  reorderToastEl._autoHide = setTimeout(hideReorderToast, 4000);
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if (reorderToastEl) reorderToastEl.classList.add('so-toast-visible');
+  }));
+}
+
+function hideReorderToast() {
+  if (!reorderToastEl) return;
+  clearTimeout(reorderToastEl._autoHide);
+  reorderToastEl.classList.remove('so-toast-visible');
+  const el = reorderToastEl;
+  reorderToastEl = null;
+  setTimeout(() => el.remove(), 320);
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+
 function renderSessionComplete() {
+  closeSessionOrderPage({ noToast: true });   // close without toast if session ends
   clearRestTimer();
   showWorkoutControls(false);
   const container = document.getElementById('screen-container');
